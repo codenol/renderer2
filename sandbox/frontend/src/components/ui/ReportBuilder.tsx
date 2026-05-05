@@ -14,6 +14,16 @@ export interface ReportFilter {
   value: string
 }
 
+interface ReportTemplate {
+  name: string
+  selectedFields: string[]
+  filters: { field: string; operator: string; value: string }[]
+  groupBy: string | null
+  sortBy: string | null
+}
+
+const TPL_STORAGE = 'report-builder-templates'
+
 interface ReportBuilderProps {
   allFields: ReportField[]
   allData: Record<string, string>[]
@@ -63,6 +73,55 @@ export function ReportBuilder({
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [exportOpen])
+
+  // ─── Templates ──────────────────────────────────────────────────────────
+  const [templates, setTemplates] = useState<ReportTemplate[]>(() => {
+    try { return JSON.parse(localStorage.getItem(TPL_STORAGE) || '[]') }
+    catch { return [] }
+  })
+  const [activeTemplate, setActiveTemplate] = useState<string | null>(null)
+  const [showSaveTpl, setShowSaveTpl] = useState(false)
+  const [tplName, setTplName] = useState('')
+  const saveTplInputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    if (showSaveTpl) saveTplInputRef.current?.focus()
+  }, [showSaveTpl])
+
+  function saveTemplate() {
+    if (!tplName.trim()) return
+    const tpl: ReportTemplate = {
+      name: tplName.trim(),
+      selectedFields: [...selectedFields],
+      filters: filters.map(({ id, ...f }) => f),
+      groupBy,
+      sortBy,
+    }
+    const updated = templates.filter(t => t.name !== tplName.trim())
+    updated.push(tpl)
+    setTemplates(updated)
+    try { localStorage.setItem(TPL_STORAGE, JSON.stringify(updated)) } catch {/* ignore */}
+    setActiveTemplate(tplName.trim())
+    setTplName('')
+    setShowSaveTpl(false)
+  }
+
+  function loadTemplate(name: string) {
+    const t = templates.find(t => t.name === name)
+    if (!t) return
+    setActiveTemplate(name)
+    setSelectedFields([...t.selectedFields])
+    setFilters(t.filters.map((f, i) => ({ id: i, ...f })))
+    setNextFilterId(t.filters.length)
+    setGroupBy(t.groupBy)
+    setSortBy(t.sortBy)
+  }
+
+  function deleteTemplate(name: string) {
+    const updated = templates.filter(t => t.name !== name)
+    setTemplates(updated)
+    try { localStorage.setItem(TPL_STORAGE, JSON.stringify(updated)) } catch {/* ignore */}
+    if (activeTemplate === name) setActiveTemplate(null)
+  }
 
   const allFieldKeys = allFields.map(f => f.key)
 
@@ -175,23 +234,6 @@ export function ReportBuilder({
             </select>
           )}
 
-          <div style={{ flex: 1 }} />
-
-          <div className={styles.rbExportWrap} ref={exportRef}>
-            <button
-              className={`${styles.rbBtn} ${styles.rbBtnExport}`}
-              onClick={() => setExportOpen(v => !v)}
-            >
-              Экспорт ▾
-            </button>
-            {exportOpen && (
-              <div className={styles.rbExportMenu}>
-                <button className={styles.rbExportItem} onClick={() => setExportOpen(false)}>CSV</button>
-                <button className={styles.rbExportItem} onClick={() => setExportOpen(false)}>PDF</button>
-                <button className={styles.rbExportItem} onClick={() => setExportOpen(false)}>Excel</button>
-              </div>
-            )}
-          </div>
         </div>
 
         <div className={styles.rbRow} style={{ marginBottom: 10 }}>
@@ -256,27 +298,98 @@ export function ReportBuilder({
           <button className={styles.rbBtn} onClick={addFilter}>Добавить</button>
         </div>
 
-        {filters.length > 0 && (
-          <div className={styles.rbRow}>
-            <span className={styles.rbLabel}>Активные фильтры:</span>
-            {filters.map(f => (
-              <button
-                key={f.id}
-                className={styles.rbChip}
-                data-filter="true"
-                title="Нажмите чтобы убрать"
-              >
-                {allFields.find(af => af.key === f.field)?.label ?? f.field} {OP_LABELS[f.operator] ?? f.operator} {f.value}
-                <span
-                  className={styles.rbChipClose}
-                  onClick={(e) => { e.stopPropagation(); removeFilter(f.id) }}
+        <div className={styles.rbRow}>
+          {filters.length > 0 && (
+            <>
+              <span className={styles.rbLabel}>Активные фильтры:</span>
+              {filters.map(f => (
+                <button
+                  key={f.id}
+                  className={styles.rbChip}
+                  data-filter="true"
+                  title="Нажмите чтобы убрать"
                 >
-                  ×
-                </span>
-              </button>
+                  {allFields.find(af => af.key === f.field)?.label ?? f.field} {OP_LABELS[f.operator] ?? f.operator} {f.value}
+                  <span
+                    className={styles.rbChipClose}
+                    onClick={(e) => { e.stopPropagation(); removeFilter(f.id) }}
+                  >
+                    ×
+                  </span>
+                </button>
+              ))}
+              <span className={styles.rbDivider} />
+            </>
+          )}
+          <span className={styles.rbLabel}>Шаблон:</span>
+          <select
+            className={styles.rbDropdown}
+            value=""
+            onChange={e => {
+              const v = e.target.value
+              if (v === '__save__') { setShowSaveTpl(true); return }
+              if (v) loadTemplate(v); e.currentTarget.value = ''
+            }}
+          >
+            <option value="">Выбрать шаблон...</option>
+            {templates.map(t => (
+              <option key={t.name} value={t.name}>{t.name}</option>
             ))}
+            <option disabled>──────────</option>
+            <option value="__save__">+ Сохранить как шаблон...</option>
+          </select>
+          {activeTemplate && (
+            <span className={styles.rbLabel} style={{ color: '#2d98b4' }}>→ {activeTemplate}</span>
+          )}
+          {activeTemplate && (
+            <button
+              className={styles.rbBtn}
+              style={{ background: '#d9534f', fontSize: 12, padding: '4px 10px' }}
+              onClick={() => deleteTemplate(activeTemplate)}
+            >
+              Удалить
+            </button>
+          )}
+          {showSaveTpl && (
+            <>
+              <input
+                ref={saveTplInputRef}
+                className={styles.rbInput}
+                placeholder="Название шаблона"
+                value={tplName}
+                onChange={e => setTplName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') saveTemplate()
+                  if (e.key === 'Escape') { setShowSaveTpl(false); setTplName('') }
+                }}
+              />
+              <button className={styles.rbBtn} onClick={saveTemplate}>Сохранить</button>
+              <button
+                className={styles.rbBtn}
+                style={{ background: '#818594' }}
+                onClick={() => { setShowSaveTpl(false); setTplName('') }}
+              >
+                Отмена
+              </button>
+            </>
+          )}
+          <div style={{ flex: 1 }} />
+          <div className={styles.rbExportWrap} ref={exportRef}>
+            <button
+              className={`${styles.rbBtn} ${styles.rbBtnExport}`}
+              onClick={() => setExportOpen(v => !v)}
+            >
+              Экспорт ▾
+            </button>
+            {exportOpen && (
+              <div className={styles.rbExportMenu}>
+                <button className={styles.rbExportItem} onClick={() => setExportOpen(false)}>CSV</button>
+                <button className={styles.rbExportItem} onClick={() => setExportOpen(false)}>PDF</button>
+                <button className={styles.rbExportItem} onClick={() => setExportOpen(false)}>Excel</button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Table */}

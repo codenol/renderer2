@@ -1,0 +1,595 @@
+// ─── App Shell ───────────────────────────────────────────────────────────────
+// Responsive: sidebar fixed-width, main content grows to fill remaining space
+// background = --color-layout-background-default (cool-gray/100)
+.appShell {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  // по спеке: left 20, top 20, bottom 20, right 16
+  padding: 20px 16px 20px 20px;
+  gap: 16px;
+  background: var(--color-layout-background-default);
+}
+
+// Main frame — правая область (AutoLayout VERTICAL, gap=16, grow=1)
+.appShellMain {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+// Content slot — растёт под breadcrumbs, скроллится
+.appShellContent {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+// ─── Sidebar — delegated to Sidebar.module.scss ───────────────────────────────
+
+// ─── Breadcrumbs ─────────────────────────────────────────────────────────────
+// layout.md: fixed height 48px, hug-width, glass surface, border-radius 16, border
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  height: 48px;
+  padding: 0 20px 0 24px;
+  background: var(--color-sidebar-background-default);
+  border-radius: 16px;
+  border: 1px solid var(--color-breadcrumbs-border-default);
+  align-self: flex-start;   // hug-width: не растягивается на всю ширину
+  flex-shrink: 0;
+  font-family: 'Roboto', 'Inter', sans-serif;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.breadcrumbItem { display: flex; align-items: center; gap: 4px; }
+
+.breadcrumbSep {
+  color: var(--color-sidebar-menubutton-icon-default);
+  font-size: 8px;
+  opacity: 0.4;
+  line-height: 1;
+  margin: 0 1px;
+}
+
+.breadcrumbLink {
+  color: var(--color-sidebar-menubutton-icon-default);
+  font-weight: 400;
+  &:hover { color: var(--color-sidebar-text-default); }
+}
+
+.breadcrumbCurrent {
+  color: var(--color-sidebar-text-default);
+  font-weight: 600;
+}
+
+// ─── Breadcrumb dropdown ──────────────────────────────────────────────────────
+.bcDropWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bcDropTrigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bcChevron {
+  font-size: 10px;
+  opacity: 0.5;
+  transition: transform 0.15s;
+  margin-left: 1px;
+}
+
+.bcChevronOpen {
+  transform: rotate(180deg);
+  opacity: 0.8;
+}
+
+.bcDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -8px;
+  min-width: 180px;
+  background: var(--color-sidebar-background-default, #fff);
+  border: 1px solid var(--color-sidebar-border-default, #dfe2e6);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  z-index: 200;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.bcDropItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Roboto', 'Inter', sans-serif;
+  text-align: left;
+  color: var(--color-sidebar-text-default);
+  transition: background 0.12s;
+
+  &:hover {
+    background: var(--color-sidebar-menuitem-background-hover);
+  }
+}
+
+.bcDropItemActive {
+  font-weight: 600;
+  color: var(--color-sidebar-text-default);
+  background: var(--color-sidebar-menuitem-background-active);
+
+  &:hover {
+    background: var(--color-sidebar-menuitem-background-active);
+  }
+}
+
+.bcDropItemDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-button-filled-accent-background-default);
+  flex-shrink: 0;
+}
+
+// ─── Layout ──────────────────────────────────────────────────────────────────
+.vstack { display: flex; flex-direction: column; width: 100%; }
+.hstack { display: flex; flex-direction: row; flex-wrap: wrap; width: 100%; }
+.grid   { display: grid; width: 100%; }
+
+.card {
+  background: var(--color-card-background-default, #fff);
+  border: 1px solid var(--color-sidebar-border-default, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-table-text-primary, #111827);
+  margin-bottom: 16px;
+}
+
+// ─── Text ─────────────────────────────────────────────────────────────────────
+.text { line-height: 1.6; }
+.text--h1 { font-size: 32px; font-weight: 700; color: var(--color-table-text-primary, #111827); }
+.text--h2 { font-size: 24px; font-weight: 700; color: var(--color-table-text-primary, #111827); }
+.text--h3 { font-size: 20px; font-weight: 600; color: var(--color-table-text-primary, #111827); }
+.text--h4 { font-size: 16px; font-weight: 600; color: var(--color-table-text-primary, #111827); }
+.text--body { font-size: 14px; color: var(--color-sidebar-text-default, #374151); }
+.text--body-sm { font-size: 13px; color: var(--color-table-text-secondary, #6b7280); }
+.text--caption { font-size: 12px; color: var(--color-table-text-tertiary, #9ca3af); }
+
+.divider { border: none; border-top: 1px solid var(--color-sidebar-border-default, #e5e7eb); width: 100%; }
+
+// ─── Tab menu ────────────────────────────────────────────────────────────────
+.tabMenu { display: flex; flex-direction: column; gap: 16px; }
+.tabBar { display: flex; border-bottom: 2px solid #e5e7eb; gap: 0; }
+.tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #6b7280;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  &--active { color: var(--color-button-filled-accent-background-default, #2d98b4); border-bottom-color: currentColor; font-weight: 500; }
+}
+
+// ─── Metric Card ──────────────────────────────────────────────────────────────
+.metricCard {
+  background: var(--color-card-background-default, #fff);
+  border: 1px solid var(--color-sidebar-border-default, #e5e7eb);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metricCard--warning { border-top: 3px solid var(--color-button-filled-warning-background-default, #f59e0b); }
+.metricCard--critical { border-top: 3px solid var(--color-button-filled-danger-background-default, #ef4444); }
+.metricCard--normal  { border-top: 3px solid var(--color-button-filled-success-background-default, #22c55e); }
+
+.metricLabel { font-size: 13px; color: var(--color-table-text-secondary, #6b7280); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.metricValue { font-size: 32px; font-weight: 700; color: var(--color-table-text-primary, #111827); line-height: 1; white-space: nowrap; display: flex; align-items: baseline; gap: 2px; }
+.metricUnit  { font-size: 14px; font-weight: 400; color: var(--color-table-text-secondary, #6b7280); white-space: nowrap; }
+
+// ─── Forms ───────────────────────────────────────────────────────────────────
+.formField { display: flex; flex-direction: column; gap: 6px; }
+.label { font-size: 13px; font-weight: 500; color: var(--color-sidebar-text-default, #374151); }
+.hint { font-size: 12px; color: var(--color-table-text-secondary, #9ca3af); }
+.errorText { font-size: 12px; color: var(--color-button-filled-danger-background-default, #dc2626); }
+
+.input, .select {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-input-border-default, #d1d5db);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background: var(--color-input-background-default, #fff);
+  color: var(--color-sidebar-text-default, #374151);
+  width: 100%;
+  &:focus { border-color: var(--color-button-filled-accent-background-default, #2d98b4); box-shadow: 0 0 0 3px rgba(45,152,180,0.12); }
+  &--error { border-color: var(--color-button-filled-danger-background-default, #ef4444); }
+}
+
+.textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--color-input-border-default, #d1d5db);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background: var(--color-input-background-default, #fff);
+  color: var(--color-sidebar-text-default, #374151);
+  width: 100%;
+  resize: vertical;
+  &:focus { border-color: var(--color-button-filled-accent-background-default, #2d98b4); }
+}
+
+.checkboxLabel { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--color-sidebar-text-default, #374151); }
+
+.switchLabel { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; color: var(--color-sidebar-text-default, #374151); }
+.switch {
+  width: 40px; height: 22px;
+  background: var(--color-sidebar-border-default, #d1d5db);
+  border-radius: 99px;
+  position: relative;
+  transition: background 0.2s;
+  &--on { background: var(--color-button-filled-accent-background-default, #2d98b4); }
+}
+.switchThumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.2s;
+  .switch--on & { left: 21px; }
+}
+
+// ─── Chip ─────────────────────────────────────────────────────────────────────
+.chip {
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  background: #fff;
+  &--selected { background: var(--color-button-filled-accent-background-default, #2d98b4); color: #fff; border-color: transparent; }
+}
+
+// ─── Button Dropdown ──────────────────────────────────────────────────────────
+.btnDropdownWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.btnDropdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+  }
+
+  &Open {
+    border-color: #2d98b4;
+    box-shadow: 0 0 0 3px rgba(45, 152, 180, 0.12);
+  }
+
+  &Accent {
+    background: var(--color-button-filled-accent-background-default, #2d98b4);
+    border-color: transparent;
+    color: #fff;
+
+    &:hover {
+      background: #2589a3;
+      border-color: transparent;
+    }
+
+    &.btnDropdownOpen {
+      border-color: transparent;
+      box-shadow: 0 0 0 3px rgba(45, 152, 180, 0.25);
+    }
+  }
+
+  &Sm {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}
+
+.btnDropdownChevron {
+  flex-shrink: 0;
+  color: #9ca3af;
+  transition: transform 0.15s;
+  .btnDropdownOpen & { transform: rotate(180deg); }
+  .btnDropdownAccent & { color: #fff; }
+}
+
+.btnDropdownMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 4px;
+  z-index: 1000;
+}
+
+.btnDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #374151;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+}
+
+// ─── Table Controls ──────────────────────────────────────────────────────────
+.tableControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0 12px;
+}
+.tableControlsLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.tableControlsRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.tableControlsSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 220px;
+}
+.tableControlsSearchIcon {
+  position: absolute;
+  left: 10px;
+  color: var(--color-input-icon-default, #9ca3af);
+  pointer-events: none;
+}
+.tableControlsSearchInput {
+  width: 100%;
+  height: 32px;
+  padding: 0 12px 0 34px;
+  border: 1px solid var(--color-input-border-default, #d1d5db);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-input-text-default, #374151);
+  background: var(--color-input-background-default, #fff);
+  outline: none;
+  &::placeholder { color: var(--color-input-text-placeholder, #9ca3af); }
+  &:focus { border-color: var(--color-input-border-focus, #2d98b4); }
+}
+
+// ─── Table ───────────────────────────────────────────────────────────────────
+// Figma: 2459-12177 — border #DEE2E6, header bg #F8F9FA, text #495057 / 14px / 500
+.tableWrap {
+  background: var(--color-table-row-background-default, #fff);
+  border: 1px solid var(--color-table-row-border-default, #dee2e6);
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th {
+    padding: 8px 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-table-text-primary, #495057);
+    background: var(--color-table-header-background-default, #f8f9fa);
+    border-bottom: 1px solid var(--color-table-row-border-default, #dee2e6);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-table-row-border-default, #dee2e6);
+    vertical-align: middle;
+    color: var(--color-table-text-primary, #495057);
+    font-size: 14px;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--color-table-row-background-hover, #eef1f5); }
+}
+
+// Sort icon in th — inline flex wrapper
+.thInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sortIcon {
+  color: var(--color-table-icon-default, #6c757d);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.sortIconActive {
+  color: var(--color-table-icon-info, #2196f3);
+  opacity: 1;
+}
+
+// ─── Tooltip ──────────────────────────────────────────────────────────────────
+.tooltipWrap { position: relative; display: inline-flex; }
+.tooltipBox {
+  position: absolute;
+  background: #1f2937;
+  color: #fff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 100;
+  .tooltipWrap:hover & { opacity: 1; }
+  &--top { bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); }
+  &--bottom { top: calc(100% + 6px); left: 50%; transform: translateX(-50%); }
+}
+
+// ─── Menu button (minibar icon button) ───────────────────────────────────────
+// Figma: 1827-16065 — 40×40, border-radius 8, 4 states
+.menuButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-sidebar-menubutton-icon-default);
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--color-sidebar-menubutton-background-hover);
+    color: var(--color-sidebar-menubutton-icon-hover);
+  }
+}
+
+.menuButtonActive {
+  background: var(--color-sidebar-menubutton-background-active);
+  color: var(--color-sidebar-menubutton-icon-active);
+  border: 1px solid var(--color-sidebar-menubutton-border-active);
+
+  &:hover {
+    background: var(--color-sidebar-menubutton-background-active_hover);
+    color: var(--color-sidebar-menubutton-icon-active_hover);
+  }
+}
+
+// ─── Section header (report builder) ──────────────────────────────────────────
+.sectionHeader {
+  background: #f0f4f8;
+  td {
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 16px;
+    border-bottom: 2px solid #dee2e6;
+    color: #1e2433;
+  }
+}
+
+// ─── Reorder list (report builder) ────────────────────────────────────────────
+.reorderList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reorderListInner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reorderItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  cursor: grab;
+  font-size: 13px;
+  color: #374151;
+  user-select: none;
+  transition: background 0.1s, border-color 0.1s;
+
+  &:hover { background: #f9fafb; }
+
+  &Dragging {
+    opacity: 0.5;
+    border-color: #2d98b4;
+    background: #eef6f9;
+  }
+}
+
+.reorderGrip {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+// ─── Filter group (report builder) ────────────────────────────────────────────
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// ─── Fallback ─────────────────────────────────────────────────────────────────
+.unknown {
+  padding: 8px 12px;
+  background: #fef3c7;
+  border: 1px dashed #f59e0b;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #92400e;
+}

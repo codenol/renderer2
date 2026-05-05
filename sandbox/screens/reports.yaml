@@ -1,0 +1,551 @@
+meta:
+  title: Отчёты
+  description: Конструктор отчётов по компонентам ПАК
+
+state:
+  viewMode: tab-flat
+  selectedAttributes:
+    - nodeName
+    - nodeType
+    - pakName
+  filters:
+    nodeType: []
+    pakType: []
+    pakName: []
+  page: 1
+  rowsPerPage: 20
+
+data:
+
+  # ─── Плоские данные: узлы с атрибутами ─────────────────────────────────
+  flatNodes:
+    - { nodeName: srv-alpha-a1,    nodeType: Сервер,      pakName: Альфа-1,  pakType: Вычислительный, package: openssl,         version: 3.0.12-1,  architecture: amd64, installDate: '2025-03-12', status: active }
+    - { nodeName: srv-alpha-a2,    nodeType: Сервер,      pakName: Альфа-1,  pakType: Вычислительный, package: libvirt-daemon,  version: 9.5.0-2,   architecture: amd64, installDate: '2025-03-12', status: active }
+    - { nodeName: srv-alpha-a3,    nodeType: Сервер,      pakName: Альфа-1,  pakType: Вычислительный, package: qemu-kvm,        version: 8.1.3-1,   architecture: amd64, installDate: '2025-03-14', status: warning }
+    - { nodeName: srv-alpha-a4,    nodeType: Сервер,      pakName: Альфа-1,  pakType: Вычислительный, package: docker-ce,       version: 26.1.4-1,  architecture: amd64, installDate: '2025-03-15', status: active }
+    - { nodeName: srv-alpha-a5,    nodeType: Сервер,      pakName: Альфа-1,  pakType: Вычислительный, package: redis-server,    version: 7.2.4-1,   architecture: amd64, installDate: '2025-03-16', status: active }
+    - { nodeName: srv-alpha-a6,    nodeType: Сервер,      pakName: Альфа-1,  pakType: Вычислительный, package: syslog-ng-core,  version: 4.5.0-2,   architecture: amd64, installDate: '2025-03-18', status: active }
+    - { nodeName: srv-alpha-b1,    nodeType: Сервер,      pakName: Альфа-1,  pakType: Вычислительный, package: haproxy,         version: 3.0.4-1,   architecture: amd64, installDate: '2025-04-01', status: active }
+    - { nodeName: sw-alpha-101,    nodeType: Коммутатор,  pakName: Альфа-1,  pakType: Вычислительный, package: frr,             version: 9.1.0-2,   architecture: amd64, installDate: '2025-04-02', status: active }
+    - { nodeName: sto-alpha-1,     nodeType: Хранилище,   pakName: Альфа-1,  pakType: Вычислительный, package: ceph-common,     version: 18.2.2-1,  architecture: amd64, installDate: '2025-04-03', status: active }
+    - { nodeName: gtw-alpha-1,     nodeType: Сервер,      pakName: Альфа-2,  pakType: Сетевой,        package: nginx-full,     version: 1.26.1-1,  architecture: amd64, installDate: '2025-01-20', status: active }
+    - { nodeName: gtw-alpha-2,     nodeType: Сервер,      pakName: Альфа-2,  pakType: Сетевой,        package: iptables,       version: 1.8.10-3,  architecture: amd64, installDate: '2025-01-21', status: active }
+    - { nodeName: gtw-alpha-3,     nodeType: Сервер,      pakName: Альфа-2,  pakType: Сетевой,        package: conntrack-tools,version: 1.4.8-1,   architecture: amd64, installDate: '2025-01-22', status: warning }
+    - { nodeName: mon-alpha-1,     nodeType: Сервер,      pakName: Альфа-2,  pakType: Сетевой,        package: graphite-web,   version: 1.1.10-1,  architecture: amd64, installDate: '2025-02-10', status: active }
+    - { nodeName: mon-alpha-2,     nodeType: Сервер,      pakName: Альфа-2,  pakType: Сетевой,        package: grafana,        version: 10.4.5-1,  architecture: amd64, installDate: '2025-02-10', status: active }
+    - { nodeName: srv-beta-c1,     nodeType: Сервер,      pakName: Бета-1,   pakType: Хранения,       package: openvswitch-switch, version: 3.3.0-1, architecture: amd64, installDate: '2025-05-01', status: active }
+    - { nodeName: srv-beta-c2,     nodeType: Сервер,      pakName: Бета-1,   pakType: Хранения,       package: multipath-tools,version: 0.9.8-1,   architecture: amd64, installDate: '2025-05-02', status: active }
+    - { nodeName: srv-beta-c3,     nodeType: Сервер,      pakName: Бета-1,   pakType: Хранения,       package: targetcli-fb,   version: 2.1.56-1,  architecture: all,    installDate: '2025-05-03', status: active }
+    - { nodeName: sto-beta-s1,     nodeType: Хранилище,   pakName: Бета-1,   pakType: Хранения,       package: ceph-osd,       version: 18.2.4-2,  architecture: amd64, installDate: '2025-05-04', status: critical }
+    - { nodeName: sto-beta-s2,     nodeType: Хранилище,   pakName: Бета-1,   pakType: Хранения,       package: ceph-osd,       version: 18.2.4-2,  architecture: amd64, installDate: '2025-05-04', status: active }
+    - { nodeName: sw-beta-201,     nodeType: Коммутатор,  pakName: Бета-1,   pakType: Хранения,       package: frr-pythontools,version: 9.1.0-2,   architecture: amd64, installDate: '2025-05-10', status: active }
+    - { nodeName: srv-gamma-d1,    nodeType: Сервер,      pakName: Гамма-1,  pakType: Вычислительный, package: consul,         version: 1.19.2-1,  architecture: amd64, installDate: '2025-06-01', status: active }
+    - { nodeName: srv-gamma-d2,    nodeType: Сервер,      pakName: Гамма-1,  pakType: Вычислительный, package: nomad,          version: 1.8.4-1,   architecture: amd64, installDate: '2025-06-02', status: active }
+    - { nodeName: srv-gamma-d3,    nodeType: Сервер,      pakName: Гамма-1,  pakType: Вычислительный, package: vault,          version: 1.17.5-1,  architecture: amd64, installDate: '2025-06-03', status: critical }
+    - { nodeName: srv-gamma-d4,    nodeType: Сервер,      pakName: Гамма-2,  pakType: Вычислительный, package: postgresql-16,  version: 16.3-1,    architecture: amd64, installDate: '2025-06-10', status: active }
+    - { nodeName: srv-gamma-d5,    nodeType: Сервер,      pakName: Гамма-2,  pakType: Вычислительный, package: timescaledb,    version: 2.15.3-1,  architecture: amd64, installDate: '2025-06-11', status: active }
+    - { nodeName: srv-gamma-d6,    nodeType: Сервер,      pakName: Гамма-2,  pakType: Вычислительный, package: rabbitmq-server,version: 3.13.3-1,  architecture: amd64, installDate: '2025-06-12', status: active }
+
+  # ─── Иерархические данные: ПАК → модули → оборудование ─────────────────
+  hierEquipment:
+    - { pakName: Альфа-1, module: Базовый модуль,     nodeType: Вычислительный узел, equipment: Сервер RS-220-G2,     article: A05X82U2-S101,    quantity: 5,  serial: 'SN201-A001..SN201-A005' }
+    - { pakName: Альфа-1, module: Базовый модуль,     nodeType: Сетевой узел,        equipment: Коммутатор CS-4132-U, article: B4-CS4132U-AC-SW, quantity: 2,  serial: 'SN301-B001..SN301-B002' }
+    - { pakName: Альфа-1, module: Базовый модуль,     nodeType: Узел хранения,       equipment: СХД TL-UNFD-G2,       article: Y16-BAS-201A,     quantity: 1,  serial: 'SN401-C001' }
+    - { pakName: Альфа-1, module: Модуль координации, nodeType: Вычислительный узел, equipment: Сервер RS-220-G2,     article: A05X82U2-C09E,    quantity: 3,  serial: 'SN501-D001..SN501-D003' }
+    - { pakName: Альфа-1, module: Модуль координации, nodeType: Сетевой узел,        equipment: Коммутатор CS-4132-U, article: B4-CS4132U-AC-SW, quantity: 1,  serial: 'SN601-E001' }
+    - { pakName: Альфа-2, module: Базовый модуль,     nodeType: Сервер приложений,   equipment: Сервер RS-320-G3,     article: A10X82U2-A988,    quantity: 4,  serial: 'SN701-F001..SN701-F004' }
+    - { pakName: Альфа-2, module: Базовый модуль,     nodeType: Сетевой узел,        equipment: Маршрутизатор NR-8500, article: HT-NR8500-DC-SW,  quantity: 2,  serial: 'SN801-G001..SN801-G002' }
+    - { pakName: Альфа-2, module: Модуль балансировки,nodeType: Сервер приложений,   equipment: Балансировщик LB-480,  article: PF-LB480-AC-C,    quantity: 2,  serial: 'SN901-H001..SN901-H002' }
+    - { pakName: Бета-1,  module: Базовый модуль,     nodeType: Узел хранения,       equipment: СХД TL-VLT-G3,        article: Y20-BAS-301B,     quantity: 2,  serial: 'SN011-J001..SN011-J002' }
+    - { pakName: Бета-1,  module: Базовый модуль,     nodeType: Вычислительный узел, equipment: Сервер RS-220-G2,     article: A05X82U2-S101,    quantity: 6,  serial: 'SN111-K001..SN111-K006' }
+    - { pakName: Бета-1,  module: Модуль синхронизации,nodeType: Вычислительный узел,equipment: Сервер RS-320-G3,     article: A10X82U2-SYNC,    quantity: 2,  serial: 'SN211-L001..SN211-L002' }
+    - { pakName: Бета-1,  module: Модуль синхронизации,nodeType: Сетевой узел,       equipment: Коммутатор CS-4150-P, article: B4-CS4150P-AC-SW, quantity: 2,  serial: 'SN311-M001..SN311-M002' }
+
+computed:
+
+  # ─── Колонки таблицы (динамические по выбранным атрибутам) ─────────────
+  flatColumns:
+    source: "$state.selectedAttributes"
+    map:
+      nodeName:
+        key: nodeName
+        label: Имя узла
+        width: "280px"
+        sortable: true
+      nodeType:
+        key: nodeType
+        label: Тип узла
+        width: "160px"
+        sortable: true
+      pakName:
+        key: pakName
+        label: Имя ПАК
+        width: "220px"
+        sortable: true
+      pakType:
+        key: pakType
+        label: Тип ПАК
+        width: "180px"
+        sortable: true
+      package:
+        key: package
+        label: Пакет ПО
+        width: auto
+        sortable: true
+      version:
+        key: version
+        label: Версия
+        width: "180px"
+        sortable: true
+      architecture:
+        key: architecture
+        label: Архитектура
+        width: "100px"
+        sortable: true
+        align: center
+      installDate:
+        key: installDate
+        label: Дата установки
+        width: "140px"
+        sortable: true
+      status:
+        key: status
+        label: Статус
+        width: "120px"
+        sortable: true
+        type: status-badge
+
+  # ─── Фильтрация данных ─────────────────────────────────────────────────
+  filteredFlatData:
+    source: "$data.flatNodes"
+    filter:
+      - { key: nodeType, value: "$state.filters.nodeType" }
+      - { key: pakType,  value: "$state.filters.pakType" }
+      - { key: pakName,  value: "$state.filters.pakName" }
+
+  filteredHierData:
+    source: "$data.hierEquipment"
+    filter:
+      - { key: pakName,  value: "$state.filters.pakName" }
+
+  # ─── Группировка для иерархической таблицы ─────────────────────────────
+  groupedHierData:
+    source: "$computed.filteredHierData"
+    groupBy:
+      - pakName
+      - module
+
+  # ─── Пагинация ─────────────────────────────────────────────────────────
+  totalFlatPages:
+    expr: "Math.ceil($computed.filteredFlatData.length / $state.rowsPerPage)"
+
+  totalHierPages:
+    expr: "Math.ceil($computed.filteredHierData.length / $state.rowsPerPage)"
+
+  pagedFlatData:
+    expr: "$computed.filteredFlatData.slice(($state.page - 1) * $state.rowsPerPage, $state.page * $state.rowsPerPage)"
+
+  pagedHierData:
+    expr: "$computed.groupedHierData.slice(($state.page - 1) * $state.rowsPerPage, $state.page * $state.rowsPerPage)"
+
+  # ─── Пресеты: подсветка активного чипа ─────────────────────────────────
+  presetGeneralActive:
+    expr: "JSON.stringify($state.selectedAttributes.slice().sort()) === JSON.stringify(['pakName','nodeType','equipment','article','quantity'].sort())"
+
+  presetTechActive:
+    expr: "JSON.stringify($state.selectedAttributes.slice().sort()) === JSON.stringify(['pakName','module','nodeType','equipment','quantity','serial'].sort())"
+
+  presetSoftwareActive:
+    expr: "JSON.stringify($state.selectedAttributes.slice().sort()) === JSON.stringify(['nodeName','nodeType','package','version','architecture','status'].sort())"
+
+  presetAllActive:
+    expr: "JSON.stringify($state.selectedAttributes.slice().sort()) === JSON.stringify(['nodeName','nodeType','pakName','pakType','package','version','architecture','installDate','status'].sort())"
+
+pages:
+  - id: reports
+    path: "/reports"
+    title: Отчёты
+    layout:
+      type: app-shell
+      id: root
+      props:
+        sidebar:
+          type: sidebar
+          id: main-sidebar
+          props:
+            items:
+              - { id: nav-health,    label: "Здоровье ПАК",   icon: activity,    href: "/",          state: default }
+              - { id: nav-structure, label: "Структура ПАК",  icon: network,     href: "/structure", state: default }
+              - { id: nav-reports,   label: "Отчёты",         icon: file-text,   href: "/reports",   state: active }
+
+        breadcrumbs:
+          type: breadcrumbs
+          id: bc-reports
+          props:
+            items:
+              - { label: ПАК, href: "/" }
+              - { label: Отчёты }
+
+        content:
+          type: vstack
+          id: content-root
+          props: { gap: 16 }
+          children:
+
+            # ─── Блок «Фильтры» ──────────────────────────────────────────
+            - type: card
+              id: card-filters
+              props:
+                title: Фильтры
+                padding: 16
+              children:
+                - type: vstack
+                  id: filters-content
+                  props: { gap: 16 }
+                  children:
+
+                    # Пресеты (чипы)
+                    - type: hstack
+                      id: presets-row
+                      props: { gap: 8 }
+                      children:
+                        - type: button-chip
+                          id: preset-general
+                          props:
+                            label: "Общий состав"
+                            selected: "$computed.presetGeneralActive"
+                          on:
+                            click:
+                              type: SET
+                              target: selectedAttributes
+                              value:
+                                - pakName
+                                - nodeType
+                                - equipment
+                                - article
+                                - quantity
+
+                        - type: button-chip
+                          id: preset-tech
+                          props:
+                            label: "Тех. средства"
+                            selected: "$computed.presetTechActive"
+                          on:
+                            click:
+                              type: SET
+                              target: selectedAttributes
+                              value:
+                                - pakName
+                                - module
+                                - nodeType
+                                - equipment
+                                - quantity
+                                - serial
+
+                        - type: button-chip
+                          id: preset-software
+                          props:
+                            label: "ПО на узлах"
+                            selected: "$computed.presetSoftwareActive"
+                          on:
+                            click:
+                              type: SET
+                              target: selectedAttributes
+                              value:
+                                - nodeName
+                                - nodeType
+                                - package
+                                - version
+                                - architecture
+                                - status
+
+                        - type: button-chip
+                          id: preset-all
+                          props:
+                            label: "Все атрибуты"
+                            selected: "$computed.presetAllActive"
+                          on:
+                            click:
+                              type: SET
+                              target: selectedAttributes
+                              value:
+                                - nodeName
+                                - nodeType
+                                - pakName
+                                - pakType
+                                - package
+                                - version
+                                - architecture
+                                - installDate
+                                - status
+
+                    # Мультиселекты
+                    - type: hstack
+                      id: filters-row
+                      props: { gap: 16 }
+                      children:
+
+                        # Тип узла (с группами)
+                        - type: multi-select-dropdown
+                          id: ms-node-type
+                          props:
+                            label: "Тип узла"
+                            placeholder: "Все типы"
+                            allLabel: "Все типы"
+                            options:
+                              - value: compute
+                                label: "Вычислительные"
+                                children:
+                                  - { value: Сервер,           label: "Сервер" }
+                                  - { value: "Вычислительный узел", label: "Вычислительный узел" }
+                              - value: network
+                                label: "Сетевые"
+                                children:
+                                  - { value: Коммутатор,       label: "Коммутатор" }
+                                  - { value: "Сетевой узел",   label: "Сетевой узел" }
+                              - value: storage
+                                label: "Хранение"
+                                children:
+                                  - { value: Хранилище,        label: "Хранилище" }
+                                  - { value: "Узел хранения",  label: "Узел хранения" }
+                              - value: app
+                                label: "Приложения"
+                                children:
+                                  - { value: "Сервер приложений", label: "Сервер приложений" }
+                            value: "$state.filters.nodeType"
+                          on:
+                            change:
+                              type: SET
+                              target: filters.nodeType
+
+                        # Тип ПАК
+                        - type: multi-select-dropdown
+                          id: ms-pak-type
+                          props:
+                            label: "Тип ПАК"
+                            placeholder: "Все типы"
+                            allLabel: "Все типы"
+                            options:
+                              - { value: Вычислительный, label: "Вычислительный" }
+                              - { value: Сетевой,        label: "Сетевой" }
+                              - { value: Хранения,       label: "Хранения" }
+                            value: "$state.filters.pakType"
+                          on:
+                            change:
+                              type: SET
+                              target: filters.pakType
+
+                        # Имя ПАК (с группами по типу)
+                        - type: multi-select-dropdown
+                          id: ms-pak-name
+                          props:
+                            label: "Имя ПАК"
+                            placeholder: "Все ПАК"
+                            allLabel: "Все ПАК"
+                            options:
+                              - value: compute-paks
+                                label: "Вычислительные"
+                                children:
+                                  - { value: Альфа-1,  label: "Альфа-1" }
+                                  - { value: Гамма-1,  label: "Гамма-1" }
+                                  - { value: Гамма-2,  label: "Гамма-2" }
+                              - value: network-paks
+                                label: "Сетевые"
+                                children:
+                                  - { value: Альфа-2,  label: "Альфа-2" }
+                              - value: storage-paks
+                                label: "Хранения"
+                                children:
+                                  - { value: Бета-1,   label: "Бета-1" }
+                            value: "$state.filters.pakName"
+                          on:
+                            change:
+                              type: SET
+                              target: filters.pakName
+
+                        # Атрибуты отчёта
+                        - type: multi-select-dropdown
+                          id: ms-attributes
+                          props:
+                            label: "Атрибуты отчёта"
+                            placeholder: "Выберите атрибуты"
+                            allLabel: "Все атрибуты"
+                            options:
+                              - value: identity
+                                label: "Идентификация"
+                                children:
+                                  - { value: nodeName,     label: "Имя узла" }
+                                  - { value: pakName,      label: "Имя ПАК" }
+                              - value: classification
+                                label: "Классификация"
+                                children:
+                                  - { value: nodeType,     label: "Тип узла" }
+                                  - { value: pakType,      label: "Тип ПАК" }
+                              - value: software
+                                label: "Программное обеспечение"
+                                children:
+                                  - { value: package,      label: "Пакет ПО" }
+                                  - { value: version,      label: "Версия" }
+                                  - { value: architecture, label: "Архитектура" }
+                              - value: meta
+                                label: "Метаданные"
+                                children:
+                                  - { value: installDate,  label: "Дата установки" }
+                                  - { value: status,       label: "Статус" }
+                            value: "$state.selectedAttributes"
+                          on:
+                            change:
+                              type: SET
+                              target: selectedAttributes
+
+                    # Кнопки действий
+                    - type: hstack
+                      id: filters-actions
+                      props: { gap: 8, justify: end }
+                      children:
+                        - type: button
+                          id: btn-clear
+                          props:
+                            label: "Очистить"
+                            variant: ghost
+                            size: sm
+                          on:
+                            click:
+                              type: SET
+                              target: filters
+                              value:
+                                nodeType: []
+                                pakType: []
+                                pakName: []
+                        - type: button-dropdown
+                          id: btn-export
+                          props:
+                            label: "Экспорт"
+                            icon: download
+                            variant: accent
+                            size: sm
+                            items:
+                              - { id: csv, label: "CSV", icon: file-spreadsheet }
+                              - { id: pdf, label: "PDF", icon: file-text }
+                              - { id: excel, label: "Excel", icon: file-spreadsheet }
+
+            # ─── Табы ───────────────────────────────────────────────────
+            - type: tab-menu
+              id: tabs-view-mode
+              props:
+                items:
+                  - { id: tab-flat,          label: "Плоский вид" }
+                  - { id: tab-hierarchical,  label: "Иерархический вид" }
+                activeId: "$state.viewMode"
+              on:
+                tabChange:
+                  type: SET
+                  target: viewMode
+
+              children:
+
+                # Плоский вид
+                - type: tab-panel
+                  id: panel-flat
+                  props:
+                    tabId: tab-flat
+                  children:
+                    - type: table
+                      id: tbl-flat
+                      props:
+                        columns: "$computed.flatColumns"
+                        data: "$computed.pagedFlatData"
+
+                # Иерархический вид
+                - type: tab-panel
+                  id: panel-hier
+                  props:
+                    tabId: tab-hierarchical
+                  children:
+                    - type: table
+                      id: tbl-hier
+                      props:
+                        columns:
+                          - { key: pakName, label: ПАК, width: "160px", sortable: true, groupBy: true }
+                          - { key: module, label: Модуль, width: "180px", sortable: true, groupBy: true }
+                          - { key: nodeType, label: Тип узла, width: "180px", sortable: true }
+                          - { key: equipment, label: Оборудование, width: auto, sortable: true }
+                          - { key: article, label: Артикул, width: "200px", sortable: true }
+                          - { key: quantity, label: Кол-во, width: "80px", sortable: true, align: center }
+                          - { key: serial, label: Серийные номера, width: "240px", sortable: true }
+                        data: "$computed.pagedHierData"
+
+            # ─── Пагинация ───────────────────────────────────────────────
+            - type: hstack
+              id: pagination-shared
+              props: { gap: 16, justify: space-between, align: center }
+              children:
+                - type: hstack
+                  id: page-buttons
+                  props: { gap: 8 }
+                  children:
+                    - type: button
+                      id: btn-prev
+                      props:
+                        label: "←"
+                        variant: ghost
+                        size: sm
+                      on:
+                        click:
+                          type: DECREMENT
+                          target: page
+                          min: 1
+
+                    - type: button
+                      id: btn-page-1
+                      props:
+                        label: "1"
+                        variant: "%if($state.page===1, accent, ghost)"
+                        size: sm
+                      on:
+                        click: { type: SET, target: page, value: 1 }
+
+                    - type: button
+                      id: btn-page-2
+                      props:
+                        label: "2"
+                        variant: "%if($state.page===2, accent, ghost)"
+                        size: sm
+                      on:
+                        click: { type: SET, target: page, value: 2 }
+
+                    - type: button
+                      id: btn-next
+                      props:
+                        label: "→"
+                        variant: ghost
+                        size: sm
+                      on:
+                        click:
+                          type: INCREMENT
+                          target: page
+                          max: "$computed.totalFlatPages"
+
+                - type: hstack
+                  id: rows-per-page
+                  props: { gap: 8, align: center }
+                  children:
+                    - type: text
+                      id: txt-rows-label
+                      props:
+                        text: "Строк на странице:"
+                        variant: body-sm
+                    - type: dropdown
+                      id: dd-rows
+                      props:
+                        options:
+                          - { value: "20", label: "20" }
+                          - { value: "30", label: "30" }
+                          - { value: "50", label: "50" }
+                        value: "$state.rowsPerPage"
+                      on:
+                        change:
+                          type: SET
+                          target: rowsPerPage
+
+modals: []

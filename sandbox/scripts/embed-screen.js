@@ -31,9 +31,9 @@ if (!filePath) {
 const screenJson = loadScreen(filePath)
 const html = fs.readFileSync(INDEX_HTML, 'utf-8')
 
-// Inject screen JSON into the embedded script tag
+// Inject screen JSON into the embedded script tag (supports re-injection)
 const updated = html.replace(
-  /<script id="embedded-screen" type="application\/json"><\/script>/,
+  /<script id="embedded-screen" type="application\/json">[^<]*<\/script>/,
   `<script id="embedded-screen" type="application/json">${JSON.stringify(screenJson).replace(/</g, '\\u003c').replace(/>/g, '\\u003e')}</script>`
 )
 

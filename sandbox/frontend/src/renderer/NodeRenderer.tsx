@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Message } from '@/components/ui/Message'
 import { Progress } from '@/components/ui/Progress'
 import { MultiSelectDropdown, type MultiSelectOption } from '@/components/ui/MultiSelectDropdown'
+import { ReportBuilder, type ReportField } from '@/components/ui/ReportBuilder'
 import { Sidebar } from './components/Sidebar'
 import { LIcon } from './components/LIcon'
 import styles from './NodeRenderer.module.scss'
@@ -702,6 +703,28 @@ export function NodeRenderer({ node, modals, onOpenModal, onToast, commentMode }
             }}
           />
         ))}
+      </div>
+    )
+  }
+
+  // ─── Report Builder (interactive table builder) ───────────────────────────
+  if (node.type === 'report-builder') {
+    const fields = (p.allFields as ReportField[]) ?? []
+    const data = (p.allData as Record<string, string>[]) ?? []
+    const defFields = p.defaultFields as string[] | undefined
+    const defFilters = p.defaultFilters as { field: string; operator: string; value: string }[] | undefined
+    const defGroup = p.defaultGroupBy as string | null | undefined
+    const defSort = p.defaultSort as string | null | undefined
+    return (
+      <div {...dataAttrs}>
+        <ReportBuilder
+          allFields={fields}
+          allData={data}
+          defaultFields={defFields}
+          defaultFilters={defFilters}
+          defaultGroupBy={defGroup ?? null}
+          defaultSort={defSort ?? null}
+        />
       </div>
     )
   }

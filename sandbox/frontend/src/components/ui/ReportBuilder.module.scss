@@ -1,0 +1,176 @@
+.rbToolbar {
+  background: var(--color-bg-card, #fff);
+  border: 1px solid var(--color-border, #e0e2e6);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.rbRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rbLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #818594);
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.rbChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #cdd0d7;
+  background: #fff;
+  font-size: 13px;
+  color: #3f4146;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  user-select: none;
+  &:hover { background: #eef1f5; }
+  &[data-selected='true'] {
+    background: var(--color-button-filled-accent-background-default, #2d98b4);
+    color: #fff;
+    border-color: var(--color-button-filled-accent-background-default, #2d98b4);
+    &:hover { background: var(--color-button-filled-accent-background-hover, #60c4dd); }
+  }
+  &[data-filter='true'] {
+    background: #dff2ff;
+    color: #157fd4;
+    border-color: #6cb7f2;
+  }
+}
+
+.rbChipClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.6;
+  &:hover { opacity: 1; background: rgba(0,0,0,0.1); }
+}
+
+.rbDropdown {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cdd0d7;
+  background: #fff;
+  font-size: 13px;
+  color: #3f4146;
+  cursor: pointer;
+  outline: none;
+  min-width: 140px;
+  &:focus { border-color: #2d98b4; box-shadow: 0 0 0 2px rgba(45,152,180,0.2); }
+}
+
+.rbInput {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cdd0d7;
+  font-size: 13px;
+  outline: none;
+  width: 140px;
+  &:focus { border-color: #2d98b4; box-shadow: 0 0 0 2px rgba(45,152,180,0.2); }
+}
+
+.rbBtn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: var(--color-button-filled-accent-background-default, #2d98b4);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { background: var(--color-button-filled-accent-background-hover, #60c4dd); }
+}
+
+.rbDivider {
+  width: 1px;
+  height: 20px;
+  background: #cdd0d7;
+  margin: 0 4px;
+}
+
+.rbTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 600;
+    color: var(--color-text-secondary, #818594);
+    border-bottom: 1px solid #e0e2e6;
+    white-space: nowrap;
+    cursor: default;
+  }
+  td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #f0f1f4;
+    white-space: nowrap;
+  }
+  tr:hover td { background: #f8f9fb; }
+}
+
+.rbSectionRow td {
+  background: #f0f4f8;
+  font-weight: 600;
+  font-size: 12px;
+  color: #818594;
+  padding: 6px 12px;
+  border-bottom: 1px solid #dde2e8;
+}
+
+// Export button
+.rbExportWrap {
+  position: relative;
+}
+
+.rbBtnExport {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.rbExportMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #cdd0d7;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 100;
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.rbExportItem {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: #3f4146;
+  text-align: left;
+  cursor: pointer;
+  &:hover { background: #eef1f5; }
+}

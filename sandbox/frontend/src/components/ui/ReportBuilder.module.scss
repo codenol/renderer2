@@ -39,6 +39,8 @@
     background: var(--color-button-filled-accent-background-default, #2d98b4);
     color: #fff;
     border-color: var(--color-button-filled-accent-background-default, #2d98b4);
+    cursor: grab;
+    &:active { cursor: grabbing; }
     &:hover { background: var(--color-button-filled-accent-background-hover, #60c4dd); }
   }
   &[data-filter='true'] {

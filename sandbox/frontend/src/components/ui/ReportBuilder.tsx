@@ -193,8 +193,8 @@ export function ReportBuilder({
     }
   }, [sortedData, groupBy])
 
-  // ─── Visible columns ───────────────────────────────────────────────────
-  const visibleColumns = allFields.filter(f => selectedFields.includes(f.key))
+  // ─── Visible columns (respect selectedFields order) ────────────────────
+  const visibleColumns = selectedFields.map(key => allFields.find(f => f.key === key)!).filter(Boolean)
 
   // ─── Unselected fields for dropdown ─────────────────────────────────────
   const unselectedFields = allFields.filter(f => !selectedFields.includes(f.key))
@@ -206,18 +206,48 @@ export function ReportBuilder({
       <div className={styles.rbToolbar}>
         <div className={styles.rbRow} style={{ marginBottom: 10 }}>
           <span className={styles.rbLabel}>Колонки:</span>
-          {allFields.map(f => (
+          {selectedFields.map((key, idx) => {
+            const f = allFields.find(af => af.key === key)!
+            return (
+              <button
+                key={f.key}
+                className={styles.rbChip}
+                data-selected="true"
+                draggable
+                onClick={() => toggleField(f.key)}
+                onDragStart={e => {
+                  e.dataTransfer.setData('text/plain', String(idx))
+                  e.dataTransfer.effectAllowed = 'move'
+                }}
+                onDragOver={e => {
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = 'move'
+                }}
+                onDrop={e => {
+                  e.preventDefault()
+                  const fromIdx = parseInt(e.dataTransfer.getData('text/plain'))
+                  if (isNaN(fromIdx) || fromIdx === idx) return
+                  setSelectedFields(prev => {
+                    const next = [...prev]
+                    const [moved] = next.splice(fromIdx, 1)
+                    next.splice(idx, 0, moved)
+                    return next
+                  })
+                }}
+              >
+                {f.label}
+                <span className={styles.rbChipClose}>×</span>
+              </button>
+            )
+          })}
+          {unselectedFields.map(f => (
             <button
               key={f.key}
               className={styles.rbChip}
-              data-selected={selectedFields.includes(f.key)}
+              data-selected={false}
               onClick={() => toggleField(f.key)}
-              title={selectedFields.includes(f.key) ? 'Нажмите чтобы убрать' : 'Нажмите чтобы добавить'}
             >
               {f.label}
-              {selectedFields.includes(f.key) && (
-                <span className={styles.rbChipClose}>×</span>
-              )}
             </button>
           ))}
           {unselectedFields.length > 0 && (

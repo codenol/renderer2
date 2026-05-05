@@ -269,7 +269,7 @@ export function NodeRenderer({ node, modals, onOpenModal, onToast, commentMode }
     const hasOnClick = !!(node.on?.click)
     return (
       <button
-        className={`${styles.chip} ${p.selected ? styles['chip--selected'] : ''}`}
+        className={`${styles.chip} ${p.selected ? styles['chip--selected'] : ''} ${p.variant === 'accent' ? styles['chip--accent'] : ''} ${p.size === 'sm' ? styles['chip--sm'] : ''}`}
         onClick={() => {
           if (hasOnClick) fireHandler('click')
           else handleAction(p.onClick as string)
@@ -333,11 +333,12 @@ export function NodeRenderer({ node, modals, onOpenModal, onToast, commentMode }
 
   // ─── Forms ────────────────────────────────────────────────────────────────
   if (node.type === 'input') {
+    const hasLabel = !!p.label
     return (
-      <div className={styles.formField} {...dataAttrs}>
-        {p.label && <label className={styles.label}>{String(p.label)}</label>}
+      <div className={`${styles.formField} ${!hasLabel ? styles.formFieldInline : ''}`} {...dataAttrs}>
+        {hasLabel && <label className={styles.label}>{String(p.label)}</label>}
         <input
-          className={`${styles.input} ${p.error ? styles['input--error'] : ''}`}
+          className={`${styles.input} ${p.size === 'sm' ? styles['input--sm'] : ''} ${p.error ? styles['input--error'] : ''}`}
           placeholder={String(p.placeholder ?? '')}
           defaultValue={String(p.value ?? '')}
           disabled={Boolean(p.disabled)}
@@ -401,14 +402,14 @@ export function NodeRenderer({ node, modals, onOpenModal, onToast, commentMode }
 
   if (node.type === 'dropdown') {
     const options = (p.options as Array<{ value: string; label: string }>) ?? []
+    const hasLabel = !!p.label
     return (
-      <div className={styles.formField} {...dataAttrs}>
-        {p.label && <label className={styles.label}>{String(p.label)}</label>}
+      <div className={`${styles.formField} ${!hasLabel ? styles.formFieldInline : ''}`} {...dataAttrs}>
+        {hasLabel && <label className={styles.label}>{String(p.label)}</label>}
         <select
-          className={styles.select}
+          className={`${styles.select} ${p.size === 'sm' ? styles['select--sm'] : ''}`}
           value={String(p.value ?? '')}
           onChange={e => {
-            // Fire the change handler from node.on if present
             if (node.on?.change) {
               screen.dispatch({ ...node.on.change, value: e.target.value } as any)
             }

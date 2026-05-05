@@ -214,6 +214,7 @@
 
 // ─── Forms ───────────────────────────────────────────────────────────────────
 .formField { display: flex; flex-direction: column; gap: 6px; }
+.formFieldInline { flex-direction: row; align-items: center; gap: 0; }
 .label { font-size: 13px; font-weight: 500; color: var(--color-sidebar-text-default, #374151); }
 .hint { font-size: 12px; color: var(--color-table-text-secondary, #9ca3af); }
 .errorText { font-size: 12px; color: var(--color-button-filled-danger-background-default, #dc2626); }
@@ -230,6 +231,12 @@
   width: 100%;
   &:focus { border-color: var(--color-button-filled-accent-background-default, #2d98b4); box-shadow: 0 0 0 3px rgba(45,152,180,0.12); }
   &--error { border-color: var(--color-button-filled-danger-background-default, #ef4444); }
+  &--sm { height: 32px; padding: 0 10px; font-size: 13px; }
+}
+
+.select {
+  cursor: pointer;
+  &--sm { height: 32px; padding: 0 10px; font-size: 13px; }
 }
 
 .textarea {
@@ -266,7 +273,7 @@
   .switch--on & { left: 21px; }
 }
 
-// ─── Chip ─────────────────────────────────────────────────────────────────────
+// ── Chip ─────────────────────────────────────────────────────────────────────
 .chip {
   padding: 6px 14px;
   border-radius: 99px;
@@ -276,6 +283,8 @@
   color: #374151;
   background: #fff;
   &--selected { background: var(--color-button-filled-accent-background-default, #2d98b4); color: #fff; border-color: transparent; }
+  &--accent { background: var(--color-button-filled-accent-background-default, #2d98b4); color: #fff; border-color: transparent; }
+  &--sm { padding: 4px 10px; font-size: 12px; }
 }
 
 // ─── Button Dropdown ──────────────────────────────────────────────────────────

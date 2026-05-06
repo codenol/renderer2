@@ -16,7 +16,7 @@ function loadScreen(filePath) {
   const content = fs.readFileSync(fullPath, 'utf-8')
 
   if (filePath.endsWith('.yaml') || filePath.endsWith('.yml')) {
-    return YAML.load(content, { schema: YAML.FAILSAFE_SCHEMA })
+    return YAML.load(content, { schema: YAML.DEFAULT_SCHEMA })
   }
   return JSON.parse(content)
 }

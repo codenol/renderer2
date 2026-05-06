@@ -16,7 +16,7 @@ export type NodeType =
   | 'status-badge' | 'badge' | 'progress' | 'metric-card'
   | 'message' | 'toast' | 'tooltip' | 'modal-trigger'
   | 'reorder-list' | 'filter-group'
-  | 'report-builder'
+  | 'report-builder' | 'report-builder2'
 
 // ─── Reactive actions ──────────────────────────────────────────────────────
 export type ScreenAction =

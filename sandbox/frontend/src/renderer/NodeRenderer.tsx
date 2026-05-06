@@ -9,6 +9,7 @@ import { Message } from '@/components/ui/Message'
 import { Progress } from '@/components/ui/Progress'
 import { MultiSelectDropdown, type MultiSelectOption } from '@/components/ui/MultiSelectDropdown'
 import { ReportBuilder, type ReportField } from '@/components/ui/ReportBuilder'
+import { ReportBuilder2 } from '@/components/ui/ReportBuilder2'
 import { Sidebar } from './components/Sidebar'
 import { LIcon } from './components/LIcon'
 import styles from './NodeRenderer.module.scss'
@@ -724,6 +725,34 @@ export function NodeRenderer({ node, modals, onOpenModal, onToast, commentMode }
           defaultFilters={defFilters}
           defaultGroupBy={defGroup ?? null}
           defaultSort={defSort ?? null}
+        />
+      </div>
+    )
+  }
+
+  // ─── Report Builder 2 (CMDB hierarchical) ────────────────────────────────
+  if (node.type === 'report-builder2') {
+    const dm = p.dataModel as { types: { key: string; label: string; parentType: string | null; fields: { key: string; label: string }[] }[] }
+    const data = (p.allData as Record<string, string>[]) ?? []
+    const vw = p.views as { id: string; label: string; defaultTypes: string[]; defaultFields: string[]; defaultGroupBy: string[]; defaultSort?: string | null; defaultFilters?: { field: string; operator: string; value: string }[] }[] | undefined
+    const dv = p.defaultView as string | undefined
+    const dt = p.defaultTypes as string[] | undefined
+    const df = p.defaultFields as string[] | undefined
+    const dg = p.defaultGroupBy as string[] | undefined
+    const ds = p.defaultSort as string | null | undefined
+    const dfl = p.defaultFilters as { field: string; operator: string; value: string }[] | undefined
+    return (
+      <div {...dataAttrs}>
+        <ReportBuilder2
+          dataModel={dm}
+          allData={data}
+          views={vw}
+          defaultView={dv}
+          defaultTypes={dt}
+          defaultFields={df}
+          defaultGroupBy={dg}
+          defaultSort={ds ?? null}
+          defaultFilters={dfl}
         />
       </div>
     )

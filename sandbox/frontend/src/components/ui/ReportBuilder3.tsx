@@ -670,9 +670,10 @@ export function ReportBuilder3({
       const section = sections[si]
       result.push(
         <tr key={`sec-${depth}-${si}-${section.title}`} className={styles.rbSectionRow}>
-          <td colSpan={visibleColumns.length} style={{ paddingLeft: 8 + depth * 20 }}>
-            {section.title}
-          </td>
+          <td>{section.title}</td>
+          {visibleColumns.slice(1).map(col => (
+            <td key={col.key} style={{ padding: 0 }}></td>
+          ))}
         </tr>
       )
       if (section.children && section.children.length > 0) {

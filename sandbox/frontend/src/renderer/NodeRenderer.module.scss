@@ -151,7 +151,7 @@
 }
 
 // ─── Layout ──────────────────────────────────────────────────────────────────
-.vstack { display: flex; flex-direction: column; width: 100%; }
+.vstack { display: flex; flex-direction: column; width: 100%; height: 100%; }
 .hstack { display: flex; flex-direction: row; flex-wrap: wrap; width: 100%; }
 .grid   { display: grid; width: 100%; }
 

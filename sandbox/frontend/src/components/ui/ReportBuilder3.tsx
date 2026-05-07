@@ -282,8 +282,10 @@ export function ReportBuilder3({
 
   const [exportOpen, setExportOpen] = useState(false)
   const exportRef = useRef<HTMLDivElement>(null)
+  const tableRef = useRef<HTMLDivElement>(null)
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [visibleCount, setVisibleCount] = useState(10)
+  const [dragColIndex, setDragColIndex] = useState<number | null>(null)
   function toggleCollapsedGroup(typeKey: string) {
     setCollapsedGroups(prev => {
       const next = new Set(prev)
@@ -300,6 +302,12 @@ export function ReportBuilder3({
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [exportOpen])
+
+  useEffect(() => {
+    if (tableRef.current) {
+      tableRef.current.scrollTop = tableRef.current.scrollHeight
+    }
+  }, [visibleCount])
 
   // ─── Views (built-in + user-saved) ─────────────────────────────────────
   const [userViews, setUserViews] = useState<ReportTemplate[]>(() => {
@@ -658,9 +666,10 @@ export function ReportBuilder3({
 
   function renderGroupedSections(sections: { title: string; rows: CMDBRow[]; children?: { title: string; rows: CMDBRow[]; children?: unknown[] }[] }[], depth: number): React.ReactNode[] {
     const result: React.ReactNode[] = []
-    for (const section of sections) {
+    for (let si = 0; si < sections.length; si++) {
+      const section = sections[si]
       result.push(
-        <tr key={`sec-${depth}-${section.title}`} className={styles.rbSectionRow}>
+        <tr key={`sec-${depth}-${si}-${section.title}`} className={styles.rbSectionRow}>
           <td colSpan={visibleColumns.length} style={{ paddingLeft: 8 + depth * 20 }}>
             {section.title}
           </td>
@@ -929,6 +938,11 @@ export function ReportBuilder3({
             </>
           )}
           <div style={{ flex: 1 }} />
+          {sortedData.length > 0 && !isHardwareView && !isSoftwareView && (
+            <span className={styles.rbCountLabel}>
+              Найдено {sortedData.length} · Показано {Math.min(sortedData.length, visibleCount)}
+            </span>
+          )}
           <button
             className={styles.rbBtnGhost}
             onClick={clearAll}
@@ -1073,7 +1087,7 @@ export function ReportBuilder3({
       </div>
 
       {/* Table */}
-      <div className={styles.rbTableWrap}>
+      <div className={styles.rbTableWrap} ref={tableRef}>
       <table className={styles.rbTable}>
         <thead>
           <tr>
@@ -1098,16 +1112,38 @@ export function ReportBuilder3({
               </>
             ) : (
               <>
-                {visibleColumns.map(col => {
+                {visibleColumns.map((col, colIdx) => {
                   const [curField, curDir] = (sortBy ?? '').split('-')
                   const isActive = curField === col.key
                   return (
                     <th
                       key={col.key}
+                      draggable={col.key !== '__type'}
+                      style={{ cursor: col.key === '__type' ? 'default' : 'grab' }}
                       onClick={() => {
                         if (curField === col.key && curDir === 'asc') setSortBy(`${col.key}-desc`)
                         else setSortBy(`${col.key}-asc`)
                       }}
+                      onDragStart={e => {
+                        if (col.key === '__type') return
+                        setDragColIndex(colIdx)
+                        e.dataTransfer.effectAllowed = 'move'
+                      }}
+                      onDragOver={e => {
+                        if (dragColIndex === null || col.key === '__type') return
+                        e.preventDefault()
+                        e.dataTransfer.dropEffect = 'move'
+                      }}
+                      onDrop={e => {
+                        e.preventDefault()
+                        if (dragColIndex === null || colIdx === dragColIndex || col.key === '__type') return
+                        const keys = selectedFields.map(k => k)
+                        const [moved] = keys.splice(dragColIndex - 1, 1)
+                        keys.splice(colIdx - 1, 0, moved)
+                        setSelectedFields(keys)
+                        setDragColIndex(null)
+                      }}
+                      onDragEnd={() => setDragColIndex(null)}
                     >
                       <div className={styles.rbThContent}>
                         {col.label}
@@ -1147,7 +1183,6 @@ export function ReportBuilder3({
       </table>
       {sortedData.length > 0 && !isHardwareView && !isSoftwareView && (
         <div className={styles.rbTableFooter}>
-          <span>Показано {Math.min(sortedData.length, visibleCount)} из {sortedData.length}</span>
           {sortedData.length > visibleCount && (
             <button className={styles.rbShowMore} onClick={() => setVisibleCount(v => v + 20)}>
               Показать ещё

@@ -1,0 +1,1239 @@
+meta:
+  title: "CMDB — Отчёт по компонентам ПАК v3"
+
+pages:
+  - id: "cmdb-report"
+    path: "/"
+    title: "CMDB — Компоненты ПАК"
+    layout:
+      type: "app-shell"
+      id: "shell"
+      props:
+        sidebar:
+          type: "sidebar"
+          id: "sidebar"
+          props:
+            items:
+              - id: "nav-health"
+                label: "Здоровье ПАК"
+                icon: "network"
+                href: "/health"
+                state: "default"
+              - id: "nav-devices"
+                label: "Устройства"
+                icon: "monitor"
+                href: "/devices"
+                state: "default"
+              - id: "nav-reports"
+                label: "Отчёты"
+                icon: "bar-chart-3"
+                href: "/"
+                state: "active"
+              - id: "nav-settings"
+                label: "Настройки"
+                icon: "settings"
+                href: "/settings"
+                state: "default"
+        breadcrumbs:
+          type: "breadcrumbs"
+          id: "bc"
+          props:
+            items:
+              - label: "Отчёты"
+                href: "/reports"
+              - label: "Конструктор отчётов"
+        content:
+          type: "vstack"
+          id: "content"
+          props:
+            gap: 16
+          children:
+            - type: "report-builder3"
+              id: "cmdb-rb"
+              props:
+                dataModel:
+                  types:
+                    - key: "pak"
+                      label: "ПАК"
+                      parentType: null
+                      fields:
+                        - key: "pak_name"
+                          label: "Название ПАК"
+                        - key: "pak_type"
+                          label: "Тип ПАК"
+                        - key: "pak_serial"
+                          label: "Серийный номер ПАК"
+                        - key: "pak_location"
+                          label: "Расположение"
+                    - key: "switch"
+                      label: "Коммутатор"
+                      parentType: pak
+                      fields:
+                        - key: "sw_name"
+                          label: "Имя"
+                        - key: "sw_model"
+                          label: "Модель"
+                        - key: "sw_role"
+                          label: "Роль"
+                        - key: "sw_speed"
+                          label: "Скорость"
+                        - key: "sw_ip"
+                          label: "IP"
+                        - key: "sw_serial"
+                          label: "Серийный номер"
+                        - key: "sw_vendor"
+                          label: "Производитель"
+                        - key: "sw_ports"
+                          label: "Порты"
+                        - key: "equipment_name"
+                          label: "Наименование оборудования"
+                        - key: "article"
+                          label: "Артикул"
+                        - key: "sw_rack"
+                          label: "Шкаф"
+                        - key: "sw_unit"
+                          label: "Юнит"
+                        - key: "sw_designation"
+                          label: "Усл. обоз."
+                        - key: "sw_mass"
+                          label: "Масса, кг"
+                        - key: "sw_power"
+                          label: "Мощность, Вт (не более)"
+                        - key: "sw_heat"
+                          label: "Тепловыделение, БТЕ"
+                        - key: "sw_dimensions"
+                          label: "Габариты, ВхШхГ, мм"
+                    - key: "server"
+                      label: "Сервер"
+                      parentType: pak
+                      fields:
+                        - key: "srv_name"
+                          label: "Имя хоста"
+                        - key: "srv_model"
+                          label: "Модель"
+                        - key: "srv_role"
+                          label: "Роль сервера"
+                        - key: "srv_ip"
+                          label: "IP"
+                        - key: "srv_serial"
+                          label: "Серийный номер"
+                        - key: "srv_pn"
+                          label: "PN"
+                        - key: "srv_bmc_ip"
+                          label: "BMC IP"
+                        - key: "equipment_name"
+                          label: "Наименование оборудования"
+                        - key: "article"
+                          label: "Артикул"
+                        - key: "srv_rack"
+                          label: "Шкаф"
+                        - key: "srv_unit"
+                          label: "Юнит"
+                        - key: "srv_designation"
+                          label: "Усл. обоз."
+                        - key: "srv_mass"
+                          label: "Масса, кг"
+                        - key: "srv_power"
+                          label: "Мощность, Вт (не более)"
+                        - key: "srv_heat"
+                          label: "Тепловыделение, БТЕ"
+                        - key: "srv_dimensions"
+                          label: "Габариты, ВхШхГ, мм"
+                    - key: "processor"
+                      label: "Процессор"
+                      parentType: server
+                      fields:
+                        - key: "cpu_model"
+                          label: "Модель"
+                        - key: "cpu_cores"
+                          label: "Ядра"
+                        - key: "cpu_threads"
+                          label: "Потоки"
+                        - key: "cpu_vendor"
+                          label: "Производитель"
+                    - key: "memory"
+                      label: "Оперативная память"
+                      parentType: server
+                      fields:
+                        - key: "ram_size"
+                          label: "Объём (ГБ)"
+                        - key: "ram_module"
+                          label: "Модуль"
+                        - key: "ram_serial"
+                          label: "Серийный номер"
+                        - key: "ram_vendor"
+                          label: "Производитель"
+                        - key: "ram_type"
+                          label: "Тип"
+                        - key: "ram_count"
+                          label: "Кол-во"
+                    - key: "disk"
+                      label: "Диск"
+                      parentType: server
+                      fields:
+                        - key: "disk_name"
+                          label: "Имя"
+                        - key: "disk_model"
+                          label: "Модель"
+                        - key: "disk_size"
+                          label: "Объём (ГБ)"
+                        - key: "disk_type"
+                          label: "Тип"
+                        - key: "disk_serial"
+                          label: "Серийный номер"
+                        - key: "disk_protocol"
+                          label: "Протокол"
+                    - key: "network_adapter"
+                      label: "Сетевой адаптер"
+                      parentType: server
+                      fields:
+                        - key: "nic_pci"
+                          label: "PCI"
+                        - key: "nic_model"
+                          label: "Модель"
+                        - key: "nic_vendor"
+                          label: "Производитель"
+                        - key: "nic_mac"
+                          label: "MAC"
+                        - key: "nic_ip"
+                          label: "IP"
+                        - key: "nic_speed"
+                          label: "Скорость"
+                    - key: "disk_controller"
+                      label: "Контроллер дисков"
+                      parentType: server
+                      fields:
+                        - key: "dctrl_model"
+                          label: "Модель"
+                        - key: "dctrl_vendor"
+                          label: "Производитель"
+                        - key: "dctrl_serial"
+                          label: "Серийный номер"
+                        - key: "dctrl_type"
+                          label: "Тип"
+                    - key: "disk_shelf"
+                      label: "Дисковая полка"
+                      parentType: server
+                      fields:
+                        - key: "shelf_name"
+                          label: "Имя"
+                        - key: "shelf_model"
+                          label: "Модель"
+                        - key: "shelf_serial"
+                          label: "Серийный номер"
+                        - key: "equipment_name"
+                          label: "Наименование оборудования"
+                        - key: "article"
+                          label: "Артикул"
+                    - key: "software_license"
+                      label: "Лицензия ПО"
+                      parentType: pak
+                      fields:
+                        - key: "module_name"
+                          label: "Модуль"
+                        - key: "manufacturer"
+                          label: "Производитель"
+                        - key: "product_name"
+                          label: "Наименование товара"
+                        - key: "article"
+                          label: "Артикул"
+                        - key: "quantity_per_module"
+                          label: "Кол-во в 1 модуле"
+                    - key: "cable_kit"
+                      label: "Комплект коммутации"
+                      parentType: pak
+                      fields:
+                        - key: "ck_name"
+                          label: "Наименование"
+                        - key: "ck_quantity"
+                          label: "Кол-во комплектов"
+                    - key: "installed_software"
+                      label: "ПО на узлах"
+                      parentType: server
+                      fields:
+                        - key: "isw_node"
+                          label: "Имя узла"
+                        - key: "isw_actualization_date"
+                          label: "Дата актуализации"
+                        - key: "isw_package"
+                          label: "Пакет"
+                        - key: "isw_version"
+                          label: "Версия"
+                        - key: "isw_architecture"
+                          label: "Архитектура"
+                        - key: "isw_install_date"
+                          label: "Дата установки"
+                views:
+                  - id: "components"
+                    label: "Компоненты CMDB"
+                    defaultTypes:
+                      - "server"
+                      - "switch"
+                      - "processor"
+                      - "memory"
+                      - "disk"
+                      - "network_adapter"
+                      - "disk_controller"
+                      - "disk_shelf"
+                      - "cable_kit"
+                    defaultFields:
+                      - "pak.pak_name"
+                      - "server.srv_name"
+                      - "disk_model"
+                      - "disk_size"
+                      - "disk_type"
+                      - "disk_serial"
+                    defaultGroupBy:
+                      - "pak.pak_name"
+                      - "server.srv_name"
+                    defaultSort: "disk_name-asc"
+                  - id: "hardware"
+                    label: "Состав оборудования"
+                    defaultTypes:
+                      - "server"
+                      - "switch"
+                      - "disk_shelf"
+                      - "cable_kit"
+                    defaultFields:
+                      - "module_name"
+                      - "node_name"
+                      - "equipment_name"
+                      - "article"
+                      - "serial_numbers"
+                    defaultGroupBy:
+                      - "pak.pak_name"
+                      - "module_name"
+                      - "node_name"
+                    defaultSort: "module_name-asc"
+                  - id: "software"
+                    label: "Состав ПО"
+                    defaultTypes:
+                      - "software_license"
+                    defaultFields:
+                      - "module_name"
+                      - "manufacturer"
+                      - "product_name"
+                      - "article"
+                      - "quantity_per_module"
+                      - "total_quantity"
+                    defaultGroupBy:
+                      - "pak.pak_name"
+                      - "module_name"
+                      - "manufacturer"
+                    defaultSort: "module_name-asc"
+                  - id: "installed_software"
+                    label: "Установленное ПО на узлах"
+                    defaultTypes:
+                      - "installed_software"
+                    defaultFields:
+                      - "isw_node"
+                      - "isw_package"
+                      - "isw_version"
+                      - "isw_architecture"
+                      - "isw_install_date"
+                      - "isw_actualization_date"
+                    defaultGroupBy:
+                      - "pak.pak_name"
+                      - "isw_node"
+                      - "isw_package"
+                    defaultSort: "isw_node-asc"
+                defaultTypes:
+                  - "server"
+                  - "switch"
+                  - "processor"
+                  - "memory"
+                  - "disk"
+                  - "network_adapter"
+                  - "disk_controller"
+                  - "disk_shelf"
+                  - "cable_kit"
+                defaultFields:
+                  - "pak.pak_name"
+                  - "server.srv_name"
+                  - "disk_model"
+                  - "disk_size"
+                  - "disk_type"
+                  - "disk_serial"
+                defaultGroupBy:
+                  - "pak.pak_name"
+                  - "server.srv_name"
+                defaultSort: "disk_name-asc"
+                allData:
+                  - id: "pak-001"
+                    type: "pak"
+                    parent_id: null
+                    pak_name: "s3m-03b01-msk01"
+                    pak_type: МБД.П
+                    pak_serial: "S^R-00617-MB.01-C02N0S0R0.1-1"
+                    pak_location: "Кострома-1"
+                  - id: "sw-001"
+                    type: "switch"
+                    parent_id: "pak-001"
+                    sw_name: "SW-MSK01-SPINE-01"
+                    sw_model: "B4Com CS4132U-AC"
+                    sw_role: spine
+                    sw_speed: 100GbE
+                    sw_ip: 192.168.104.26
+                    sw_serial: "B4C-SW-001234"
+                    sw_vendor: B4Com
+                    sw_ports: 32×100GbE
+                    equipment_name: Коммутатор B4Com CS4132U
+                    article: "SR-CS4132U-AC-B-SW"
+                  - id: "sw-002"
+                    type: "switch"
+                    parent_id: "pak-001"
+                    sw_name: "SW-MSK01-LEAF-01"
+                    sw_model: "B4Com CS2148P-4D"
+                    sw_role: leaf
+                    sw_speed: 1GbE
+                    sw_ip: 192.168.104.27
+                    sw_serial: "B4C-SW-001235"
+                    sw_vendor: B4Com
+                    sw_ports: 48×1GbE + 4×10GbE
+                    equipment_name: "Коммутатор B4Com CS2148P-4D"
+                    article: "B4T-CS2148P-4D-NP-AC"
+                  - id: "srv-001"
+                    type: "server"
+                    parent_id: "pak-001"
+                    srv_role: monitoring
+                    srv_name: "scs-01node-01.adb.local"
+                    srv_model: YADRO VEGMAN R220 G2
+                    srv_ip: 192.168.104.51
+                    srv_serial: Y05X82U2S101A_73E80A
+                    srv_pn: "РМБГ.466535.003-361"
+                    srv_bmc_ip: 192.168.104.201
+                    equipment_name: Сервер YADRO VEGMAN R220 G2
+                    article: Y05X82U2S101A_2C1C19
+                  - id: "r005"
+                    type: "processor"
+                    parent_id: "srv-001"
+                    cpu_model: 2× Intel Xeon Gold 6342
+                    cpu_cores: 48
+                    cpu_threads: 96
+                    cpu_vendor: Intel
+                  - id: "r006"
+                    type: "memory"
+                    parent_id: "srv-001"
+                    ram_size: 32
+                    ram_module: "M393A4K40DB3-CWE"
+                    ram_serial: "2224-51A3AA82"
+                    ram_vendor: Samsung
+                    ram_type: "DDR4-3200 ECC"
+                    ram_count: 8
+                  - id: "r007"
+                    type: "disk"
+                    parent_id: "srv-001"
+                    disk_name: sda
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X911938
+                    disk_protocol: SATA
+                  - id: "r008"
+                    type: "disk"
+                    parent_id: "srv-001"
+                    disk_name: sdb
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X911939
+                    disk_protocol: SATA
+                  - id: "r009"
+                    type: "disk"
+                    parent_id: "srv-001"
+                    disk_name: sdc
+                    disk_model: "Intel D3-S4610"
+                    disk_size: 480
+                    disk_type: SSD
+                    disk_serial: PHYG234900EB960B
+                    disk_protocol: SATA
+                  - id: "r010"
+                    type: "network_adapter"
+                    parent_id: "srv-001"
+                    nic_pci: "0000:01:00.0"
+                    nic_model: "Ethernet Controller I225-LM"
+                    nic_vendor: Intel Corporation
+                    nic_mac: "f0:3f:03:01:42:9e"
+                    nic_ip: 192.168.104.51
+                    nic_speed: 1 Gbit/s full duplex
+                  - id: "r011"
+                    type: "network_adapter"
+                    parent_id: "srv-001"
+                    nic_pci: "0000:02:00.0"
+                    nic_model: Ethernet Controller X710
+                    nic_vendor: Intel Corporation
+                    nic_mac: "f0:3f:03:01:42:9f"
+                    nic_ip: 192.168.105.51
+                    nic_speed: 10 Gbit/s full duplex
+                  - id: "r012"
+                    type: "disk_controller"
+                    parent_id: "srv-001"
+                    dctrl_model: "Broadcom MegaRAID 9560-8i"
+                    dctrl_vendor: Broadcom
+                    dctrl_serial: "DCTRL-0001"
+                    dctrl_type: RAID
+                  - id: "r013"
+                    type: "disk_shelf"
+                    parent_id: "srv-001"
+                    shelf_name: "TUSN-01"
+                    shelf_model: YADRO TATLIN.UNIFIED Gen2
+                    shelf_serial: 011024030F1009
+                    equipment_name: Система хранения данных TATLIN.UNIFIED Gen2
+                    article: Y16SYSBAS201A_166151
+                  - id: "srv-002"
+                    type: "server"
+                    parent_id: "pak-001"
+                    srv_role: management
+                    srv_name: "scs-01node-02.adb.local"
+                    srv_model: YADRO VEGMAN R220 G2
+                    srv_ip: 192.168.104.52
+                    srv_serial: Y05X82U2S101A_73E80B
+                    srv_pn: "РМБГ.466535.003-361"
+                    srv_bmc_ip: 192.168.104.202
+                    equipment_name: Сервер YADRO VEGMAN R220 G2
+                    article: Y05X82U2S101A_C9CEA8
+                  - id: "r015"
+                    type: "processor"
+                    parent_id: "srv-002"
+                    cpu_model: 2× Intel Xeon Gold 6342
+                    cpu_cores: 48
+                    cpu_threads: 96
+                    cpu_vendor: Intel
+                  - id: "r016"
+                    type: "memory"
+                    parent_id: "srv-002"
+                    ram_size: 32
+                    ram_module: "M393A4K40DB3-CWE"
+                    ram_serial: "2224-51A3AA83"
+                    ram_vendor: Samsung
+                    ram_type: "DDR4-3200 ECC"
+                    ram_count: 8
+                  - id: "r017"
+                    type: "disk"
+                    parent_id: "srv-002"
+                    disk_name: sda
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X911940
+                    disk_protocol: SATA
+                  - id: "r018"
+                    type: "disk"
+                    parent_id: "srv-002"
+                    disk_name: sdb
+                    disk_model: "Intel D3-S4610"
+                    disk_size: 480
+                    disk_type: SSD
+                    disk_serial: PHYG234900EB960C
+                    disk_protocol: SATA
+                  - id: "r019"
+                    type: "network_adapter"
+                    parent_id: "srv-002"
+                    nic_pci: "0000:01:00.0"
+                    nic_model: "Ethernet Controller I225-LM"
+                    nic_vendor: Intel Corporation
+                    nic_mac: "f0:3f:03:01:43:01"
+                    nic_ip: 192.168.104.52
+                    nic_speed: 1 Gbit/s full duplex
+                  - id: "r020"
+                    type: "disk_controller"
+                    parent_id: "srv-002"
+                    dctrl_model: "Broadcom MegaRAID 9560-8i"
+                    dctrl_vendor: Broadcom
+                    dctrl_serial: "DCTRL-0002"
+                    dctrl_type: RAID
+                  - id: "r021"
+                    type: "disk_shelf"
+                    parent_id: "srv-002"
+                    shelf_name: "TUSN-02"
+                    shelf_model: YADRO TATLIN.UNIFIED Gen2
+                    shelf_serial: 011024030F1010
+                    equipment_name: Система хранения данных TATLIN.UNIFIED Gen2
+                    article: Y16SYSBAS201A_524678
+                  - id: "pak-002"
+                    type: "pak"
+                    parent_id: null
+                    pak_name: "s3m-03b01-klg02"
+                    pak_type: МБД.Г
+                    pak_serial: "S^R-00618-MB.02-C03N1S0R0.1-1"
+                    pak_location: "Калуга-2"
+                  - id: "sw-003"
+                    type: "switch"
+                    parent_id: "pak-002"
+                    sw_name: "SW-KLG02-SPINE-01"
+                    sw_model: "B4Com CS4132U-AC"
+                    sw_role: spine
+                    sw_speed: 100GbE
+                    sw_ip: 192.168.105.26
+                    sw_serial: "B4C-SW-002234"
+                    sw_vendor: B4Com
+                    sw_ports: 32×100GbE
+                    equipment_name: Коммутатор B4Com CS4132U
+                    article: "SR-CS4132U-AC-B-SW"
+                  - id: "srv-003"
+                    type: "server"
+                    parent_id: "pak-002"
+                    srv_role: virtualization
+                    srv_name: "scs-02node-01.adb.local"
+                    srv_model: YADRO VEGMAN R220 G2
+                    srv_ip: 192.168.105.51
+                    srv_serial: Y05X82U2S101A_A9880C
+                    srv_pn: "РМБГ.466535.003-362"
+                    srv_bmc_ip: 192.168.105.201
+                    equipment_name: Сервер YADRO VEGMAN R220 G2
+                    article: Y05X82U2S101A_A9880C
+                  - id: "r025"
+                    type: "processor"
+                    parent_id: "srv-003"
+                    cpu_model: 2× Intel Xeon Silver 4314
+                    cpu_cores: 32
+                    cpu_threads: 64
+                    cpu_vendor: Intel
+                  - id: "r026"
+                    type: "memory"
+                    parent_id: "srv-003"
+                    ram_size: 64
+                    ram_module: "M393A4K40DB3-CWE"
+                    ram_serial: "2224-51A3BB01"
+                    ram_vendor: Samsung
+                    ram_type: "DDR4-2933 ECC"
+                    ram_count: 16
+                  - id: "r027"
+                    type: "disk"
+                    parent_id: "srv-003"
+                    disk_name: sda
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X912001
+                    disk_protocol: SATA
+                  - id: "r028"
+                    type: "disk"
+                    parent_id: "srv-003"
+                    disk_name: sdb
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X912002
+                    disk_protocol: SATA
+                  - id: "r029"
+                    type: "disk"
+                    parent_id: "srv-003"
+                    disk_name: sdc
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X912003
+                    disk_protocol: SATA
+                  - id: "r030"
+                    type: "network_adapter"
+                    parent_id: "srv-003"
+                    nic_pci: "0000:01:00.0"
+                    nic_model: "Ethernet Controller I225-LM"
+                    nic_vendor: Intel Corporation
+                    nic_mac: "f0:3f:03:02:50:01"
+                    nic_ip: 192.168.105.51
+                    nic_speed: 1 Gbit/s full duplex
+                  - id: "r031"
+                    type: "network_adapter"
+                    parent_id: "srv-003"
+                    nic_pci: "0000:02:00.0"
+                    nic_model: Ethernet Controller X710
+                    nic_vendor: Intel Corporation
+                    nic_mac: "f0:3f:03:02:50:02"
+                    nic_ip: 192.168.106.51
+                    nic_speed: 10 Gbit/s full duplex
+                  - id: "r032"
+                    type: "disk_controller"
+                    parent_id: "srv-003"
+                    dctrl_model: "Broadcom MegaRAID 9560-8i"
+                    dctrl_vendor: Broadcom
+                    dctrl_serial: "DCTRL-0003"
+                    dctrl_type: RAID
+                  - id: "r033"
+                    type: "disk_shelf"
+                    parent_id: "srv-003"
+                    shelf_name: "TUSN-03"
+                    shelf_model: YADRO TATLIN.UNIFIED Gen2
+                    shelf_serial: 011024030F1011
+                    equipment_name: Система хранения данных TATLIN.UNIFIED Gen2
+                    article: Y16SYSBAS201A_524678
+                  - id: "srv-004"
+                    type: "server"
+                    parent_id: "pak-002"
+                    srv_role: virtualization
+                    srv_name: "scs-02node-02.adb.local"
+                    srv_model: YADRO VEGMAN R220 G2
+                    srv_ip: 192.168.105.52
+                    srv_serial: Y05X82U2S101A_A9880D
+                    srv_pn: "РМБГ.466535.003-362"
+                    srv_bmc_ip: 192.168.105.202
+                    equipment_name: Сервер YADRO VEGMAN R220 G2
+                    article: Y05X82U2S101A_A9880C
+                  - id: "r035"
+                    type: "processor"
+                    parent_id: "srv-004"
+                    cpu_model: 2× Intel Xeon Silver 4314
+                    cpu_cores: 32
+                    cpu_threads: 64
+                    cpu_vendor: Intel
+                  - id: "r036"
+                    type: "memory"
+                    parent_id: "srv-004"
+                    ram_size: 64
+                    ram_module: "M393A4K40DB3-CWE"
+                    ram_serial: "2224-51A3BB02"
+                    ram_vendor: Samsung
+                    ram_type: "DDR4-2933 ECC"
+                    ram_count: 16
+                  - id: "r037"
+                    type: "disk"
+                    parent_id: "srv-004"
+                    disk_name: sda
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X912004
+                    disk_protocol: SATA
+                  - id: "r038"
+                    type: "disk"
+                    parent_id: "srv-004"
+                    disk_name: sdb
+                    disk_model: "Intel D3-S4610"
+                    disk_size: 480
+                    disk_type: SSD
+                    disk_serial: PHYG234900EB960D
+                    disk_protocol: SATA
+                  - id: "r039"
+                    type: "network_adapter"
+                    parent_id: "srv-004"
+                    nic_pci: "0000:01:00.0"
+                    nic_model: "Ethernet Controller I225-LM"
+                    nic_vendor: Intel Corporation
+                    nic_mac: "f0:3f:03:02:51:01"
+                    nic_ip: 192.168.105.52
+                    nic_speed: 1 Gbit/s full duplex
+                  - id: "r040"
+                    type: "disk_controller"
+                    parent_id: "srv-004"
+                    dctrl_model: "Broadcom MegaRAID 9560-8i"
+                    dctrl_vendor: Broadcom
+                    dctrl_serial: "DCTRL-0004"
+                    dctrl_type: RAID
+                  - id: "pak-003"
+                    type: "pak"
+                    parent_id: null
+                    pak_name: "s3m-03b01-rnd01"
+                    pak_type: МВ.ДИ
+                    pak_serial: "S^R-00619-MV.03-C04N2S0R0.1-1"
+                    pak_location: "Ростов-на-Дону-1"
+                  - id: "sw-004"
+                    type: "switch"
+                    parent_id: "pak-003"
+                    sw_name: "SW-RND01-SPINE-01"
+                    sw_model: "B4Com CS4132U-AC"
+                    sw_role: spine
+                    sw_speed: 100GbE
+                    sw_ip: 192.168.106.26
+                    sw_serial: "B4C-SW-003234"
+                    sw_vendor: B4Com
+                    sw_ports: 32×100GbE
+                    equipment_name: Коммутатор B4Com CS4132U
+                    article: "SR-CS4132U-AC-B-SW"
+                  - id: "sw-005"
+                    type: "switch"
+                    parent_id: "pak-003"
+                    sw_name: "SW-RND01-LEAF-01"
+                    sw_model: "B4Com CS2148P-4D"
+                    sw_role: leaf
+                    sw_speed: 1GbE
+                    sw_ip: 192.168.106.27
+                    sw_serial: "B4C-SW-003235"
+                    sw_vendor: B4Com
+                    sw_ports: 48×1GbE + 4×10GbE
+                    equipment_name: "Коммутатор B4Com CS2148P-4D"
+                    article: "B4T-CS2148P-4D-NP-AC"
+                  - id: "srv-005"
+                    type: "server"
+                    parent_id: "pak-003"
+                    srv_role: virtualization
+                    srv_name: "scs-03node-01.adb.local"
+                    srv_model: YADRO VEGMAN R220 G2
+                    srv_ip: 192.168.106.51
+                    srv_serial: Y05X82U2S101A_6DE490
+                    srv_pn: "РМБГ.466535.003-363"
+                    srv_bmc_ip: 192.168.106.201
+                    equipment_name: Сервер YADRO VEGMAN R220 G2
+                    article: Y05X82U2S101A_62A105
+                  - id: "r045"
+                    type: "processor"
+                    parent_id: "srv-005"
+                    cpu_model: 2× Intel Xeon Gold 6348
+                    cpu_cores: 56
+                    cpu_threads: 112
+                    cpu_vendor: Intel
+                  - id: "r046"
+                    type: "memory"
+                    parent_id: "srv-005"
+                    ram_size: 128
+                    ram_module: "M393A4K40DB3-CWE"
+                    ram_serial: "2224-51A3CC01"
+                    ram_vendor: Samsung
+                    ram_type: "DDR4-3200 ECC"
+                    ram_count: 16
+                  - id: "r047"
+                    type: "disk"
+                    parent_id: "srv-005"
+                    disk_name: sda
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X913001
+                    disk_protocol: SATA
+                  - id: "r048"
+                    type: "disk"
+                    parent_id: "srv-005"
+                    disk_name: sdb
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X913002
+                    disk_protocol: SATA
+                  - id: "r049"
+                    type: "disk"
+                    parent_id: "srv-005"
+                    disk_name: sdc
+                    disk_model: Samsung PM893
+                    disk_size: 960
+                    disk_type: SSD
+                    disk_serial: S665NN0X913003
+                    disk_protocol: SATA
+                  - id: "r050"
+                    type: "disk"
+                    parent_id: "srv-005"
+                    disk_name: sdd
+                    disk_model: "Intel D3-S4610"
+                    disk_size: 480
+                    disk_type: SSD
+                    disk_serial: PHYG234900EB960E
+                    disk_protocol: SATA
+                  - id: "r051"
+                    type: "network_adapter"
+                    parent_id: "srv-005"
+                    nic_pci: "0000:01:00.0"
+                    nic_model: "Ethernet Controller I225-LM"
+                    nic_vendor: Intel Corporation
+                    nic_mac: "f0:3f:03:03:60:01"
+                    nic_ip: 192.168.106.51
+                    nic_speed: 1 Gbit/s full duplex
+                  - id: "r052"
+                    type: "network_adapter"
+                    parent_id: "srv-005"
+                    nic_pci: "0000:02:00.0"
+                    nic_model: Ethernet Controller X710
+                    nic_vendor: Intel Corporation
+                    nic_mac: "f0:3f:03:03:60:02"
+                    nic_ip: 192.168.107.51
+                    nic_speed: 10 Gbit/s full duplex
+                  - id: "r053"
+                    type: "network_adapter"
+                    parent_id: "srv-005"
+                    nic_pci: "0000:03:00.0"
+                    nic_model: Ethernet Controller X710
+                    nic_vendor: Intel Corporation
+                    nic_mac: "f0:3f:03:03:60:03"
+                    nic_ip: 192.168.108.51
+                    nic_speed: 10 Gbit/s full duplex
+                  - id: "r054"
+                    type: "disk_controller"
+                    parent_id: "srv-005"
+                    dctrl_model: "Broadcom MegaRAID 9560-16i"
+                    dctrl_vendor: Broadcom
+                    dctrl_serial: "DCTRL-0005"
+                    dctrl_type: RAID
+                  - id: "r055"
+                    type: "disk_shelf"
+                    parent_id: "srv-005"
+                    shelf_name: "TUSN-04"
+                    shelf_model: YADRO TATLIN.UNIFIED Gen2
+                    shelf_serial: 011024030F1012
+                    equipment_name: Система хранения данных TATLIN.UNIFIED Gen2
+                    article: Y16SYSBAS201A_B32E02
+                  - id: "swlic-001"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Базовый модуль
+                    manufacturer: ООО «Базальт СПО»
+                    product_name: "ОС Альт СП / 4305 / Лицензия на право использования Альт СП Сервер релиз 10 / бессрочная / ФСТЭК / с правом использования виртуализации / арх.64 бит, право на использование (№ реестра 4305)"
+                    article: "ALT10-0110SY"
+                    quantity_per_module: 1
+                  - id: "swlic-002"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Базовый модуль
+                    manufacturer: ООО «Базальт СПО»
+                    product_name: "ОС Альт СП / 4305 / Лицензия на право использования Альт СП Сервер релиз 10 / бессрочная / ФСТЭК / kit / с правом использования виртуализации / арх.64 бит, право на использование (№ реестра 4305)"
+                    article: "ALT10-0110SY-K"
+                    quantity_per_module: 1
+                  - id: "swlic-003"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Базовый модуль
+                    manufacturer: ООО «Базальт СПО»
+                    product_name: "ОС Альт СП / 4305 / Лицензия на право использования Альт СП Сервер релиз 10 / бессрочная / ФСТЭК / без права использования виртуализации / арх.64 бит, право на использование (№ реестра 4305)"
+                    article: "ALT10-0110SZ"
+                    quantity_per_module: 4
+                  - id: "swlic-004"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Базовый модуль
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 2
+                  - id: "swlic-005"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Базовый модуль
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 2
+                  - id: "swlic-006"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым блоком хранения в ТБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ТБ (raw storage)"
+                    article: "BDX-STG-LC-SP-STD-3Y"
+                    quantity_per_module: 600
+                  - id: "swlic-007"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: "ООО «РусБИТех-Астра»"
+                    product_name: "Лицензия на операционную систему специального назначения «Astra Linux Special Edition» для 64-х разрядной платформы на базе процессорной архитектуры x86-64, уровень защищенности «Максимальный» («Смоленск»), РУСБ.10015-01 (ФСТЭК), способ передачи OEM, серверная до 2 сокетов, на срок действия исключительного права, с включенными обновлениями Тип 2 на 36 мес., Право на использование (№ реестра 369)"
+                    article: "OS2101X8617OEMSKTSR01-PO36"
+                    quantity_per_module: 3
+                  - id: "swlic-008"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-009"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-010"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительное право на использование ПО / BDX-CMP-LC-SP-STD-3Y / Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым вычислительным блоком в ГБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ГБ RAM (raw memory)"
+                    article: "BDX-CMP-LC-SP-STD-3Y"
+                    quantity_per_module: 3072
+                  - id: "swlic-011"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Модуль координации
+                    manufacturer: "ООО «РусБИТех-Астра»"
+                    product_name: "Лицензия на операционную систему специального назначения «Astra Linux Special Edition» для 64-х разрядной платформы на базе процессорной архитектуры x86-64, уровень защищенности «Максимальный» («Смоленск»), РУСБ.10015-01 (ФСТЭК), способ передачи OEM, серверная до 2 сокетов, на срок действия исключительного права, с включенными обновлениями Тип 2 на 36 мес., Право на использование (№ реестра 369)"
+                    article: "OS2101X8617OEMSKTSR01-PO36"
+                    quantity_per_module: 1
+                  - id: "swlic-012"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Модуль координации
+                    manufacturer: "ООО «РусБИТех-Астра»"
+                    product_name: "Лицензия на операционную систему специального назначения «Astra Linux Special Edition» для 64-х разрядной платформы на базе процессорной архитектуры x86-64, уровень защищенности «Максимальный» («Смоленск»), РУСБ.10015-01 (ФСТЭК), способ передачи OEM, серверная до 2 сокетов, на срок действия исключительного права, с включенными обновлениями Тип 2 на 36 мес., Право на использование (№ реестра 369)"
+                    article: "OS2101X8617OEMSKTSR01-PO36"
+                    quantity_per_module: 2
+                  - id: "swlic-013"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Модуль координации
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-014"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Модуль координации
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-015"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Модуль координации
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительное право на использование ПО / BDX-CMP-LC-SP-STD-3Y / Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым вычислительным блоком в ГБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ГБ RAM (raw memory)"
+                    article: "BDX-CMP-LC-SP-STD-3Y"
+                    quantity_per_module: 3072
+                  - id: "swlic-016"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Модуль виртуализации
+                    manufacturer: "ООО «РусБИТех-Астра»"
+                    product_name: "Лицензия на операционную систему специального назначения «Astra Linux Special Edition» для 64-х разрядной платформы на базе процессорной архитектуры x86-64, уровень защищенности «Максимальный» («Смоленск»), РУСБ.10015-01 (ФСТЭК), способ передачи OEM, серверная до 2 сокетов, на срок действия исключительного права, с включенными обновлениями Тип 2 на 36 мес., Право на использование (№ реестра 369)"
+                    article: "OS2101X8617OEMSKTSR01-PO36"
+                    quantity_per_module: 3
+                  - id: "swlic-017"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Модуль виртуализации
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-018"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Модуль виртуализации
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-019"
+                    type: "software_license"
+                    parent_id: "pak-001"
+                    module_name: Модуль виртуализации
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительное право на использование ПО / BDX-CMP-LC-SP-STD-3Y / Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым вычислительным блоком в ГБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ГБ RAM (raw memory)"
+                    article: "BDX-CMP-LC-SP-STD-3Y"
+                    quantity_per_module: 3072
+                  - id: "swlic-020"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: Базовый модуль
+                    manufacturer: ООО «Базальт СПО»
+                    product_name: "ОС Альт СП / 4305 / Лицензия на право использования Альт СП Сервер релиз 10 / бессрочная / ФСТЭК / с правом использования виртуализации / арх.64 бит, право на использование (№ реестра 4305)"
+                    article: "ALT10-0110SY"
+                    quantity_per_module: 1
+                  - id: "swlic-021"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: Базовый модуль
+                    manufacturer: ООО «Базальт СПО»
+                    product_name: "ОС Альт СП / 4305 / Лицензия на право использования Альт СП Сервер релиз 10 / бессрочная / ФСТЭК / kit / с правом использования виртуализации / арх.64 бит, право на использование (№ реестра 4305)"
+                    article: "ALT10-0110SY-K"
+                    quantity_per_module: 1
+                  - id: "swlic-022"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: Базовый модуль
+                    manufacturer: ООО «Базальт СПО»
+                    product_name: "ОС Альт СП / 4305 / Лицензия на право использования Альт СП Сервер релиз 10 / бессрочная / ФСТЭК / без права использования виртуализации / арх.64 бит, право на использование (№ реестра 4305)"
+                    article: "ALT10-0110SZ"
+                    quantity_per_module: 4
+                  - id: "swlic-023"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: Базовый модуль
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 2
+                  - id: "swlic-024"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: Базовый модуль
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 2
+                  - id: "swlic-025"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым блоком хранения в ТБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ТБ (raw storage)"
+                    article: "BDX-STG-LC-SP-STD-3Y"
+                    quantity_per_module: 600
+                  - id: "swlic-026"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: "ООО «РусБИТех-Астра»"
+                    product_name: "Лицензия на операционную систему специального назначения «Astra Linux Special Edition» для 64-х разрядной платформы на базе процессорной архитектуры x86-64, уровень защищенности «Максимальный» («Смоленск»), РУСБ.10015-01 (ФСТЭК), способ передачи OEM, серверная до 2 сокетов, на срок действия исключительного права, с включенными обновлениями Тип 2 на 36 мес., Право на использование (№ реестра 369)"
+                    article: "OS2101X8617OEMSKTSR01-PO36"
+                    quantity_per_module: 3
+                  - id: "swlic-027"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-028"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-029"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительное право на использование ПО / BDX-CMP-LC-SP-STD-3Y / Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым вычислительным блоком в ГБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ГБ RAM (raw memory)"
+                    article: "BDX-CMP-LC-SP-STD-3Y"
+                    quantity_per_module: 3072
+                  - id: "swlic-030"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: Модуль виртуализации
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительное право на использование ПО / BDX-CMP-LC-SP-STD-3Y / Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым вычислительным блоком в ГБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ГБ RAM (raw memory)"
+                    article: "BDX-CMP-LC-SP-STD-3Y"
+                    quantity_per_module: 3072
+                  - id: "swlic-031"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: Модуль виртуализации
+                    manufacturer: "ООО «РусБИТех-Астра»"
+                    product_name: "Лицензия на операционную систему специального назначения «Astra Linux Special Edition» для 64-х разрядной платформы на базе процессорной архитектуры x86-64, уровень защищенности «Максимальный» («Смоленск»), РУСБ.10015-01 (ФСТЭК), способ передачи OEM, серверная до 2 сокетов, на срок действия исключительного права, с включенными обновлениями Тип 2 на 36 мес., Право на использование (№ реестра 369)"
+                    article: "OS2101X8617OEMSKTSR01-PO36"
+                    quantity_per_module: 3
+                  - id: "swlic-032"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: Модуль виртуализации
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-033"
+                    type: "software_license"
+                    parent_id: "pak-002"
+                    module_name: Модуль виртуализации
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-034"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: Базовый модуль
+                    manufacturer: ООО «Базальт СПО»
+                    product_name: "ОС Альт СП / 4305 / Лицензия на право использования Альт СП Сервер релиз 10 / бессрочная / ФСТЭК / с правом использования виртуализации / арх.64 бит, право на использование (№ реестра 4305)"
+                    article: "ALT10-0110SY"
+                    quantity_per_module: 1
+                  - id: "swlic-035"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: Базовый модуль
+                    manufacturer: ООО «Базальт СПО»
+                    product_name: "ОС Альт СП / 4305 / Лицензия на право использования Альт СП Сервер релиз 10 / бессрочная / ФСТЭК / kit / с правом использования виртуализации / арх.64 бит, право на использование (№ реестра 4305)"
+                    article: "ALT10-0110SY-K"
+                    quantity_per_module: 1
+                  - id: "swlic-036"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: Базовый модуль
+                    manufacturer: ООО «Базальт СПО»
+                    product_name: "ОС Альт СП / 4305 / Лицензия на право использования Альт СП Сервер релиз 10 / бессрочная / ФСТЭК / без права использования виртуализации / арх.64 бит, право на использование (№ реестра 4305)"
+                    article: "ALT10-0110SZ"
+                    quantity_per_module: 4
+                  - id: "swlic-037"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: Базовый модуль
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 2
+                  - id: "swlic-038"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: Базовый модуль
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 2
+                  - id: "swlic-039"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым блоком хранения в ТБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ТБ (raw storage)"
+                    article: "BDX-STG-LC-SP-STD-3Y"
+                    quantity_per_module: 600
+                  - id: "swlic-040"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: "ООО «РусБИТех-Астра»"
+                    product_name: "Лицензия на операционную систему специального назначения «Astra Linux Special Edition» для 64-х разрядной платформы на базе процессорной архитектуры x86-64, уровень защищенности «Максимальный» («Смоленск»), РУСБ.10015-01 (ФСТЭК), способ передачи OEM, серверная до 2 сокетов, на срок действия исключительного права, с включенными обновлениями Тип 2 на 36 мес., Право на использование (№ реестра 369)"
+                    article: "OS2101X8617OEMSKTSR01-PO36"
+                    quantity_per_module: 3
+                  - id: "swlic-041"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-042"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-043"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: "Модуль коммутации, вычисления и хранения"
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительное право на использование ПО / BDX-CMP-LC-SP-STD-3Y / Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым вычислительным блоком в ГБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ГБ RAM (raw memory)"
+                    article: "BDX-CMP-LC-SP-STD-3Y"
+                    quantity_per_module: 3072
+                  - id: "swlic-044"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: Модуль виртуализации
+                    manufacturer: ООО «Базис»
+                    product_name: "Неисключительное право на использование ПО / BDX-CMP-LC-SP-STD-3Y / Неисключительная лицензия на ПО Базис.DunamiX; модуль управления программно-определяемым вычислительным блоком в ГБ; гарантия на 3 года; бессрочная лицензия и гарантия 3 года на 1 ГБ RAM (raw memory)"
+                    article: "BDX-CMP-LC-SP-STD-3Y"
+                    quantity_per_module: 3072
+                  - id: "swlic-045"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: Модуль виртуализации
+                    manufacturer: "ООО «РусБИТех-Астра»"
+                    product_name: "Лицензия на операционную систему специального назначения «Astra Linux Special Edition» для 64-х разрядной платформы на базе процессорной архитектуры x86-64, уровень защищенности «Максимальный» («Смоленск»), РУСБ.10015-01 (ФСТЭК), способ передачи OEM, серверная до 2 сокетов, на срок действия исключительного права, с включенными обновлениями Тип 2 на 36 мес., Право на использование (№ реестра 369)"
+                    article: "OS2101X8617OEMSKTSR01-PO36"
+                    quantity_per_module: 3
+                  - id: "swlic-046"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: Модуль виртуализации
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Визион. Лицензия (неисключительное право использования) на систему мониторинга Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-VN-NODE-LIC"
+                    quantity_per_module: 3
+                  - id: "swlic-047"
+                    type: "software_license"
+                    parent_id: "pak-003"
+                    module_name: Модуль виртуализации
+                    manufacturer: "ООО «СКАЛА-Р»"
+                    product_name: "ПО Скала'р Геном. Лицензия (неисключительное право использования) на систему обслуживания Машин Скала'р, на 1 вычислительный узел."
+                    article: "S^R-GN-NODE-LIC"
+                    quantity_per_module: 3
+
+modals: []

@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Screenshots
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Playwright
+.playwright-mcp/
+
+# Claude
+.claude/
+CLAUDE.md
+
+# Agents
+.agents/
+
+# Misc
+_tokens.scss
+after-filter-removal/
+cmdb-snapshot/
+component-map.json
+current-state/
+embedded-test.png
+export-button.png
+figma-manifest.json
+index.html
+interactive-test.png
+layout.md
+no-backend-test.png
+offline-test.png
+pak-health/
+report-builder*.png
+table_node.png
+tokens.json
+trebovanija.pdf
+sidebar-menu-slot-guide.md
+skala-design-system-index.json

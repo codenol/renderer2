@@ -250,19 +250,6 @@ export function ReportBuilder({
               {f.label}
             </button>
           ))}
-          {unselectedFields.length > 0 && (
-            <select
-              className={styles.rbDropdown}
-              value=""
-              onChange={e => { if (e.target.value) toggleField(e.target.value); e.target.value = '' }}
-              style={{ minWidth: 160 }}
-            >
-              <option value="">+ Добавить поле</option>
-              {unselectedFields.map(f => (
-                <option key={f.key} value={f.key}>{f.label}</option>
-              ))}
-            </select>
-          )}
 
         </div>
 

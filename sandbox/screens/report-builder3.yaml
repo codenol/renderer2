@@ -51,6 +51,7 @@ pages:
             - type: "report-builder3"
               id: "cmdb-rb"
               props:
+                defaultView: "installed_software"
                 dataModel:
                   types:
                     - key: "pak"
@@ -327,15 +328,13 @@ pages:
                       - "installed_software"
                     defaultFields:
                       - "isw_node"
+                      - "isw_actualization_date"
                       - "isw_package"
                       - "isw_version"
                       - "isw_architecture"
                       - "isw_install_date"
-                      - "isw_actualization_date"
                     defaultGroupBy:
-                      - "pak.pak_name"
                       - "isw_node"
-                      - "isw_package"
                     defaultSort: "isw_node-asc"
                 defaultTypes:
                   - "server"

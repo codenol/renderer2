@@ -665,19 +665,13 @@ export function ReportBuilder3({
       const label = sourceLabel ? `${f.label} (${sourceLabel})` : f.label
       return { ...f, label }
     }).filter(Boolean) as DataModelFieldType[]
-    // Prepend a synthetic type column for disambiguation
-    const typeCol: DataModelFieldType = { key: '__type', label: 'Тип', exportLabel: 'Тип' }
-    return [typeCol, ...cols]
+    return cols
   }, [selectedFields, allAvailableFields, fieldGroups])
 
   const unselectedFields = allAvailableFields.filter(f => !selectedFields.includes(f.key))
 
   // ─── Render helpers ────────────────────────────────────────────────────
   function renderCell(row: CMDBRow, col: DataModelFieldType): React.ReactNode {
-    if (col.key === '__type') {
-      const typeDef = dataModel.types.find(t => t.key === row.type)
-      return typeDef?.label ?? row.type
-    }
     const val = getRowValue(row, allData, col.key)
     if (col.key === 'article' && val === '—') return ''
     if (val === '—') return <span className={styles.rbCellEmpty}>—</span>
@@ -1138,28 +1132,27 @@ export function ReportBuilder3({
                   return (
                     <th
                       key={col.key}
-                      draggable={col.key !== '__type'}
-                      style={{ cursor: col.key === '__type' ? 'default' : 'grab' }}
+                      draggable
+                      style={{ cursor: 'grab' }}
                       onClick={() => {
                         if (curField === col.key && curDir === 'asc') setSortBy(`${col.key}-desc`)
                         else setSortBy(`${col.key}-asc`)
                       }}
                       onDragStart={e => {
-                        if (col.key === '__type') return
                         setDragColIndex(colIdx)
                         e.dataTransfer.effectAllowed = 'move'
                       }}
                       onDragOver={e => {
-                        if (dragColIndex === null || col.key === '__type') return
+                        if (dragColIndex === null) return
                         e.preventDefault()
                         e.dataTransfer.dropEffect = 'move'
                       }}
                       onDrop={e => {
                         e.preventDefault()
-                        if (dragColIndex === null || colIdx === dragColIndex || col.key === '__type') return
+                        if (dragColIndex === null || colIdx === dragColIndex) return
                         const keys = selectedFields.map(k => k)
-                        const [moved] = keys.splice(dragColIndex - 1, 1)
-                        keys.splice(colIdx - 1, 0, moved)
+                        const [moved] = keys.splice(dragColIndex, 1)
+                        keys.splice(colIdx, 0, moved)
                         setSelectedFields(keys)
                         setDragColIndex(null)
                       }}
@@ -1179,20 +1172,26 @@ export function ReportBuilder3({
           </tr>
         </thead>
         <tbody>
-          {isHardwareView ? renderHardwareView() :
-           isSoftwareView ? renderSoftwareView() :
+          {visibleColumns.length === 0 ? (
+            <tr>
+              <td style={{ textAlign: 'center', color: '#818594', padding: 32 }}>
+                Выберите колонки для отображения
+              </td>
+            </tr>
+          ) : isHardwareView ? renderHardwareView() :
+            isSoftwareView ? renderSoftwareView() :
             groupBy.length > 0 && groupedData.sections.length > 0 ? (
-             renderGroupedSections(groupedData.sections as any, 0)
-           ) : (
-             sortedData.slice(0, visibleCount).map((row) => (
-               <tr key={row.id}>
-                 {visibleColumns.map(col => (
-                   <td key={col.key}>{renderCell(row, col)}</td>
-                 ))}
-               </tr>
-             ))
-           )}
-          {!isHardwareView && !isSoftwareView && (groupBy.length > 0 ? groupedData.sections.length : sortedData.length) === 0 && (
+              renderGroupedSections(groupedData.sections as any, 0)
+            ) : (
+              sortedData.slice(0, visibleCount).map((row) => (
+                <tr key={row.id}>
+                  {visibleColumns.map(col => (
+                    <td key={col.key}>{renderCell(row, col)}</td>
+                  ))}
+                </tr>
+              ))
+            )}
+          {!isHardwareView && !isSoftwareView && visibleColumns.length > 0 && (groupBy.length > 0 ? groupedData.sections.length : sortedData.length) === 0 && (
             <tr>
               <td colSpan={visibleColumns.length || 1} style={{ textAlign: 'center', color: '#818594', padding: 32 }}>
                 Нет данных по заданным фильтрам

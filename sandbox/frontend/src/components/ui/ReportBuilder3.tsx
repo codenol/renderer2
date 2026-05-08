@@ -719,6 +719,9 @@ export function ReportBuilder3({
     const val = getRowValue(row, allData, col.key)
     if (col.key === 'article' && val === '—') return ''
     if (val === '—') return <span className={styles.rbCellEmpty}>—</span>
+    if (col.key === 'pm_serial' && val.includes('\n')) {
+      return <span style={{ whiteSpace: 'pre-line' }}>{val}</span>
+    }
     return val
   }
 

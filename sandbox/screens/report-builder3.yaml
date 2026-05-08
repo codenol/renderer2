@@ -66,6 +66,8 @@ pages:
                           label: "Серийный номер ПАК"
                         - key: "pak_location"
                           label: "Расположение"
+                        - key: "pak_extended_name"
+                          label: "Название расш."
                     - key: "switch"
                       label: "Коммутатор"
                       parentType: pak
@@ -248,6 +250,18 @@ pages:
                           label: "Наименование"
                         - key: "ck_quantity"
                           label: "Кол-во комплектов"
+                    - key: "pak_module"
+                      label: "Модули ПАК"
+                      parentType: pak
+                      fields:
+                        - key: "pm_type"
+                          label: "Тип модуля"
+                        - key: "pm_quantity"
+                          label: "Количество"
+                        - key: "pm_article"
+                          label: "Артикул"
+                        - key: "pm_serial"
+                          label: "Серийный номер"
                     - key: "installed_software"
                       label: "ПО на узлах"
                       parentType: server
@@ -308,6 +322,7 @@ pages:
                     pak_type: МБД.П
                     pak_serial: "S^R-00617-MB.01-C02N0S0R0.1-1"
                     pak_location: "Кострома-1"
+                    pak_extended_name: "Машина базовых данных СКАЛА-Р МБД.П, серийный номер S^R-00617-MB.01-C02N0S0R0.1-1"
                   - id: "sw-001"
                     type: "switch"
                     parent_id: "pak-001"
@@ -499,6 +514,7 @@ pages:
                     pak_type: МБД.Г
                     pak_serial: "S^R-00618-MB.02-C03N1S0R0.1-1"
                     pak_location: "Калуга-2"
+                    pak_extended_name: "Машина базовых данных СКАЛА-Р МБД.Г, серийный номер S^R-00618-MB.02-C03N1S0R0.1-1"
                   - id: "sw-003"
                     type: "switch"
                     parent_id: "pak-002"
@@ -669,6 +685,7 @@ pages:
                     pak_type: МВ.ДИ
                     pak_serial: "S^R-00619-MV.03-C04N2S0R0.1-1"
                     pak_location: "Ростов-на-Дону-1"
+                    pak_extended_name: "Машина виртуализации СКАЛА-Р МВ.ДИ, серийный номер S^R-00619-MV.03-C04N2S0R0.1-1"
                   - id: "sw-004"
                     type: "switch"
                     parent_id: "pak-003"
@@ -1368,5 +1385,75 @@ pages:
                     isw_version: "25.0.3-1"
                     isw_architecture: "amd64"
                     isw_install_date: "2025-03-19"
+
+                  # ── Модули ПАК (pak_module) ──
+                  # PAK-001 (МБД.П, Кострома-1)
+                  - id: "pm-001"
+                    type: "pak_module"
+                    parent_id: "pak-001"
+                    pm_type: "Базовый модуль"
+                    pm_quantity: 1
+                    pm_article: "S^R-006170M.BXX-C02N252543"
+                    pm_serial: "S^R-006170M.BXX-C0252R01.1"
+                  - id: "pm-002"
+                    type: "pak_module"
+                    parent_id: "pak-001"
+                    pm_type: "Модуль координации"
+                    pm_quantity: 1
+                    pm_article: "S^R-006170M.CRD-C035252543"
+                    pm_serial: "S^R-006170M.CRD-C0322R01.1"
+                  - id: "pm-003"
+                    type: "pak_module"
+                    parent_id: "pak-001"
+                    pm_type: "Модуль обработки данных"
+                    pm_quantity: 2
+                    pm_article: "S^R-006170M.DXX-C045252543"
+                    pm_serial: "S^R-006170M.DXX-C0422R01.1\nS^R-006170M.DXX-C0422R01.2"
+
+                  # PAK-002 (МБД.Г, Калуга-2)
+                  - id: "pm-004"
+                    type: "pak_module"
+                    parent_id: "pak-002"
+                    pm_type: "Базовый модуль"
+                    pm_quantity: 1
+                    pm_article: "S^R-006180M.BXX-C03N252543"
+                    pm_serial: "S^R-006180M.BXX-C0352R01.1"
+                  - id: "pm-005"
+                    type: "pak_module"
+                    parent_id: "pak-002"
+                    pm_type: "Модуль координации"
+                    pm_quantity: 1
+                    pm_article: "S^R-006180M.CRD-C045252543"
+                    pm_serial: "S^R-006180M.CRD-C0422R01.1"
+                  - id: "pm-006"
+                    type: "pak_module"
+                    parent_id: "pak-002"
+                    pm_type: "Модуль репликации"
+                    pm_quantity: 3
+                    pm_article: "S^R-006180M.RXX-C055252543"
+                    pm_serial: "S^R-006180M.RXX-C0522R01.1\nS^R-006180M.RXX-C0522R01.2\nS^R-006180M.RXX-C0522R01.3"
+
+                  # PAK-003 (МВ.ДИ, Ростов-на-Дону-1)
+                  - id: "pm-007"
+                    type: "pak_module"
+                    parent_id: "pak-003"
+                    pm_type: "Базовый модуль"
+                    pm_quantity: 1
+                    pm_article: "S^R-006190M.BXX-C04N252543"
+                    pm_serial: "S^R-006190M.BXX-C0452R01.1"
+                  - id: "pm-008"
+                    type: "pak_module"
+                    parent_id: "pak-003"
+                    pm_type: "Модуль координации"
+                    pm_quantity: 1
+                    pm_article: "S^R-006190M.CRD-C055252543"
+                    pm_serial: "S^R-006190M.CRD-C0522R01.1"
+                  - id: "pm-009"
+                    type: "pak_module"
+                    parent_id: "pak-003"
+                    pm_type: "Модуль виртуализации"
+                    pm_quantity: 4
+                    pm_article: "S^R-006190M.VXX-C065252543"
+                    pm_serial: "S^R-006190M.VXX-C0622R01.1\nS^R-006190M.VXX-C0622R01.2\nS^R-006190M.VXX-C0622R01.3\nS^R-006190M.VXX-C0622R01.4"
 
 modals: []

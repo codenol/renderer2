@@ -194,10 +194,7 @@
     white-space: nowrap;
     cursor: default;
     user-select: none;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    &:first-child { border-radius: 12px 0 0 0; }
+    position: relative;
     &[draggable='true']:hover { background: #e8ecf4; }
     .rbThContent {
       display: flex;
@@ -215,9 +212,6 @@
     border-bottom: 1px solid #f0f1f4;
     white-space: nowrap;
     color: #3f4146;
-  }
-  td.rbCellEmpty {
-    color: #c0c4cc;
   }
   tbody tr {
     transition: background 0.1s;
@@ -238,6 +232,10 @@
     border-radius: 4px;
     &:hover { background: #eef1f5; color: #3f4146; }
   }
+}
+
+.rbCellEmpty {
+  opacity: 0.3;
 }
 
 .rbTableFooter {
@@ -264,35 +262,19 @@
   color: #1a1a1a;
   padding: 8px 16px;
   border-bottom: 1px solid #e0e2e6;
-}
-
-.rbSectionRow td:first-child {
-  border-left: 3px solid #2d98b4;
-}
-
-.rbGutter {
-  width: 16px;
-  min-width: 16px;
-  max-width: 16px;
-  padding: 0 !important;
-  border: none !important;
-  background: transparent !important;
-}
-
-th.rbGutter {
-  position: static !important;
-  z-index: 0;
+  text-align: center;
 }
 
 .rbPakHeader td {
   background: #e8f0f8;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 18px;
   color: #1a3a5c;
   padding: 10px 12px;
   border-bottom: 2px solid #2d98b4;
   white-space: normal;
   line-height: 1.4;
+  text-align: center;
 }
 
 // Export button
@@ -506,9 +488,6 @@ th.rbGutter {
       border-bottom-color: #2a3545;
       color: #dfe2e6;
     }
-    td.rbCellEmpty {
-      color: #5a6a7a;
-    }
     tbody tr {
       &:nth-child(even) td { background: #1a2535; }
       &:hover td { background: #253347; }
@@ -523,10 +502,6 @@ th.rbGutter {
     background: #253347;
     color: #dfe2e6;
     border-bottom-color: #354c6a;
-  }
-
-  .rbSectionRow td:first-child {
-    border-left-color: #60c4dd;
   }
 
   .rbPakHeader td {

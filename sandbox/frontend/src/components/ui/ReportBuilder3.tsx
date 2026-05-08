@@ -664,24 +664,29 @@ export function ReportBuilder3({
     return val
   }
 
-  function renderGroupedSections(sections: { title: string; rows: CMDBRow[]; children?: { title: string; rows: CMDBRow[]; children?: unknown[] }[] }[], depth: number): React.ReactNode[] {
+  function renderGroupedSections(sections: { title: string; rows: CMDBRow[]; children?: { title: string; rows: CMDBRow[]; children?: unknown[] }[] }[], depth: number, maxDepth: number): React.ReactNode[] {
     const result: React.ReactNode[] = []
     for (let si = 0; si < sections.length; si++) {
       const section = sections[si]
+      const gutters = Array.from({ length: depth }, (_, i) => (
+        <td key={`g-${i}`} className={styles.rbGutter} />
+      ))
       result.push(
         <tr key={`sec-${depth}-${si}-${section.title}`} className={styles.rbSectionRow}>
-          <td>{section.title}</td>
-          {visibleColumns.slice(1).map(col => (
-            <td key={col.key} style={{ padding: 0 }}></td>
-          ))}
+          {gutters}
+          <td colSpan={Math.max(1, (maxDepth ?? 0) - depth + (visibleColumns?.length ?? 1))}>{section.title}</td>
         </tr>
       )
       if (section.children && section.children.length > 0) {
-        result.push(...renderGroupedSections(section.children as any, depth + 1))
+        result.push(...renderGroupedSections(section.children as any, depth + 1, maxDepth))
       } else {
         for (const row of section.rows) {
+          const dataGutters = Array.from({ length: maxDepth }, (_, i) => (
+            <td key={`dg-${i}`} className={styles.rbGutter} />
+          ))
           result.push(
             <tr key={`row-${depth}-${row.id}`}>
+              {dataGutters}
               {visibleColumns.map(col => (
                 <td key={col.key}>{renderCell(row, col)}</td>
               ))}
@@ -1113,6 +1118,9 @@ export function ReportBuilder3({
               </>
             ) : (
               <>
+                {groupBy.length > 0 && Array.from({ length: groupBy.length }, (_, i) => (
+                  <th key={`gutter-${i}`} className={styles.rbGutter} />
+                ))}
                 {visibleColumns.map((col, colIdx) => {
                   const [curField, curDir] = (sortBy ?? '').split('-')
                   const isActive = curField === col.key
@@ -1163,7 +1171,7 @@ export function ReportBuilder3({
           {isHardwareView ? renderHardwareView() :
            isSoftwareView ? renderSoftwareView() :
             groupBy.length > 0 && groupedData.sections.length > 0 ? (
-             renderGroupedSections(groupedData.sections as any, 0)
+             renderGroupedSections(groupedData.sections as any, 0, groupBy.length)
            ) : (
              sortedData.slice(0, visibleCount).map((row) => (
                <tr key={row.id}>
@@ -1175,7 +1183,7 @@ export function ReportBuilder3({
            )}
           {!isHardwareView && !isSoftwareView && (groupBy.length > 0 ? groupedData.sections.length : sortedData.length) === 0 && (
             <tr>
-              <td colSpan={visibleColumns.length || 1} style={{ textAlign: 'center', color: '#818594', padding: 32 }}>
+              <td colSpan={Math.max(1, groupBy.length + (visibleColumns?.length || 1))} style={{ textAlign: 'center', color: '#818594', padding: 32 }}>
                 Нет данных по заданным фильтрам
               </td>
             </tr>

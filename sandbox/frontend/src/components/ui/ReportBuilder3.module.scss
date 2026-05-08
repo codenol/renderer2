@@ -260,6 +260,15 @@
   border-bottom: 1px solid #e0e2e6;
 }
 
+.rbGutter {
+  width: 16px;
+  min-width: 16px;
+  max-width: 16px;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
 .rbPakHeader td {
   background: #e8f0f8;
   font-weight: 700;

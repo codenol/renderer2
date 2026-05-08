@@ -47,6 +47,7 @@ export interface ReportTemplate {
   filters: { field: string; operator: string; value: string }[]
   groupBy: string[]
   sortBy: string | null
+  hiddenColumns: string[]
 }
 
 export interface ReportView {
@@ -190,7 +191,12 @@ function getRowValue(row: CMDBRow, allData: CMDBRow[], fieldKey: string): string
     return mi ? mi[fieldKey] : (row[fieldKey] ?? '—')
   }
   if (fieldKey.includes('.')) return resolveParentField(row, allData, fieldKey)
-  return row[fieldKey] ?? '—'
+  if (row[fieldKey] !== undefined) return row[fieldKey]
+  if (row.parent_id) {
+    const parent = allData.find(r => r.id === row.parent_id)
+    if (parent && parent.id !== row.id) return getRowValue(parent, allData, fieldKey)
+  }
+  return '—'
 }
 
 interface FieldResult {
@@ -324,6 +330,7 @@ export function ReportBuilder3({
     }
     setActiveView(defaultView)
     setActiveUserView(null)
+    setHiddenColumns([])
     setVisibleCount(10)
     setSelectedTypes([...v.defaultTypes])
     setSelectedFields([...v.defaultFields])
@@ -362,6 +369,7 @@ export function ReportBuilder3({
       filters: filters.map(({ id, ...f }) => f),
       groupBy: [...groupBy],
       sortBy,
+      hiddenColumns: [...hiddenColumns],
     }
     const updated = userViews.filter(t => t.name !== v.name)
     updated.push(v)
@@ -385,13 +393,17 @@ export function ReportBuilder3({
     setNextFilterId(t.filters.length)
     setGroupBy([...t.groupBy])
     setSortBy(t.sortBy)
+    setHiddenColumns(t.hiddenColumns ?? [])
   }
 
   function deleteUserView(name: string) {
     const updated = userViews.filter(t => t.name !== name)
     setUserViews(updated)
     try { localStorage.setItem(TPL_STORAGE, JSON.stringify(updated)) } catch {/* ignore */}
-    if (activeUserView === name) setActiveUserView(null)
+    if (activeUserView === name) {
+      setActiveUserView(null)
+      setHiddenColumns([])
+    }
   }
 
   // ─── Apply view ─────────────────────────────────────────────────────────
@@ -400,6 +412,7 @@ export function ReportBuilder3({
     if (!v) return
     setActiveView(viewId)
     setActiveUserView(null)
+    setHiddenColumns([])
     setVisibleCount(10)
     setSelectedTypes([...v.defaultTypes])
     setSelectedFields([...v.defaultFields])
@@ -425,11 +438,11 @@ export function ReportBuilder3({
   function resetActiveView() {
     setActiveView(null)
     setActiveUserView(null)
-    setHiddenColumns([])
   }
 
   function clearAll() {
     resetActiveView()
+    setHiddenColumns([])
     setGroupBy([])
     setFilters([])
     setNextFilterId(0)

@@ -273,6 +273,7 @@ export function ReportBuilder3({
   )
   const [nextFilterId, setNextFilterId] = useState(filters.length)
   const [groupBy, setGroupBy] = useState<string[]>(defaultGroupBy ?? [])
+  const [hiddenColumns, setHiddenColumns] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<string | null>(defaultSort ?? null)
   const [activeView, setActiveView] = useState<string | null>(defaultView ?? null)
 
@@ -394,6 +395,7 @@ export function ReportBuilder3({
   function resetActiveView() {
     setActiveView(null)
     setActiveUserView(null)
+    setHiddenColumns([])
   }
 
   function clearAll() {
@@ -454,6 +456,15 @@ export function ReportBuilder3({
   useEffect(() => {
     const availableKeys = new Set(allAvailableFields.map(f => f.key))
     setSelectedFields(prev => {
+      const valid = prev.filter(k => availableKeys.has(k))
+      return valid.length === prev.length ? prev : valid
+    })
+  }, [allAvailableFields])
+
+  // Validate hiddenColumns when available fields change
+  useEffect(() => {
+    const availableKeys = new Set(allAvailableFields.map(f => f.key))
+    setHiddenColumns(prev => {
       const valid = prev.filter(k => availableKeys.has(k))
       return valid.length === prev.length ? prev : valid
     })
@@ -665,8 +676,8 @@ export function ReportBuilder3({
       const label = sourceLabel ? `${f.label} (${sourceLabel})` : f.label
       return { ...f, label }
     }).filter(Boolean) as DataModelFieldType[]
-    return cols
-  }, [selectedFields, allAvailableFields, fieldGroups])
+    return cols.filter(c => !hiddenColumns.includes(c.key))
+  }, [selectedFields, allAvailableFields, fieldGroups, hiddenColumns])
 
   const unselectedFields = allAvailableFields.filter(f => !selectedFields.includes(f.key))
 
@@ -1097,6 +1108,40 @@ export function ReportBuilder3({
               })}
             </>
           )}
+        </div>
+
+        <div className={styles.rbRow} style={{ marginBottom: 10 }}>
+          <span className={styles.rbLabel}>Скрыть колонки:</span>
+          <select
+            className={styles.rbDropdown}
+            style={{ minWidth: 120 }}
+            value=""
+            onChange={e => {
+              const v = e.target.value
+              if (v && !hiddenColumns.includes(v)) setHiddenColumns(p => [...p, v])
+              e.currentTarget.value = ''
+            }}
+          >
+            <option value="">Колонка...</option>
+            {visibleColumns.map(f => (
+              <option key={f.key} value={f.key}>{f.label}</option>
+            ))}
+          </select>
+          {hiddenColumns.map(hk => {
+            const f = allAvailableFields.find(af => af.key === hk)
+            return (
+              <button
+                key={hk}
+                className={styles.rbChip}
+                data-filter="true"
+                title="Нажмите чтобы показать"
+                onClick={() => setHiddenColumns(p => p.filter(k => k !== hk))}
+              >
+                {f?.label ?? hk}
+                <span className={styles.rbChipClose}>×</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 

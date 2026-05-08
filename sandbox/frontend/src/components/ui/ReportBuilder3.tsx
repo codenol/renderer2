@@ -450,6 +450,15 @@ export function ReportBuilder3({
     })
   }, [allAvailableFields])
 
+  // Validate selectedFields when available fields change
+  useEffect(() => {
+    const availableKeys = new Set(allAvailableFields.map(f => f.key))
+    setSelectedFields(prev => {
+      const valid = prev.filter(k => availableKeys.has(k))
+      return valid.length === prev.length ? prev : valid
+    })
+  }, [allAvailableFields])
+
   // ── View type detection ───────────────────────────────────────────────
   const isHardwareView = activeView === 'hardware'
   const isSoftwareView = activeView === 'software'

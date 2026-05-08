@@ -386,30 +386,9 @@ export function ReportBuilder3({
   // ─── Toggle type ────────────────────────────────────────────────────────
   function toggleType(key: string) {
     setVisibleCount(10)
-    const typeDef = dataModel.types.find(t => t.key === key)
-    if (!typeDef) return
-    setSelectedTypes(prev => {
-      const isAdd = !prev.includes(key)
-      if (isAdd) {
-        // Add type's direct fields to selected fields
-        const fieldKeys = typeDef.fields.map(f => f.key)
-        setSelectedFields(p => [...new Set([...p, ...fieldKeys])])
-        return [...prev, key]
-      } else {
-        // Remove type's direct fields from selected fields if no other selected type uses them
-        const otherTypes = prev.filter(k => k !== key)
-        const otherFieldKeys = new Set<string>()
-        for (const ot of otherTypes) {
-          const otDef = dataModel.types.find(t => t.key === ot)
-          if (otDef) otDef.fields.forEach(f => otherFieldKeys.add(f.key))
-        }
-        const toRemove = typeDef.fields
-          .map(f => f.key)
-          .filter(k => !otherFieldKeys.has(k))
-        setSelectedFields(p => p.filter(k => !toRemove.includes(k)))
-        return prev.filter(k => k !== key)
-      }
-    })
+    setSelectedTypes(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    )
   }
 
   function resetActiveView() {
@@ -461,6 +440,15 @@ export function ReportBuilder3({
     () => getAllAvailableFields(dataModel, selectedTypes),
     [dataModel, selectedTypes]
   )
+
+  // Validate groupBy when available fields change (e.g. type deselected)
+  useEffect(() => {
+    const availableKeys = new Set(allAvailableFields.map(f => f.key))
+    setGroupBy(prev => {
+      const valid = prev.filter(k => availableKeys.has(k))
+      return valid.length === prev.length ? prev : valid
+    })
+  }, [allAvailableFields])
 
   // ── View type detection ───────────────────────────────────────────────
   const isHardwareView = activeView === 'hardware'
@@ -541,6 +529,7 @@ export function ReportBuilder3({
       const groups = new Map<string, CMDBRow[]>()
       for (const row of rows) {
         const key = getRowValue(row, allData, groupBy[level]) ?? '—'
+        if (key === '—') continue
         if (!groups.has(key)) groups.set(key, [])
         groups.get(key)!.push(row)
       }
@@ -675,42 +664,33 @@ export function ReportBuilder3({
   const unselectedFields = allAvailableFields.filter(f => !selectedFields.includes(f.key))
 
   // ─── Render helpers ────────────────────────────────────────────────────
-  function renderCell(row: CMDBRow, col: DataModelFieldType): React.ReactNode {
+  function renderCell(row: CMDBRow, col: DataModelFieldType): string {
     if (col.key === '__type') {
       const typeDef = dataModel.types.find(t => t.key === row.type)
       return typeDef?.label ?? row.type
     }
     const val = getRowValue(row, allData, col.key)
     if (col.key === 'article' && val === '—') return ''
-    if (val === '—' || val === '') {
-      return <span className={styles.rbCellEmpty}>—</span>
-    }
     return val
   }
 
-  function renderGroupedSections(sections: { title: string; rows: CMDBRow[]; children?: { title: string; rows: CMDBRow[]; children?: unknown[] }[] }[], depth: number, maxDepth: number): React.ReactNode[] {
+  function renderGroupedSections(sections: { title: string; rows: CMDBRow[]; children?: { title: string; rows: CMDBRow[]; children?: unknown[] }[] }[], depth: number): React.ReactNode[] {
     const result: React.ReactNode[] = []
     for (let si = 0; si < sections.length; si++) {
       const section = sections[si]
-      const gutters = Array.from({ length: depth }, (_, i) => (
-        <td key={`g-${i}`} className={styles.rbGutter} />
-      ))
       result.push(
         <tr key={`sec-${depth}-${si}-${section.title}`} className={styles.rbSectionRow}>
-          {gutters}
-          <td colSpan={Math.max(1, (maxDepth ?? 0) - depth + (visibleColumns?.length ?? 1))}>{section.title}</td>
+          <td colSpan={visibleColumns.length} style={{ paddingLeft: 8 + depth * 20 }}>
+            {section.title}
+          </td>
         </tr>
       )
       if (section.children && section.children.length > 0) {
-        result.push(...renderGroupedSections(section.children as any, depth + 1, maxDepth))
+        result.push(...renderGroupedSections(section.children as any, depth + 1))
       } else {
         for (const row of section.rows) {
-          const dataGutters = Array.from({ length: maxDepth }, (_, i) => (
-            <td key={`dg-${i}`} className={styles.rbGutter} />
-          ))
           result.push(
             <tr key={`row-${depth}-${row.id}`}>
-              {dataGutters}
               {visibleColumns.map(col => (
                 <td key={col.key}>{renderCell(row, col)}</td>
               ))}
@@ -1142,9 +1122,6 @@ export function ReportBuilder3({
               </>
             ) : (
               <>
-                {groupBy.length > 0 && Array.from({ length: groupBy.length }, (_, i) => (
-                  <th key={`gutter-${i}`} className={styles.rbGutter} />
-                ))}
                 {visibleColumns.map((col, colIdx) => {
                   const [curField, curDir] = (sortBy ?? '').split('-')
                   const isActive = curField === col.key
@@ -1195,7 +1172,7 @@ export function ReportBuilder3({
           {isHardwareView ? renderHardwareView() :
            isSoftwareView ? renderSoftwareView() :
             groupBy.length > 0 && groupedData.sections.length > 0 ? (
-             renderGroupedSections(groupedData.sections as any, 0, groupBy.length)
+             renderGroupedSections(groupedData.sections as any, 0)
            ) : (
              sortedData.slice(0, visibleCount).map((row) => (
                <tr key={row.id}>
@@ -1207,7 +1184,7 @@ export function ReportBuilder3({
            )}
           {!isHardwareView && !isSoftwareView && (groupBy.length > 0 ? groupedData.sections.length : sortedData.length) === 0 && (
             <tr>
-              <td colSpan={Math.max(1, groupBy.length + (visibleColumns?.length || 1))} style={{ textAlign: 'center', color: '#818594', padding: 32 }}>
+              <td colSpan={visibleColumns.length || 1} style={{ textAlign: 'center', color: '#818594', padding: 32 }}>
                 Нет данных по заданным фильтрам
               </td>
             </tr>

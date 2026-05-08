@@ -310,6 +310,28 @@ export function ReportBuilder3({
     }
   }, [visibleCount])
 
+  // Apply defaultView on mount
+  useEffect(() => {
+    if (!defaultView) return
+    const v = views?.find(v => v.id === defaultView)
+    if (!v) return
+    setActiveView(defaultView)
+    setActiveUserView(null)
+    setVisibleCount(10)
+    setSelectedTypes([...v.defaultTypes])
+    setSelectedFields([...v.defaultFields])
+    setGroupBy([...v.defaultGroupBy])
+    setSortBy(v.defaultSort ?? null)
+    if (v.defaultFilters) {
+      setFilters(v.defaultFilters.map((f, i) => ({ id: i, ...f })))
+      setNextFilterId(v.defaultFilters.length)
+    } else {
+      setFilters([])
+      setNextFilterId(0)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // ─── Views (built-in + user-saved) ─────────────────────────────────────
   const [userViews, setUserViews] = useState<ReportTemplate[]>(() => {
     try { return JSON.parse(localStorage.getItem(TPL_STORAGE) || '[]') }

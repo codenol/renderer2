@@ -386,9 +386,30 @@ export function ReportBuilder3({
   // ─── Toggle type ────────────────────────────────────────────────────────
   function toggleType(key: string) {
     setVisibleCount(10)
-    setSelectedTypes(prev =>
-      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-    )
+    const typeDef = dataModel.types.find(t => t.key === key)
+    if (!typeDef) return
+    setSelectedTypes(prev => {
+      const isAdd = !prev.includes(key)
+      if (isAdd) {
+        // Add type's direct fields to selected fields
+        const fieldKeys = typeDef.fields.map(f => f.key)
+        setSelectedFields(p => [...new Set([...p, ...fieldKeys])])
+        return [...prev, key]
+      } else {
+        // Remove type's direct fields from selected fields if no other selected type uses them
+        const otherTypes = prev.filter(k => k !== key)
+        const otherFieldKeys = new Set<string>()
+        for (const ot of otherTypes) {
+          const otDef = dataModel.types.find(t => t.key === ot)
+          if (otDef) otDef.fields.forEach(f => otherFieldKeys.add(f.key))
+        }
+        const toRemove = typeDef.fields
+          .map(f => f.key)
+          .filter(k => !otherFieldKeys.has(k))
+        setSelectedFields(p => p.filter(k => !toRemove.includes(k)))
+        return prev.filter(k => k !== key)
+      }
+    })
   }
 
   function resetActiveView() {

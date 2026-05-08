@@ -287,6 +287,7 @@ export function ReportBuilder3({
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   const [visibleCount, setVisibleCount] = useState(10)
   const [dragColIndex, setDragColIndex] = useState<number | null>(null)
+  const defaultViewApplied = useRef(false)
   function toggleCollapsedGroup(typeKey: string) {
     setCollapsedGroups(prev => {
       const next = new Set(prev)
@@ -312,9 +313,15 @@ export function ReportBuilder3({
 
   // Apply defaultView on mount
   useEffect(() => {
-    if (!defaultView) return
+    if (!defaultView) {
+      defaultViewApplied.current = true
+      return
+    }
     const v = views?.find(v => v.id === defaultView)
-    if (!v) return
+    if (!v) {
+      defaultViewApplied.current = true
+      return
+    }
     setActiveView(defaultView)
     setActiveUserView(null)
     setVisibleCount(10)
@@ -329,6 +336,7 @@ export function ReportBuilder3({
       setFilters([])
       setNextFilterId(0)
     }
+    defaultViewApplied.current = true
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -467,6 +475,7 @@ export function ReportBuilder3({
 
   // Validate groupBy when available fields change (e.g. type deselected)
   useEffect(() => {
+    if (!defaultViewApplied.current) return
     const availableKeys = new Set(allAvailableFields.map(f => f.key))
     setGroupBy(prev => {
       const valid = prev.filter(k => availableKeys.has(k))
@@ -476,6 +485,7 @@ export function ReportBuilder3({
 
   // Validate selectedFields when available fields change
   useEffect(() => {
+    if (!defaultViewApplied.current) return
     const availableKeys = new Set(allAvailableFields.map(f => f.key))
     setSelectedFields(prev => {
       const valid = prev.filter(k => availableKeys.has(k))
@@ -485,6 +495,7 @@ export function ReportBuilder3({
 
   // Validate hiddenColumns when available fields change
   useEffect(() => {
+    if (!defaultViewApplied.current) return
     const availableKeys = new Set(allAvailableFields.map(f => f.key))
     setHiddenColumns(prev => {
       const valid = prev.filter(k => availableKeys.has(k))

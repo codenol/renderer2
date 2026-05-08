@@ -654,13 +654,16 @@ export function ReportBuilder3({
   const unselectedFields = allAvailableFields.filter(f => !selectedFields.includes(f.key))
 
   // ─── Render helpers ────────────────────────────────────────────────────
-  function renderCell(row: CMDBRow, col: DataModelFieldType): string {
+  function renderCell(row: CMDBRow, col: DataModelFieldType): React.ReactNode {
     if (col.key === '__type') {
       const typeDef = dataModel.types.find(t => t.key === row.type)
       return typeDef?.label ?? row.type
     }
     const val = getRowValue(row, allData, col.key)
     if (col.key === 'article' && val === '—') return ''
+    if (val === '—' || val === '') {
+      return <span className={styles.rbCellEmpty}>—</span>
+    }
     return val
   }
 

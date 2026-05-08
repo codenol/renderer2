@@ -194,7 +194,10 @@
     white-space: nowrap;
     cursor: default;
     user-select: none;
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    &:first-child { border-radius: 12px 0 0 0; }
     &[draggable='true']:hover { background: #e8ecf4; }
     .rbThContent {
       display: flex;
@@ -212,6 +215,9 @@
     border-bottom: 1px solid #f0f1f4;
     white-space: nowrap;
     color: #3f4146;
+  }
+  td.rbCellEmpty {
+    color: #c0c4cc;
   }
   tbody tr {
     transition: background 0.1s;
@@ -260,6 +266,10 @@
   border-bottom: 1px solid #e0e2e6;
 }
 
+.rbSectionRow td:first-child {
+  border-left: 3px solid #2d98b4;
+}
+
 .rbGutter {
   width: 16px;
   min-width: 16px;
@@ -267,6 +277,11 @@
   padding: 0 !important;
   border: none !important;
   background: transparent !important;
+}
+
+th.rbGutter {
+  position: static !important;
+  z-index: 0;
 }
 
 .rbPakHeader td {
@@ -491,6 +506,9 @@
       border-bottom-color: #2a3545;
       color: #dfe2e6;
     }
+    td.rbCellEmpty {
+      color: #5a6a7a;
+    }
     tbody tr {
       &:nth-child(even) td { background: #1a2535; }
       &:hover td { background: #253347; }
@@ -505,6 +523,10 @@
     background: #253347;
     color: #dfe2e6;
     border-bottom-color: #354c6a;
+  }
+
+  .rbSectionRow td:first-child {
+    border-left-color: #60c4dd;
   }
 
   .rbPakHeader td {

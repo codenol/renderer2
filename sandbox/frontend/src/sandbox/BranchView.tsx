@@ -258,6 +258,7 @@ export function BranchView() {
             {yamlError && <div className={styles.yamlError}>{yamlError}</div>}
             <div className={styles.yamlBody}><textarea className={styles.yamlTextarea} value={yamlText} onChange={e => { setYamlText(e.target.value); setYamlError(null) }} spellCheck={false} /></div>
             <div className={styles.yamlFooter}>
+              <input ref={yamlFileRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }} onChange={onUploadYamlFile} />
               <button className={`${styles.yamlBtn} ${styles.yamlBtnApply}`} onClick={applyYaml}>Применить</button>
               <button className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`} onClick={() => yamlFileRef.current?.click()}>Загрузить файл</button>
               <div style={{ flex: 1 }} />

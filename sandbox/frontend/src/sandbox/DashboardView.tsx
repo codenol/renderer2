@@ -331,7 +331,7 @@ export function DashboardView() {
                                               >
                                                 <LIcon name="git-branch" size={14} style={{ flexShrink: 0, color: 'var(--color-icon-secondary, #9ca3af)' }} />
                                                 <span className={styles.featTitle} style={{ flex: 1 }}>Версия {v.versionNumber}</span>
-                                                <span className={styles.featVersion}>
+                                                <span className={styles.featVersion} style={{ marginRight: 48 }}>
                                                   {new Date(v.createdAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                 </span>
                                               </div>

@@ -191,7 +191,7 @@ export function BranchView() {
     const json = parsed as ScreenJSON
     if (!json.pages || !Array.isArray(json.pages)) { setYamlError('YAML должен содержать раздел pages'); return }
 
-    if (slug && connected && userRole === 'designer' && currentVersionId) {
+    if (slug && userRole === 'designer' && currentVersionId) {
       const token = localStorage.getItem('skala_access_token')
       try {
         const res = await fetch(`${BACKEND}/api/versions/${currentVersionId}/data`, {

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
 import { LIcon } from '@/renderer/components/LIcon'
 import { SettingsModal } from './SettingsModal'
+import { AboutModal } from './AboutModal'
 import type { UserRole } from '@/renderer/types'
 import styles from './AppLayout.module.scss'
 
@@ -36,6 +37,7 @@ export function MiniSidebar({
   const location = useLocation()
   const [profileOpen, setProfileOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
 
   const isDesigner = user?.role === 'designer'
@@ -107,6 +109,9 @@ export function MiniSidebar({
 
       {/* Bottom slot — settings + profile */}
       <div className={styles.sidebarBottom}>
+        <button className={styles.sidebarBtn} title="О программе" onClick={() => setAboutOpen(true)}>
+          <LIcon name="help-circle" size={20} />
+        </button>
         <button className={styles.sidebarBtn} title="Настройки" onClick={() => setSettingsOpen(true)}>
           <LIcon name="settings" size={20} />
         </button>
@@ -139,6 +144,7 @@ export function MiniSidebar({
       </div>
 
       <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </div>
   )
 }

@@ -195,10 +195,21 @@ export function CommentLayer({
     if (rafRef.current) cancelAnimationFrame(rafRef.current)
     rafRef.current = requestAnimationFrame(() => {
       const elements = document.elementsFromPoint(e.clientX, e.clientY)
-      const nodeEl = elements.find(el => (el as HTMLElement).hasAttribute?.('data-node-id')) as HTMLElement | undefined
-      if (nodeEl) {
-        const nodeId = nodeEl.getAttribute('data-node-id')
-        const rect = nodeEl.getBoundingClientRect()
+      // Pick the smallest data-node-id element — avoids large containers shadowing small leaf nodes
+      let bestEl: HTMLElement | null = null
+      let bestArea = Infinity
+      for (const el of elements) {
+        if (!(el as HTMLElement).hasAttribute?.('data-node-id')) continue
+        const rect = (el as HTMLElement).getBoundingClientRect()
+        const area = rect.width * rect.height
+        if (area < bestArea) {
+          bestArea = area
+          bestEl = el as HTMLElement
+        }
+      }
+      if (bestEl) {
+        const nodeId = bestEl.getAttribute('data-node-id')
+        const rect = bestEl.getBoundingClientRect()
         setHoveredNodeId(nodeId)
         setHoveredRect(rect)
       } else {

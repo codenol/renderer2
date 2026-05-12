@@ -191,17 +191,26 @@ export function BranchView() {
     const json = parsed as ScreenJSON
     if (!json.pages || !Array.isArray(json.pages)) { setYamlError('YAML должен содержать раздел pages'); return }
 
-    if (slug && connected && userRole === 'designer') {
+    if (slug && connected && userRole === 'designer' && currentVersionId) {
       const token = localStorage.getItem('skala_access_token')
       try {
-        const res = await fetch(`${BACKEND}/api/branches/${slug}/versions`, {
-          method: 'POST',
+        const res = await fetch(`${BACKEND}/api/versions/${currentVersionId}/data`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'text/yaml', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
           body: yamlText,
         })
-        if (res.ok) { const v = await res.json(); setCurrentVersionId(v.id); showToast(`Версия ${v.versionNumber} создана`) }
-        else setApiScreenJson(json)
-      } catch { setApiScreenJson(json) }
+        if (res.ok) {
+          setApiScreenJson(json)
+          showToast('Версия обновлена')
+        } else {
+          const err = await res.json().catch(() => ({}))
+          setYamlError(err.error || 'Ошибка сохранения')
+          return
+        }
+      } catch (e) {
+        setYamlError(e instanceof Error ? e.message : 'Ошибка')
+        return
+      }
     } else { setApiScreenJson(json) }
     setYamlOpen(false)
   }

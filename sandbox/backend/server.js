@@ -437,6 +437,24 @@ app.put('/api/versions/:id/name', { preHandler: [authGuard, roleGuard('designer'
   return { id: parseInt(req.params.id), name }
 })
 
+app.put('/api/versions/:id/data', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const db = getDb()
+  const contentType = req.headers['content-type'] || ''
+  const body = contentType.includes('yaml')
+    ? parseBody(req.body)
+    : req.body
+
+  if (!body || !body.meta) return reply.code(400).send({ error: 'Invalid screen: missing meta' })
+
+  const result = db.prepare('UPDATE versions SET json_data = ? WHERE id = ?').run(JSON.stringify(body), parseInt(req.params.id))
+  if (result.changes === 0) return reply.code(404).send({ error: 'Version not found' })
+  const version = db.prepare('SELECT * FROM versions WHERE id = ?').get(parseInt(req.params.id))
+  if (version) {
+    wsBroadcast(version.branch_slug, { type: 'version.updated', payload: { version: fmtVersion(version), screen: body } })
+  }
+  return reply.code(204).send()
+})
+
 app.get('/api/branches/:slug', async (req, reply) => {
   const db = getDb()
   const branch = db.prepare('SELECT * FROM branches WHERE slug = ?').get(req.params.slug)

@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import React from 'react'
 import { LoginPage } from './auth/LoginPage'
 import { RegisterPage } from './auth/RegisterPage'
 import { ForgotPasswordPage } from './auth/ForgotPasswordPage'
@@ -9,9 +10,12 @@ import { SidebarActionsProvider } from './sandbox/SidebarActions'
 import { DashboardView } from './sandbox/DashboardView'
 import { BranchView } from './sandbox/BranchView'
 import { ShareView } from './sandbox/ShareView'
-import { Agentation } from 'agentation'
+
+const Agentation = React.lazy(() => import('agentation').then(m => ({ default: m.Agentation })))
 
 export default function App() {
+  const agentationEnabled = localStorage.getItem('skala_agentation_enabled') === 'true'
+
   return (
     <>
       <Routes>
@@ -39,7 +43,7 @@ export default function App() {
         </Route>
       </Routes>
 
-      {localStorage.getItem('skala_agentation_enabled') === 'true' && <Agentation />}
+      {agentationEnabled && <React.Suspense fallback={null}><Agentation /></React.Suspense>}
     </>
   )
 }

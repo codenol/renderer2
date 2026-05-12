@@ -263,13 +263,15 @@ export function CommentLayer({
     setActiveComment(null)
   }
 
-  // ─── Build marker list with thread awareness ─────────────────────────────
+  // ─── Build marker list: only root comments (no parent) with known positions ──
   function collectCommentsForMarkers(tree: CommentTree[], versionId: number): Comment[] {
     const result: Comment[] = []
     for (const item of tree) {
       const { replies, ...rest } = item
-      if (rest.versionId === versionId || !rest.parentId) {
-        result.push(rest)
+      if (!rest.parentId && rest.x != null && rest.y != null) {
+        if (rest.versionId === versionId) {
+          result.push(rest)
+        }
       }
       if (replies) result.push(...collectCommentsForMarkers(replies, versionId))
     }
@@ -277,7 +279,7 @@ export function CommentLayer({
   }
 
   const currentComments = collectCommentsForMarkers(commentTree, currentVersionId)
-  const olderComments = allComments.filter(c => c.versionId !== currentVersionId && !c.parentId)
+  const olderComments = allComments.filter(c => c.versionId !== currentVersionId && !c.parentId && c.x != null && c.y != null)
   const allSorted = [...olderComments, ...currentComments]
 
   function countReplies(cid: number): number {
@@ -440,6 +442,17 @@ export function CommentLayer({
 
             {/* Text */}
             <div className={styles.tooltipText}>{c.text}</div>
+
+            {/* LLM button near root comment text */}
+            {isDesigner && (
+              <button
+                className={`${styles.btnLlmMini} ${llmIds.has(c.id) ? styles['btnLlmMini--active'] : ''}`}
+                onClick={(e) => { e.stopPropagation(); toggleLLM(c.id) }}
+                title={llmIds.has(c.id) ? 'Убрать LLM-пометку' : 'Пометить для LLM'}
+              >
+                ✨
+              </button>
+            )}
 
             {/* Node */}
             {c.nodeId && (

@@ -209,26 +209,35 @@ export function DashboardView() {
 
   async function openVersionYaml(slug: string, title: string) {
     const token = localStorage.getItem('skala_access_token')
+    let screen
+    let nextNum = 1
     try {
       const res = await fetch(`${BACKEND}/api/branches/${slug}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-      if (!res.ok) throw new Error('Failed to load branch')
-      const branch = await res.json()
-      const nextNum = (branch.versionNumber || 0) + 1
-      setVersionYamlFeatureSlug(slug)
-      setVersionYamlFeatureTitle(title)
-      setVersionYamlNextNum(nextNum)
-      try {
-        setVersionYamlText(yaml.dump(branch.screen, { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false, indent: 2 }))
-      } catch {
-        setVersionYamlText(JSON.stringify(branch.screen, null, 2))
+      if (res.ok) {
+        const branch = await res.json()
+        nextNum = (branch.versionNumber || 0) + 1
+        screen = branch.screen
       }
-      setVersionYamlError('')
-      setVersionYamlOpen(true)
-    } catch (err) {
-      showToast('Ошибка загрузки данных версии')
+    } catch {}
+    // If feature has no versions yet, create empty template
+    if (!screen) {
+      screen = {
+        meta: { title: title || 'Без названия' },
+        pages: [{ id: 'main', path: '/', layout: { type: 'vstack', id: 'root', props: { gap: 16 } } }],
+      }
     }
+    setVersionYamlFeatureSlug(slug)
+    setVersionYamlFeatureTitle(title)
+    setVersionYamlNextNum(nextNum)
+    try {
+      setVersionYamlText(yaml.dump(screen, { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false, indent: 2 }))
+    } catch {
+      setVersionYamlText(JSON.stringify(screen, null, 2))
+    }
+    setVersionYamlError('')
+    setVersionYamlOpen(true)
   }
 
   async function submitVersionYaml() {

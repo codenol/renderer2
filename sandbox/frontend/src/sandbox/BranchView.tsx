@@ -5,6 +5,7 @@ import type { ScreenJSON, Comment, CommentTree, UserRole } from '@/renderer/type
 import { Renderer } from '@/renderer/Renderer'
 import { CommentLayer } from './CommentLayer'
 import { useApiClient } from './apiClient'
+import { useAuth } from '@/auth/AuthContext'
 import styles from './BranchView.module.scss'
 
 const BACKEND = 'http://localhost:3001'
@@ -15,6 +16,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
   frontend: 'Фронтенд',
   backend: 'Бэкенд',
   qa: 'QA',
+  guest: 'Гость',
 }
 const ROLE_COLORS: Record<UserRole, string> = {
   designer: '#8b5cf6',
@@ -23,8 +25,8 @@ const ROLE_COLORS: Record<UserRole, string> = {
   frontend: '#f472b6',
   backend: '#4ade80',
   qa: '#ef4444',
+  guest: '#94a3b8',
 }
-const ALL_ROLES = Object.keys(ROLE_LABELS) as UserRole[]
 
 export function BranchView() {
   const { slug } = useParams<{ slug: string }>()
@@ -73,30 +75,13 @@ export function BranchView() {
   const [yamlError, setYamlError] = useState<string | null>(null)
   const yamlFileRef = useRef<HTMLInputElement>(null)
 
-  // ─── User identity ───────────────────────────────────────────────────────
-  const [firstName, setFirstName] = useState(
-    () => localStorage.getItem('sandbox_firstname') ?? ''
-  )
-  const [lastName, setLastName] = useState(
-    () => localStorage.getItem('sandbox_lastname') ?? ''
-  )
-  const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'Аноним'
-  const initials = [firstName, lastName]
-    .filter(Boolean)
-    .map(s => s[0])
-    .join('')
-    .toUpperCase() || '?'
-  const [userRole, setUserRole] = useState<UserRole>(
-    () => (localStorage.getItem('sandbox_role') as UserRole) ?? 'designer'
-  )
-  const [identityOpen, setIdentityOpen] = useState(false)
-  const identityRef = useRef<HTMLDivElement>(null)
+  const { user, logout } = useAuth()
 
-  // ─── Anonymous enforcement ───────────────────────────────────────────────
-  const [showIdentityModal, setShowIdentityModal] = useState(false)
-  const [modalFirstName, setModalFirstName] = useState('')
-  const [modalLastName, setModalLastName] = useState('')
-  const [modalRole, setModalRole] = useState<UserRole>('analyst')
+  const userRole = user?.role ?? 'guest'
+  const firstName = user?.firstName ?? ''
+  const lastName = user?.lastName ?? ''
+  const fullName = [firstName, lastName].filter(Boolean).join(' ') || user?.email || 'Аноним'
+  const initials = [firstName, lastName].filter(Boolean).map(s => s[0]).join('').toUpperCase() || '?'
 
   // ─── Version dropdown ─────────────────────────────────────────────────────
   const [versionOpen, setVersionOpen] = useState(false)
@@ -106,23 +91,13 @@ export function BranchView() {
   const [shareOpen, setShareOpen] = useState(false)
   const [shareUrl, setShareUrl] = useState('')
   const [sharing, setSharing] = useState(false)
-
-  // ─── Close dropdowns on outside click ────────────────────────────────────
   useEffect(() => {
     function onDown(e: MouseEvent) {
-      if (identityRef.current && !identityRef.current.contains(e.target as Node)) setIdentityOpen(false)
       if (versionRef.current && !versionRef.current.contains(e.target as Node)) setVersionOpen(false)
     }
     document.addEventListener('mousedown', onDown)
     return () => document.removeEventListener('mousedown', onDown)
   }, [])
-
-  // ─── Persist identity ────────────────────────────────────────────────────
-  useEffect(() => {
-    localStorage.setItem('sandbox_firstname', firstName)
-    localStorage.setItem('sandbox_lastname', lastName)
-    localStorage.setItem('sandbox_role', userRole)
-  }, [firstName, lastName, userRole])
 
   // ─── Escape key ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -164,9 +139,12 @@ export function BranchView() {
     setVersionOpen(false)
     if (versionId === currentVersionId) return
     setCurrentVersionId(versionId)
-    try {
-      const res = await fetch(`${BACKEND}/api/branches/${slug}/versions/${versionId}`)
-      if (!res.ok) return
+      try {
+        const token = localStorage.getItem('skala_access_token')
+        const res = await fetch(`${BACKEND}/api/branches/${slug}/versions/${versionId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
+        if (!res.ok) return
       const data = await res.json()
       setLocalScreenJson(data.screen)
     } catch {}
@@ -204,10 +182,11 @@ export function BranchView() {
 
     // Save as new version via backend
     if (slug && connected) {
+      const token = localStorage.getItem('skala_access_token')
       try {
         const res = await fetch(`${BACKEND}/api/branches/${slug}/versions`, {
           method: 'POST',
-          headers: { 'Content-Type': 'text/yaml' },
+          headers: { 'Content-Type': 'text/yaml', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
           body: yamlText,
         })
         if (res.ok) {
@@ -261,10 +240,11 @@ export function BranchView() {
 
     // Save via backend
     if (slug && connected) {
+      const token = localStorage.getItem('skala_access_token')
       try {
         const res = await fetch(`${BACKEND}/api/branches/${slug}/versions`, {
           method: 'POST',
-          headers: { 'Content-Type': 'text/yaml' },
+          headers: { 'Content-Type': 'text/yaml', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
           body: text,
         })
         if (res.ok) {
@@ -303,25 +283,6 @@ export function BranchView() {
     navigator.clipboard.writeText(shareUrl)
     setShareOpen(false)
     showToast('Ссылка скопирована в буфер')
-  }
-
-  // ─── Anonymous check ─────────────────────────────────────────────────────
-  function checkIdentity(): boolean {
-    if (!firstName.trim() || !lastName.trim()) {
-      setModalFirstName(firstName)
-      setModalLastName(lastName)
-      setModalRole(userRole)
-      setShowIdentityModal(true)
-      return false
-    }
-    return true
-  }
-
-  function confirmIdentity() {
-    setFirstName(modalFirstName)
-    setLastName(modalLastName)
-    setUserRole(modalRole)
-    setShowIdentityModal(false)
   }
 
   // ─── Error state ─────────────────────────────────────────────────────────
@@ -400,38 +361,21 @@ export function BranchView() {
             {connected ? '⚡' : '⏳'}
           </span>
 
-          {/* Identity selector */}
-          <div className={styles.identityWrap} ref={identityRef}>
-            <button
-              className={styles.identityBtn}
-              onClick={() => setIdentityOpen(v => !v)}
-              title="Ваша роль и имя"
-            >
+          {/* Identity display */}
+          <div className={styles.identityWrap}>
+            <span className={styles.identityBtn} style={{ padding: '0 8px', gap: 6, cursor: 'default' }}>
               <span className={styles.identityDot} style={{ background: ROLE_COLORS[userRole] }}>
                 {initials}
               </span>
-              <span className={styles.identityName}>{fullName}</span>
-              <span className={styles.identityRole}>{ROLE_LABELS[userRole]}</span>
-              <span className={styles.identityChevron}>▾</span>
-            </button>
-            {identityOpen && (
-              <div className={styles.identityDropdown}>
-                <input className={styles.identityInput} placeholder="Имя" value={firstName}
-                  onChange={e => setFirstName(e.target.value)} autoFocus />
-                <input className={styles.identityInput} placeholder="Фамилия" value={lastName}
-                  onChange={e => setLastName(e.target.value)} />
-                <div className={styles.rolePills}>
-                  {ALL_ROLES.map(r => (
-                    <button key={r}
-                      className={`${styles.rolePill} ${r === userRole ? styles['rolePill--active'] : ''}`}
-                      style={r === userRole ? { background: ROLE_COLORS[r], borderColor: ROLE_COLORS[r] } : {}}
-                      onClick={() => setUserRole(r)}
-                    >{ROLE_LABELS[r]}</button>
-                  ))}
-                </div>
-              </div>
-            )}
+              <span className={styles.identityName} style={{ color: 'rgba(255,255,255,0.8)' }}>{fullName}</span>
+              <span className={styles.identityRole} style={{ color: ROLE_COLORS[userRole] }}>{ROLE_LABELS[userRole]}</span>
+            </span>
           </div>
+
+          {/* Logout */}
+          <button className={styles.topBarBtn} onClick={() => { logout(); navigate('/login') }} title="Выйти">
+            Выйти
+          </button>
 
           {/* YAML viewer */}
           <button className={styles.topBarBtn} onClick={openYamlModal} title="Редактор YAML">YAML</button>
@@ -450,16 +394,15 @@ export function BranchView() {
             onChange={onUploadYamlFile} />
 
           {/* Comment mode */}
-          <button
-            className={`${styles.btnComment} ${commentMode ? styles['btnComment--active'] : ''}`}
-            onClick={() => {
-              if (!commentMode && !checkIdentity()) return
-              setCommentMode(v => !v)
-            }}
-            title={commentMode ? 'Выйти из режима комментирования' : 'Комментировать'}
-          >
-            {commentMode ? 'Выйти из режима комментирования' : 'Комментировать'}
-          </button>
+          {userRole !== 'guest' && (
+            <button
+              className={`${styles.btnComment} ${commentMode ? styles['btnComment--active'] : ''}`}
+              onClick={() => setCommentMode(v => !v)}
+              title={commentMode ? 'Выйти из режима комментирования' : 'Комментировать'}
+            >
+              {commentMode ? 'Выйти из режима комментирования' : 'Комментировать'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -476,46 +419,6 @@ export function BranchView() {
       {/* Copy toast */}
       {copyToast && (
         <div className={styles.copyToast}>{toastMsg}</div>
-      )}
-
-      {/* Identity modal */}
-      {showIdentityModal && (
-        <div className={styles.yamlOverlay} onClick={() => setShowIdentityModal(false)}>
-          <div className={styles.yamlModal} onClick={e => e.stopPropagation()} style={{ maxWidth: 360 }}>
-            <div className={styles.yamlHeader}>
-              <span className={styles.yamlTitle}>Представьтесь, пожалуйста</span>
-              <button className={styles.yamlClose} onClick={() => setShowIdentityModal(false)}>✕</button>
-            </div>
-            <div className={styles.yamlBody} style={{ padding: '16px 20px' }}>
-              <p style={{ margin: '0 0 12px', fontSize: 14, color: '#64748b' }}>
-                Анонимные комментарии запрещены. Укажите имя и фамилию.
-              </p>
-              <input className={styles.identityInput} placeholder="Имя" value={modalFirstName}
-                onChange={e => setModalFirstName(e.target.value)}
-                style={{ marginBottom: 8, width: '100%', boxSizing: 'border-box' }} autoFocus />
-              <input className={styles.identityInput} placeholder="Фамилия" value={modalLastName}
-                onChange={e => setModalLastName(e.target.value)}
-                style={{ marginBottom: 12, width: '100%', boxSizing: 'border-box' }} />
-              <div className={styles.rolePills}>
-                {ALL_ROLES.filter(r => r !== 'designer').map(r => (
-                  <button key={r}
-                    className={`${styles.rolePill} ${r === modalRole ? styles['rolePill--active'] : ''}`}
-                    style={r === modalRole ? { background: ROLE_COLORS[r], borderColor: ROLE_COLORS[r] } : {}}
-                    onClick={() => setModalRole(r)}
-                  >{ROLE_LABELS[r]}</button>
-                ))}
-              </div>
-            </div>
-            <div className={styles.yamlFooter}>
-              <div style={{ flex: 1 }} />
-              <button className={`${styles.yamlBtn} ${styles.yamlBtnApply}`}
-                onClick={confirmIdentity}
-                disabled={!modalFirstName.trim() || !modalLastName.trim()}
-                style={{ opacity: (!modalFirstName.trim() || !modalLastName.trim()) ? 0.5 : 1 }}
-              >Продолжить</button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Share modal */}

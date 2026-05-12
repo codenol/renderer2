@@ -1,6 +1,8 @@
 const fastify = require('fastify')
 const cors = require('@fastify/cors')
 const websocket = require('@fastify/websocket')
+const fjwt = require('@fastify/jwt')
+const bcrypt = require('bcrypt')
 const { nanoid } = require('nanoid')
 const yaml = require('js-yaml')
 const { getDb } = require('./db')
@@ -11,6 +13,7 @@ const app = fastify({ logger: true })
 
 app.register(cors, { origin: true })
 app.register(websocket)
+app.register(fjwt, { secret: process.env.JWT_SECRET || 'skala-sandbox-secret-key-2026' })
 
 // ─── YAML body parser ──────────────────────────────────────────────────────
 
@@ -80,6 +83,141 @@ function fmtVersion(v) {
   }
 }
 
+// ─── Auth middleware ──────────────────────────────────────────────────────────
+
+function fmtUser(u) {
+  return {
+    id: u.id,
+    email: u.email,
+    firstName: u.first_name,
+    lastName: u.last_name,
+    role: u.role,
+    createdAt: new Date(u.created_at * 1000).toISOString(),
+  }
+}
+
+async function authGuard(req, reply) {
+  try {
+    await req.jwtVerify()
+  } catch {
+    return reply.code(401).send({ error: 'Unauthorized' })
+  }
+}
+
+function roleGuard(...roles) {
+  return async function (req, reply) {
+    if (!roles.includes(req.user.role)) {
+      return reply.code(403).send({ error: 'Forbidden: insufficient role' })
+    }
+  }
+}
+
+// ─── Auth routes ──────────────────────────────────────────────────────────────
+
+app.post('/api/auth/register', async (req, reply) => {
+  const { email, password, firstName, lastName } = req.body || {}
+  if (!email?.trim() || !password?.trim()) {
+    return reply.code(400).send({ error: 'email and password required' })
+  }
+  if (password.length < 6) {
+    return reply.code(400).send({ error: 'password must be at least 6 characters' })
+  }
+
+  const db = getDb()
+  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.trim().toLowerCase())
+  if (existing) {
+    return reply.code(409).send({ error: 'Email already registered' })
+  }
+
+  const hash = bcrypt.hashSync(password, 10)
+  const now = Math.floor(Date.now() / 1000)
+  const result = db.prepare(
+    'INSERT INTO users (email, password_hash, first_name, last_name, role, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+  ).run(email.trim().toLowerCase(), hash, firstName?.trim() || '', lastName?.trim() || '', 'guest', now)
+
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(Number(result.lastInsertRowid))
+  const token = app.jwt.sign({ id: user.id, email: user.email, role: user.role }, { expiresIn: '24h' })
+
+  reply.code(201).send({ user: fmtUser(user), accessToken: token })
+})
+
+app.post('/api/auth/login', async (req, reply) => {
+  const { email, password } = req.body || {}
+  if (!email?.trim() || !password?.trim()) {
+    return reply.code(400).send({ error: 'email and password required' })
+  }
+
+  const db = getDb()
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.trim().toLowerCase())
+  if (!user) return reply.code(401).send({ error: 'Invalid email or password' })
+
+  const valid = bcrypt.compareSync(password, user.password_hash)
+  if (!valid) return reply.code(401).send({ error: 'Invalid email or password' })
+
+  const token = app.jwt.sign(
+    { id: user.id, email: user.email, role: user.role, firstName: user.first_name, lastName: user.last_name },
+    { expiresIn: '24h' }
+  )
+
+  return { user: fmtUser(user), accessToken: token }
+})
+
+app.post('/api/auth/forgot', async (req, reply) => {
+  const { email } = req.body || {}
+  if (!email?.trim()) return reply.code(400).send({ error: 'email required' })
+
+  const db = getDb()
+  const user = db.prepare('SELECT id FROM users WHERE email = ?').get(email.trim().toLowerCase())
+  if (!user) return reply.code(200).send({ ok: true }) // don't reveal existence
+
+  const token = nanoid(32)
+  const expires = Math.floor(Date.now() / 1000) + 3600 // 1 hour
+  db.prepare('UPDATE users SET reset_token = ?, reset_expires = ? WHERE id = ?').run(token, expires, user.id)
+
+  console.log(`\n[FORGOT PASSWORD] Email: ${email.trim().toLowerCase()}`)
+  console.log(`[RESET TOKEN] ${token}`)
+  console.log(`[RESET URL] http://localhost:5175/reset-password/${token}\n`)
+
+  reply.code(200).send({ ok: true, token })
+})
+
+app.post('/api/auth/reset', async (req, reply) => {
+  const { token, password } = req.body || {}
+  if (!token?.trim() || !password?.trim()) {
+    return reply.code(400).send({ error: 'token and password required' })
+  }
+  if (password.length < 6) {
+    return reply.code(400).send({ error: 'password must be at least 6 characters' })
+  }
+
+  const db = getDb()
+  const now = Math.floor(Date.now() / 1000)
+  const user = db.prepare('SELECT id, reset_expires FROM users WHERE reset_token = ?').get(token)
+  if (!user) return reply.code(400).send({ error: 'Invalid or expired token' })
+  if (user.reset_expires < now) return reply.code(400).send({ error: 'Token expired' })
+
+  const hash = bcrypt.hashSync(password, 10)
+  db.prepare('UPDATE users SET password_hash = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?').run(hash, user.id)
+
+  return { ok: true }
+})
+
+app.get('/api/auth/me', { preHandler: [authGuard] }, async (req) => {
+  const db = getDb()
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id)
+  if (!user) throw { statusCode: 404, message: 'User not found' }
+  return fmtUser(user)
+})
+
+app.patch('/api/auth/me', { preHandler: [authGuard] }, async (req, reply) => {
+  const { firstName, lastName } = req.body || {}
+  const db = getDb()
+  db.prepare('UPDATE users SET first_name = ?, last_name = ? WHERE id = ?')
+    .run(firstName?.trim() || '', lastName?.trim() || '', req.user.id)
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id)
+  return fmtUser(user)
+})
+
 // ─── WebSocket broadcast ─────────────────────────────────────────────────────
 
 const branchSubscribers = new Map() // branchSlug → Set<WebSocket>
@@ -95,7 +233,7 @@ function wsBroadcast(branchSlug, payload) {
 
 // ─── Branches ────────────────────────────────────────────────────────────────
 
-app.post('/api/branches', async (req, reply) => {
+app.post('/api/branches', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
   const contentType = req.headers['content-type'] || ''
   const body = contentType.includes('yaml')
     ? parseBody(req.body)
@@ -181,7 +319,7 @@ app.get('/api/branches/:slug/versions/:versionId', async (req, reply) => {
   return { ...fmtVersion(version), screen: JSON.parse(version.json_data) }
 })
 
-app.post('/api/branches/:slug/versions', async (req, reply) => {
+app.post('/api/branches/:slug/versions', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
   const db = getDb()
   const branch = db.prepare('SELECT slug FROM branches WHERE slug = ?').get(req.params.slug)
   if (!branch) return reply.code(404).send({ error: 'Branch not found' })
@@ -237,15 +375,15 @@ app.get('/api/branches/:slug/comments', async (req, reply) => {
   return comments.map(fmtComment)
 })
 
-app.post('/api/branches/:slug/comments', async (req, reply) => {
-  const { versionId, parentId, nodeId, x, y, text, author, role } = req.body
+app.post('/api/branches/:slug/comments', { preHandler: [authGuard, roleGuard('designer','pm','analyst','frontend','backend')] }, async (req, reply) => {
+  const { versionId, parentId, nodeId, x, y, text } = req.body
 
   if (!text?.trim()) return reply.code(400).send({ error: 'Comment text is required' })
   if (!versionId) return reply.code(400).send({ error: 'versionId is required' })
-  if (!author?.trim()) return reply.code(400).send({ error: 'author is required' })
 
-  const validRoles = ['designer', 'analyst', 'pm', 'frontend', 'backend', 'qa']
-  const safeRole = validRoles.includes(role) ? role : 'designer'
+  const author = [req.user.firstName, req.user.lastName].filter(Boolean).join(' ')
+  if (!author.trim()) return reply.code(400).send({ error: 'User has no name set' })
+
   const now = Math.floor(Date.now() / 1000)
 
   const db = getDb()
@@ -264,7 +402,7 @@ app.post('/api/branches/:slug/comments', async (req, reply) => {
     y ?? null,
     text.trim(),
     author.trim(),
-    safeRole,
+    req.user.role,
     now,
     now
   )
@@ -281,16 +419,12 @@ app.post('/api/branches/:slug/comments', async (req, reply) => {
   reply.code(201).send(formatted)
 })
 
-app.patch('/api/branches/:slug/comments/:id', async (req, reply) => {
-  const { status, rejectReason, role } = req.body
+app.patch('/api/branches/:slug/comments/:id', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const { status, rejectReason } = req.body
   const validStatuses = ['open', 'resolved', 'rejected']
 
   if (!validStatuses.includes(status)) {
     return reply.code(400).send({ error: 'Invalid status' })
-  }
-
-  if (role !== 'designer') {
-    return reply.code(403).send({ error: 'Only designer can resolve or reject comments' })
   }
 
   if (status === 'rejected' && !rejectReason?.trim()) {
@@ -317,7 +451,7 @@ app.patch('/api/branches/:slug/comments/:id', async (req, reply) => {
   return formatted
 })
 
-app.delete('/api/branches/:slug/comments/:id', async (req, reply) => {
+app.delete('/api/branches/:slug/comments/:id', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
   const db = getDb()
   const result = db.prepare(
     'DELETE FROM comments WHERE id = ? AND branch_slug = ?'
@@ -332,7 +466,7 @@ app.delete('/api/branches/:slug/comments/:id', async (req, reply) => {
 
 // ─── Shares ──────────────────────────────────────────────────────────────────
 
-app.post('/api/branches/:slug/shares', async (req, reply) => {
+app.post('/api/branches/:slug/shares', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
   const { versionId, createdBy } = req.body
   if (!versionId) return reply.code(400).send({ error: 'versionId is required' })
 

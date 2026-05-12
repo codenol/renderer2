@@ -9,6 +9,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
   frontend: 'Фронтенд',
   backend: 'Бэкенд',
   qa: 'QA',
+  guest: 'Гость',
 }
 
 const ROLE_COLORS: Record<UserRole, string> = {
@@ -18,6 +19,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
   frontend: '#f472b6',
   backend: '#4ade80',
   qa: '#ef4444',
+  guest: '#94a3b8',
 }
 
 function getInitials(name: string): string {

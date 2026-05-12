@@ -3,6 +3,11 @@ import type { Comment, CommentTree, ScreenJSON, BranchVersion, UserRole, WsEvent
 
 const BACKEND = 'http://localhost:3001'
 
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('skala_access_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 export function buildTree(comments: Comment[]): CommentTree[] {
   const roots: CommentTree[] = []
   const map = new Map<number, CommentTree>()
@@ -45,9 +50,9 @@ export function useApiClient(branchSlug: string): ApiClient {
 
       try {
         const [branchRes, commentsRes, versionsRes] = await Promise.all([
-          fetch(`${BACKEND}/api/branches/${branchSlug}`),
-          fetch(`${BACKEND}/api/branches/${branchSlug}/comments`),
-          fetch(`${BACKEND}/api/branches/${branchSlug}/versions`),
+          fetch(`${BACKEND}/api/branches/${branchSlug}`, { headers: getAuthHeaders() }),
+          fetch(`${BACKEND}/api/branches/${branchSlug}/comments`, { headers: getAuthHeaders() }),
+          fetch(`${BACKEND}/api/branches/${branchSlug}/versions`, { headers: getAuthHeaders() }),
         ])
 
         if (!branchRes.ok) throw new Error(`Branch not found: ${branchRes.status}`)
@@ -120,7 +125,7 @@ export function useApiClient(branchSlug: string): ApiClient {
           break
         case 'version.created':
           // Reload versions list
-          fetch(`${BACKEND}/api/branches/${branchSlug}/versions`)
+          fetch(`${BACKEND}/api/branches/${branchSlug}/versions`, { headers: getAuthHeaders() })
             .then(r => r.json())
             .then((v: BranchVersion[]) => setVersions(v))
             .catch(() => {})
@@ -138,7 +143,7 @@ export function useApiClient(branchSlug: string): ApiClient {
     if (!data.author?.trim()) throw new Error('author is required')
     const res = await fetch(`${BACKEND}/api/branches/${branchSlug}/comments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify(data),
     })
     if (!res.ok) {
@@ -153,7 +158,7 @@ export function useApiClient(branchSlug: string): ApiClient {
   ) => {
     const res = await fetch(`${BACKEND}/api/branches/${branchSlug}/comments/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ status, role, rejectReason }),
     })
     if (!res.ok) {
@@ -165,6 +170,7 @@ export function useApiClient(branchSlug: string): ApiClient {
   const deleteComment = useCallback(async (id: number) => {
     const res = await fetch(`${BACKEND}/api/branches/${branchSlug}/comments/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     })
     if (!res.ok) throw new Error('Ошибка удаления')
   }, [branchSlug])
@@ -172,7 +178,7 @@ export function useApiClient(branchSlug: string): ApiClient {
   const createShare = useCallback(async (versionId: number) => {
     const res = await fetch(`${BACKEND}/api/branches/${branchSlug}/shares`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ versionId }),
     })
     if (!res.ok) {

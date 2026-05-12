@@ -1,4 +1,5 @@
 const Database = require('better-sqlite3')
+const bcrypt = require('bcrypt')
 const path = require('path')
 const fs = require('fs')
 
@@ -64,7 +65,27 @@ function migrate(db) {
       created_by  TEXT NOT NULL DEFAULT 'designer',
       created_at  INTEGER NOT NULL DEFAULT (unixepoch())
     );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id              INTEGER PRIMARY KEY AUTOINCREMENT,
+      email           TEXT NOT NULL UNIQUE,
+      password_hash   TEXT NOT NULL,
+      first_name      TEXT NOT NULL DEFAULT '',
+      last_name       TEXT NOT NULL DEFAULT '',
+      role            TEXT NOT NULL DEFAULT 'guest' CHECK(role IN ('designer','pm','analyst','frontend','backend','guest')),
+      reset_token     TEXT,
+      reset_expires   INTEGER,
+      created_at      INTEGER NOT NULL DEFAULT (unixepoch())
+    );
   `)
+
+  // ─── Seed default users ───────────────────────────────────────────────────
+  const now = Math.floor(Date.now() / 1000)
+  const insertUser = db.prepare(
+    'INSERT OR IGNORE INTO users (email, password_hash, first_name, last_name, role, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+  )
+  insertUser.run('serg@skala.dev', bcrypt.hashSync('9562876', 10), 'Serg', '', 'designer', now)
+  insertUser.run('admin@skala.dev', bcrypt.hashSync('admin123', 10), 'Admin', '', 'designer', now)
 
   // ─── Migrate old schema: branches.json_data → versions ───────────────────
   const branchCols = db.pragma('table_info(branches)').map(c => c.name)

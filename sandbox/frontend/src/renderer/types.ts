@@ -185,6 +185,16 @@ export interface BranchVersion {
   createdAt: string
 }
 
+// ─── Auth ───────────────────────────────────────────────────────────────────
+export interface AuthUser {
+  id: number
+  email: string
+  firstName: string
+  lastName: string
+  role: UserRole
+  createdAt: string
+}
+
 // ─── API ───────────────────────────────────────────────────────────────────
 export interface ApiClient {
   comments: Comment[]
@@ -216,7 +226,7 @@ export interface AddCommentData {
 }
 
 // ─── Comment ───────────────────────────────────────────────────────────────
-export type UserRole = 'designer' | 'analyst' | 'pm' | 'frontend' | 'backend' | 'qa'
+export type UserRole = 'designer' | 'analyst' | 'pm' | 'frontend' | 'backend' | 'qa' | 'guest'
 export type CommentStatus = 'open' | 'resolved' | 'rejected'
 
 export interface Comment {

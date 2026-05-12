@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
 import { LIcon } from '@/renderer/components/LIcon'
+import { SettingsModal } from './SettingsModal'
 import type { UserRole } from '@/renderer/types'
 import styles from './AppLayout.module.scss'
 
@@ -34,6 +35,7 @@ export function MiniSidebar({
   const navigate = useNavigate()
   const location = useLocation()
   const [profileOpen, setProfileOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
 
   const isDesigner = user?.role === 'designer'
@@ -105,36 +107,12 @@ export function MiniSidebar({
 
       {/* Bottom slot — settings + profile */}
       <div className={styles.sidebarBottom}>
-        <button className={styles.sidebarBtn} title="Настройки (заглушка)" onClick={() => {}}>
+        <button className={styles.sidebarBtn} title="Настройки" onClick={() => setSettingsOpen(true)}>
           <LIcon name="settings" size={20} />
         </button>
-        <div className={styles.profileWrap} ref={profileRef}>
-          <button className={styles.sidebarBtn} onClick={() => setProfileOpen(v => !v)} title={fullName}>
-            <span className={styles.avatarDot} style={{ background: ROLE_COLORS[user?.role ?? 'guest'] }}>
-              {initials}
-            </span>
-          </button>
-          {profileOpen && (
-            <div className={styles.profileDropdown}>
-              <div className={styles.profileHeader}>
-                <span className={styles.profileDot} style={{ background: ROLE_COLORS[user?.role ?? 'guest'] }}>
-                  {initials}
-                </span>
-                <div>
-                  <div className={styles.profileName}>{fullName}</div>
-                  <div className={styles.profileRole} style={{ color: ROLE_COLORS[user?.role ?? 'guest'] }}>
-                    {ROLE_LABELS[user?.role ?? 'guest']}
-                  </div>
-                  <div className={styles.profileEmail}>{user?.email}</div>
-                </div>
-              </div>
-              <button className={styles.profileLogout} onClick={() => { logout(); navigate('/login') }}>
-                Выйти
-              </button>
-            </div>
-          )}
-        </div>
       </div>
+
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   )
 }

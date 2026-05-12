@@ -39,7 +39,7 @@ export default function App() {
         </Route>
       </Routes>
 
-      <Agentation />
+      {localStorage.getItem('skala_agentation_enabled') === 'true' && <Agentation />}
     </>
   )
 }

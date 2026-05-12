@@ -320,7 +320,12 @@ export function DashboardView() {
               Добавить фичу
             </button>
           )}
-          <div className={styles.contextSep} />
+          {ctxMenu.type === 'feature' && (
+            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); navigate(`/branch/${ctxMenu.slug}`) }}>
+              <LIcon name="upload" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              Добавить версию
+            </button>
+          )}
           <button className={styles.contextItem} onClick={() => renameItem(ctxMenu.slug)}>
             <LIcon name="edit" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Переименовать

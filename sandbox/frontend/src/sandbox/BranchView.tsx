@@ -242,39 +242,6 @@ export function BranchView() {
 
   return (
     <div className={styles.wrap}>
-      {/* Content header: breadcrumbs + version + actions */}
-      <div className={styles.contentHeader}>
-        <div className={styles.breadcrumbs}>
-          <button className={styles.breadcrumbLink} onClick={() => navigate('/')}>Продукты</button>
-          <span className={styles.breadcrumbSep}>/</span>
-          <span className={styles.breadcrumbCurrent}>{localBranchTitle}</span>
-        </div>
-
-        <div className={styles.headerActions}>
-          {versions.length > 1 && (
-            <div className={styles.versionWrap} ref={versionRef}>
-              <button className={styles.versionBtn} onClick={() => setVersionOpen(v => !v)}>
-                v{getCurrentVersionNumber()} из {versions.length} ▾
-              </button>
-              {versionOpen && (
-                <div className={styles.versionDropdown}>
-                  {versions.map(v => (
-                    <button key={v.id} className={`${styles.versionItem} ${v.id === currentVersionId ? styles['versionItem--active'] : ''}`}
-                      onClick={() => switchVersion(v.id)}>
-                      <span>Версия {v.versionNumber}</span>
-                      <span className={styles.versionItemDate}>{new Date(v.createdAt).toLocaleString('ru-RU')}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          <span className={styles.wsStatus} title={connected ? 'Online' : 'Offline'}>{connected ? '⚡' : '⏳'}</span>
-          <button className={styles.headerBtn} onClick={copyComments} title="Копировать комментарии">📋</button>
-          <input ref={yamlFileRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }} onChange={onUploadYamlFile} />
-        </div>
-      </div>
-
       {commentMode && <div className={styles.commentHint}>Кликните на элемент, чтобы оставить комментарий · Esc — выйти</div>}
       {commentError && <div className={styles.commentError}>{commentError}</div>}
       {copyToast && <div className={styles.copyToast}>{toastMsg}</div>}

@@ -358,3 +358,19 @@
   &:hover:not(:disabled) { background: #248aa4; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
+
+.copyToast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e2433;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  z-index: 9999;
+  animation: toastIn 0.2s;
+}
+
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }

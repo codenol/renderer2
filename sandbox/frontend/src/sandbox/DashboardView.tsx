@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import yaml from 'js-yaml'
+import type { ScreenJSON } from '@/renderer/types'
 import { useAuth } from '@/auth/AuthContext'
 import { LIcon } from '@/renderer/components/LIcon'
 import styles from './DashboardView.module.scss'
@@ -66,6 +68,27 @@ export function DashboardView() {
 
   // Delete modal
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null)
+
+  // Toast
+  const [toastMsg, setToastMsg] = useState('')
+  const [toastVisible, setToastVisible] = useState(false)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function showToast(msg: string) {
+    setToastMsg(msg); setToastVisible(true)
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToastVisible(false), 3000)
+  }
+
+  // Version YAML modal
+  const [versionYamlOpen, setVersionYamlOpen] = useState(false)
+  const [versionYamlText, setVersionYamlText] = useState('')
+  const [versionYamlError, setVersionYamlError] = useState('')
+  const [versionYamlFeatureSlug, setVersionYamlFeatureSlug] = useState('')
+  const [versionYamlFeatureTitle, setVersionYamlFeatureTitle] = useState('')
+  const [versionYamlNextNum, setVersionYamlNextNum] = useState(1)
+  const [versionYamlSubmitting, setVersionYamlSubmitting] = useState(false)
+  const yamlFileRef = useRef<HTMLInputElement>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -182,6 +205,69 @@ export function DashboardView() {
     setCreateTitle('')
     setCreateError('')
     setCreateOpen(true)
+  }
+
+  async function openVersionYaml(slug: string, title: string) {
+    const token = localStorage.getItem('skala_access_token')
+    try {
+      const res = await fetch(`${BACKEND}/api/branches/${slug}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!res.ok) throw new Error('Failed to load branch')
+      const branch = await res.json()
+      const nextNum = (branch.versionNumber || 0) + 1
+      setVersionYamlFeatureSlug(slug)
+      setVersionYamlFeatureTitle(title)
+      setVersionYamlNextNum(nextNum)
+      try {
+        setVersionYamlText(yaml.dump(branch.screen, { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false, indent: 2 }))
+      } catch {
+        setVersionYamlText(JSON.stringify(branch.screen, null, 2))
+      }
+      setVersionYamlError('')
+      setVersionYamlOpen(true)
+    } catch (err) {
+      showToast('Ошибка загрузки данных версии')
+    }
+  }
+
+  async function submitVersionYaml() {
+    setVersionYamlError('')
+    let parsed: unknown
+    try { parsed = yaml.load(versionYamlText, { schema: yaml.FAILSAFE_SCHEMA }) } catch (e) {
+      setVersionYamlError(e instanceof Error ? e.message : 'Ошибка парсинга YAML'); return
+    }
+    if (!parsed || typeof parsed !== 'object') { setVersionYamlError('YAML должен содержать объект'); return }
+    const json = parsed as ScreenJSON
+    if (!json.pages || !Array.isArray(json.pages)) { setVersionYamlError('YAML должен содержать раздел pages'); return }
+
+    setVersionYamlSubmitting(true)
+    const token = localStorage.getItem('skala_access_token')
+    try {
+      const res = await fetch(`${BACKEND}/api/branches/${versionYamlFeatureSlug}/versions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/yaml', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: versionYamlText,
+      })
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}))
+        throw new Error(e.error || 'Ошибка создания версии')
+      }
+      await res.json()
+      setVersionYamlOpen(false)
+      load()
+    } catch (err) {
+      setVersionYamlError(err instanceof Error ? err.message : 'Ошибка')
+    } finally {
+      setVersionYamlSubmitting(false)
+    }
+  }
+
+  async function onUploadYamlFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file) return; e.target.value = ''
+    const text = await file.text()
+    setVersionYamlText(text)
+    setVersionYamlError('')
   }
 
   if (loading) {
@@ -372,7 +458,7 @@ export function DashboardView() {
             </button>
           )}
           {ctxMenu.type === 'feature' && (
-            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); navigate(`/branch/${ctxMenu.slug}`) }}>
+            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); openVersionYaml(ctxMenu.slug, ctxMenu.title) }}>
               <LIcon name="upload" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
               Добавить версию
             </button>
@@ -470,6 +556,53 @@ export function DashboardView() {
           </div>
         </div>
       )}
+
+      {/* Version YAML modal */}
+      {versionYamlOpen && (
+        <div className={styles.modalOverlay} onClick={() => setVersionYamlOpen(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ maxWidth: 900 }}>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>
+                Новая версия · {versionYamlFeatureTitle} · v{versionYamlNextNum}
+              </span>
+              <button className={styles.modalClose} onClick={() => setVersionYamlOpen(false)}>
+                <LIcon name="x" size={18} />
+              </button>
+            </div>
+            {versionYamlError && <div className={styles.error}>{versionYamlError}</div>}
+            <div className={styles.modalBody} style={{ padding: 0 }}>
+              <textarea
+                className={styles.modalInput}
+                style={{
+                  minHeight: 400, fontFamily: '"JetBrains Mono","Fira Code",monospace',
+                  fontSize: 13, lineHeight: 1.6, resize: 'vertical',
+                  border: 'none', borderRadius: 0, padding: 20,
+                  background: 'var(--color-modal-background-primary, #f8fafc)',
+                  color: 'var(--color-modal-text-primary, #1e2433)',
+                }}
+                value={versionYamlText}
+                onChange={e => { setVersionYamlText(e.target.value); setVersionYamlError('') }}
+                spellCheck={false}
+              />
+            </div>
+            <div className={styles.modalFooter}>
+              <input ref={yamlFileRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }} onChange={onUploadYamlFile} />
+              <button className={styles.modalSubmit} style={{ background: 'transparent', color: 'var(--color-modal-text-primary, #374151)', fontWeight: 400 }}
+                onClick={() => yamlFileRef.current?.click()}>
+                Загрузить файл
+              </button>
+              <div style={{ flex: 1 }} />
+              <button className={styles.modalCancel} onClick={() => setVersionYamlOpen(false)}>Отмена</button>
+              <button className={styles.modalSubmit} onClick={submitVersionYaml} disabled={!versionYamlText.trim() || versionYamlSubmitting}>
+                {versionYamlSubmitting ? '...' : `Создать версию ${versionYamlNextNum}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toastVisible && <div className={styles.copyToast}>{toastMsg}</div>}
     </div>
   )
 }

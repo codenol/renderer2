@@ -311,12 +311,25 @@ export function DashboardView() {
       {/* Context menu */}
       {ctxMenu && (
         <div ref={ctxRef} className={styles.contextMenu} style={{ left: ctxMenu.x, top: ctxMenu.y }}>
+          {ctxMenu.type === 'product' && (
+            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); openCreate('page', ctxMenu.slug) }}>
+              <LIcon name="file-plus" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              Добавить страницу
+            </button>
+          )}
+          {ctxMenu.type === 'page' && (
+            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); openCreate('feature', ctxMenu.slug) }}>
+              <LIcon name="layout-plus" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              Добавить фичу
+            </button>
+          )}
+          <div className={styles.contextSep} />
           <button className={styles.contextItem} onClick={() => renameItem(ctxMenu.slug)}>
             <LIcon name="edit" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Переименовать
           </button>
           <button className={styles.contextItem} onClick={() => archiveItem(ctxMenu.slug, !ctxMenu.isArchived)}>
-            <LIcon name={ctxMenu.isArchived ? 'archive' : 'archive'} size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            <LIcon name="archive" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
             {ctxMenu.isArchived ? 'Разархивировать' : 'Архивировать'}
           </button>
           <button className={`${styles.contextItem} ${styles['contextItem--danger']}`} onClick={() => deleteItem(ctxMenu.slug)}>

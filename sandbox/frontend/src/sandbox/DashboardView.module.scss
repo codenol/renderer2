@@ -260,12 +260,19 @@
   color: #374151;
   cursor: pointer;
   text-align: left;
+  white-space: nowrap;
   &:hover { background: #f9fafb; }
 
   &--danger {
     color: #dc2626;
     &:hover { background: #fef2f2; }
   }
+}
+
+.contextSep {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 4px 8px;
 }
 
 // ─── Modal ───────────────────────────────────────────────────────────────────

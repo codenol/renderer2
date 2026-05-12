@@ -1,32 +1,28 @@
-const express = require('express')
-const cors = require('cors')
+const fastify = require('fastify')
+const cors = require('@fastify/cors')
+const websocket = require('@fastify/websocket')
 const { nanoid } = require('nanoid')
 const yaml = require('js-yaml')
 const { getDb } = require('./db')
 
-const app = express()
 const PORT = process.env.PORT || 3001
 
-app.use(cors())
+const app = fastify({ logger: true })
 
-// Raw body capture for YAML support — express.json() can't parse YAML
-app.use(express.raw({ type: 'text/yaml', limit: '10mb' }))
-app.use(express.raw({ type: 'application/x-yaml', limit: '10mb' }))
-app.use(express.json({ limit: '10mb' }))
+app.register(cors, { origin: true })
+app.register(websocket)
 
-// Parse YAML body if applicable (as raw Buffer).
-// Uses FAILSAFE_SCHEMA to avoid YAML 1.1 boolean coercion ('on' → true).
-function parseBody(req) {
-  if (Buffer.isBuffer(req.body)) {
-    const str = req.body.toString('utf-8')
+// ─── YAML body parser ──────────────────────────────────────────────────────
+
+function parseBody(body) {
+  if (Buffer.isBuffer(body)) {
+    const str = body.toString('utf-8')
     const raw = yaml.load(str, { schema: yaml.FAILSAFE_SCHEMA })
     return postProcess(raw)
   }
-  return req.body
+  return body
 }
 
-// Post-process: convert "true"/"false" strings → booleans, numeric strings → numbers.
-// FAILSAFE_SCHEMA treats everything as strings, so we fix common types.
 function postProcess(obj) {
   if (Array.isArray(obj)) return obj.map(postProcess)
   if (obj !== null && typeof obj === 'object') {
@@ -46,11 +42,19 @@ function postProcess(obj) {
   return obj
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+app.addContentTypeParser('text/yaml', { parseAs: 'buffer' }, (_req, body, done) => {
+  done(null, body)
+})
+app.addContentTypeParser('application/x-yaml', { parseAs: 'buffer' }, (_req, body, done) => {
+  done(null, body)
+})
+
+// ─── Formatters ──────────────────────────────────────────────────────────────
 
 function fmtComment(c) {
   return {
     id: c.id,
+    parentId: c.parent_id ?? null,
     branchSlug: c.branch_slug,
     versionId: c.version_id,
     versionNumber: c.version_number ?? null,
@@ -63,6 +67,7 @@ function fmtComment(c) {
     status: c.status ?? 'open',
     rejectReason: c.reject_reason ?? null,
     createdAt: new Date(c.created_at * 1000).toISOString(),
+    updatedAt: c.updated_at ? new Date(c.updated_at * 1000).toISOString() : null,
   }
 }
 
@@ -75,103 +80,118 @@ function fmtVersion(v) {
   }
 }
 
-// ─── Branches ─────────────────────────────────────────────────────────────────
+// ─── WebSocket broadcast ─────────────────────────────────────────────────────
 
-// POST /api/branches — загрузить JSON/YAML экрана → создать ветку + первую версию
-app.post('/api/branches', (req, res) => {
-  const json = parseBody(req)
-  if (!json || !json.meta) {
-    return res.status(400).json({ error: 'Invalid screen: missing meta. Send JSON or YAML with meta.title.' })
+const branchSubscribers = new Map() // branchSlug → Set<WebSocket>
+
+function wsBroadcast(branchSlug, payload) {
+  const set = branchSubscribers.get(branchSlug)
+  if (!set) return
+  const msg = JSON.stringify(payload)
+  for (const ws of set) {
+    try { ws.send(msg) } catch { /* ignore */ }
+  }
+}
+
+// ─── Branches ────────────────────────────────────────────────────────────────
+
+app.post('/api/branches', async (req, reply) => {
+  const contentType = req.headers['content-type'] || ''
+  const body = contentType.includes('yaml')
+    ? parseBody(req.body)
+    : req.body
+
+  if (!body || !body.meta) {
+    return reply.code(400).send({ error: 'Invalid screen: missing meta. Send JSON or YAML with meta.title.' })
   }
 
   const db = getDb()
   const slug = nanoid(8)
-  const title = json.meta.title || 'Без названия'
+  const title = body.meta.title || 'Без названия'
   const now = Math.floor(Date.now() / 1000)
 
   db.prepare('INSERT INTO branches (slug, title, created_at) VALUES (?, ?, ?)').run(slug, title, now)
   const result = db.prepare(
     'INSERT INTO versions (branch_slug, version_number, json_data, created_at) VALUES (?, 1, ?, ?)'
-  ).run(slug, JSON.stringify(json), now)
+  ).run(slug, JSON.stringify(body), now)
 
-  res.status(201).json({
+  reply.code(201).send({
     slug,
     title,
-    versionId: result.lastInsertRowid,
+    versionId: Number(result.lastInsertRowid),
     versionNumber: 1,
     url: `/branch/${slug}`,
     createdAt: new Date(now * 1000).toISOString(),
   })
 })
 
-// GET /api/branches — список всех веток
-app.get('/api/branches', (req, res) => {
+app.get('/api/branches', async () => {
   const db = getDb()
   const rows = db.prepare(
     'SELECT slug, title, created_at FROM branches ORDER BY created_at DESC LIMIT 50'
   ).all()
-  res.json(rows.map(r => ({
+  return rows.map(r => ({
     slug: r.slug,
     title: r.title,
     createdAt: new Date(r.created_at * 1000).toISOString(),
-  })))
+  }))
 })
 
-// GET /api/branches/:slug — информация о ветке + последняя версия JSON
-app.get('/api/branches/:slug', (req, res) => {
+app.get('/api/branches/:slug', async (req, reply) => {
   const db = getDb()
   const branch = db.prepare('SELECT * FROM branches WHERE slug = ?').get(req.params.slug)
-  if (!branch) return res.status(404).json({ error: 'Branch not found' })
+  if (!branch) return reply.code(404).send({ error: 'Branch not found' })
 
   const latest = db.prepare(
     'SELECT * FROM versions WHERE branch_slug = ? ORDER BY version_number DESC LIMIT 1'
   ).get(req.params.slug)
-  if (!latest) return res.status(404).json({ error: 'No versions found' })
+  if (!latest) return reply.code(404).send({ error: 'No versions found' })
 
-  res.json({
+  return {
     slug: branch.slug,
     title: branch.title,
     versionId: latest.id,
     versionNumber: latest.version_number,
     createdAt: new Date(branch.created_at * 1000).toISOString(),
     screen: JSON.parse(latest.json_data),
-  })
+  }
 })
 
-// ─── Versions ─────────────────────────────────────────────────────────────────
+// ─── Versions ────────────────────────────────────────────────────────────────
 
-// GET /api/branches/:slug/versions — список версий
-app.get('/api/branches/:slug/versions', (req, res) => {
+app.get('/api/branches/:slug/versions', async (req, reply) => {
   const db = getDb()
   const branch = db.prepare('SELECT slug FROM branches WHERE slug = ?').get(req.params.slug)
-  if (!branch) return res.status(404).json({ error: 'Branch not found' })
+  if (!branch) return reply.code(404).send({ error: 'Branch not found' })
 
   const versions = db.prepare(
     'SELECT * FROM versions WHERE branch_slug = ? ORDER BY version_number ASC'
   ).all(req.params.slug)
 
-  res.json(versions.map(fmtVersion))
+  return versions.map(fmtVersion)
 })
 
-// GET /api/branches/:slug/versions/:versionId — JSON конкретной версии
-app.get('/api/branches/:slug/versions/:versionId', (req, res) => {
+app.get('/api/branches/:slug/versions/:versionId', async (req, reply) => {
   const db = getDb()
   const version = db.prepare(
     'SELECT * FROM versions WHERE id = ? AND branch_slug = ?'
   ).get(parseInt(req.params.versionId), req.params.slug)
-  if (!version) return res.status(404).json({ error: 'Version not found' })
+  if (!version) return reply.code(404).send({ error: 'Version not found' })
 
-  res.json({ ...fmtVersion(version), screen: JSON.parse(version.json_data) })
+  return { ...fmtVersion(version), screen: JSON.parse(version.json_data) }
 })
 
-// POST /api/branches/:slug/versions — загрузить новую версию (JSON или YAML)
-app.post('/api/branches/:slug/versions', (req, res) => {
+app.post('/api/branches/:slug/versions', async (req, reply) => {
   const db = getDb()
   const branch = db.prepare('SELECT slug FROM branches WHERE slug = ?').get(req.params.slug)
-  if (!branch) return res.status(404).json({ error: 'Branch not found' })
+  if (!branch) return reply.code(404).send({ error: 'Branch not found' })
 
-  const json = parseBody(req)
-  if (!json || !json.meta) return res.status(400).json({ error: 'Invalid screen: missing meta' })
+  const contentType = req.headers['content-type'] || ''
+  const body = contentType.includes('yaml')
+    ? parseBody(req.body)
+    : req.body
+
+  if (!body || !body.meta) return reply.code(400).send({ error: 'Invalid screen: missing meta' })
 
   const maxRow = db.prepare(
     'SELECT MAX(version_number) as max FROM versions WHERE branch_slug = ?'
@@ -181,28 +201,30 @@ app.post('/api/branches/:slug/versions', (req, res) => {
 
   const result = db.prepare(
     'INSERT INTO versions (branch_slug, version_number, json_data, created_at) VALUES (?, ?, ?, ?)'
-  ).run(req.params.slug, newNum, JSON.stringify(json), now)
+  ).run(req.params.slug, newNum, JSON.stringify(body), now)
 
-  // Update branch title from new version
-  if (json.meta?.title) {
-    db.prepare('UPDATE branches SET title = ? WHERE slug = ?').run(json.meta.title, req.params.slug)
+  if (body.meta?.title) {
+    db.prepare('UPDATE branches SET title = ? WHERE slug = ?').run(body.meta.title, req.params.slug)
   }
 
-  res.status(201).json({
-    id: result.lastInsertRowid,
+  const version = {
+    id: Number(result.lastInsertRowid),
     branchSlug: req.params.slug,
     versionNumber: newNum,
     createdAt: new Date(now * 1000).toISOString(),
-  })
+  }
+
+  wsBroadcast(req.params.slug, { type: 'version.created', payload: { version, screen: body } })
+
+  reply.code(201).send(version)
 })
 
-// ─── Comments ─────────────────────────────────────────────────────────────────
+// ─── Comments ────────────────────────────────────────────────────────────────
 
-// GET /api/branches/:slug/comments — все комментарии по всем версиям
-app.get('/api/branches/:slug/comments', (req, res) => {
+app.get('/api/branches/:slug/comments', async (req, reply) => {
   const db = getDb()
   const branch = db.prepare('SELECT slug FROM branches WHERE slug = ?').get(req.params.slug)
-  if (!branch) return res.status(404).json({ error: 'Branch not found' })
+  if (!branch) return reply.code(404).send({ error: 'Branch not found' })
 
   const comments = db.prepare(`
     SELECT c.*, v.version_number
@@ -212,15 +234,15 @@ app.get('/api/branches/:slug/comments', (req, res) => {
     ORDER BY c.created_at ASC
   `).all(req.params.slug)
 
-  res.json(comments.map(fmtComment))
+  return comments.map(fmtComment)
 })
 
-// POST /api/branches/:slug/comments — добавить комментарий
-app.post('/api/branches/:slug/comments', (req, res) => {
-  const { versionId, nodeId, x, y, text, author, role } = req.body
+app.post('/api/branches/:slug/comments', async (req, reply) => {
+  const { versionId, parentId, nodeId, x, y, text, author, role } = req.body
 
-  if (!text?.trim()) return res.status(400).json({ error: 'Comment text is required' })
-  if (!versionId) return res.status(400).json({ error: 'versionId is required' })
+  if (!text?.trim()) return reply.code(400).send({ error: 'Comment text is required' })
+  if (!versionId) return reply.code(400).send({ error: 'versionId is required' })
+  if (!author?.trim()) return reply.code(400).send({ error: 'author is required' })
 
   const validRoles = ['designer', 'analyst', 'pm', 'frontend', 'backend', 'qa']
   const safeRole = validRoles.includes(role) ? role : 'designer'
@@ -228,37 +250,58 @@ app.post('/api/branches/:slug/comments', (req, res) => {
 
   const db = getDb()
   const branch = db.prepare('SELECT slug FROM branches WHERE slug = ?').get(req.params.slug)
-  if (!branch) return res.status(404).json({ error: 'Branch not found' })
+  if (!branch) return reply.code(404).send({ error: 'Branch not found' })
 
   const result = db.prepare(`
-    INSERT INTO comments (branch_slug, version_id, node_id, x, y, text, author, role, status, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)
-  `).run(req.params.slug, versionId, nodeId ?? null, x ?? null, y ?? null, text.trim(), author || 'Аноним', safeRole, now)
+    INSERT INTO comments (parent_id, branch_slug, version_id, node_id, x, y, text, author, role, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)
+  `).run(
+    parentId ?? null,
+    req.params.slug,
+    versionId,
+    nodeId ?? null,
+    x ?? null,
+    y ?? null,
+    text.trim(),
+    author.trim(),
+    safeRole,
+    now,
+    now
+  )
 
   const comment = db.prepare(`
     SELECT c.*, v.version_number
     FROM comments c LEFT JOIN versions v ON c.version_id = v.id
     WHERE c.id = ?
-  `).get(result.lastInsertRowid)
+  `).get(Number(result.lastInsertRowid))
+  const formatted = fmtComment(comment)
 
-  res.status(201).json(fmtComment(comment))
+  wsBroadcast(req.params.slug, { type: 'comment.created', payload: formatted })
+
+  reply.code(201).send(formatted)
 })
 
-// PATCH /api/branches/:slug/comments/:id — изменить статус (open/resolved/rejected)
-app.patch('/api/branches/:slug/comments/:id', (req, res) => {
-  const { status, rejectReason } = req.body
+app.patch('/api/branches/:slug/comments/:id', async (req, reply) => {
+  const { status, rejectReason, role } = req.body
   const validStatuses = ['open', 'resolved', 'rejected']
+
   if (!validStatuses.includes(status)) {
-    return res.status(400).json({ error: 'Invalid status' })
+    return reply.code(400).send({ error: 'Invalid status' })
   }
+
+  if (role !== 'designer') {
+    return reply.code(403).send({ error: 'Only designer can resolve or reject comments' })
+  }
+
   if (status === 'rejected' && !rejectReason?.trim()) {
-    return res.status(400).json({ error: 'rejectReason required when rejecting' })
+    return reply.code(400).send({ error: 'rejectReason required when rejecting' })
   }
 
   const db = getDb()
+  const now = Math.floor(Date.now() / 1000)
   db.prepare(
-    'UPDATE comments SET status = ?, reject_reason = ? WHERE id = ? AND branch_slug = ?'
-  ).run(status, rejectReason?.trim() ?? null, parseInt(req.params.id), req.params.slug)
+    'UPDATE comments SET status = ?, reject_reason = ?, updated_at = ? WHERE id = ? AND branch_slug = ?'
+  ).run(status, rejectReason?.trim() ?? null, now, parseInt(req.params.id), req.params.slug)
 
   const comment = db.prepare(`
     SELECT c.*, v.version_number
@@ -266,23 +309,165 @@ app.patch('/api/branches/:slug/comments/:id', (req, res) => {
     WHERE c.id = ?
   `).get(parseInt(req.params.id))
 
-  if (!comment) return res.status(404).json({ error: 'Comment not found' })
-  res.json(fmtComment(comment))
+  if (!comment) return reply.code(404).send({ error: 'Comment not found' })
+  const formatted = fmtComment(comment)
+
+  wsBroadcast(req.params.slug, { type: 'comment.updated', payload: formatted })
+
+  return formatted
 })
 
-// DELETE /api/branches/:slug/comments/:id — удалить комментарий
-app.delete('/api/branches/:slug/comments/:id', (req, res) => {
+app.delete('/api/branches/:slug/comments/:id', async (req, reply) => {
   const db = getDb()
   const result = db.prepare(
     'DELETE FROM comments WHERE id = ? AND branch_slug = ?'
   ).run(parseInt(req.params.id), req.params.slug)
 
-  if (result.changes === 0) return res.status(404).json({ error: 'Comment not found' })
-  res.status(204).send()
+  if (result.changes === 0) return reply.code(404).send({ error: 'Comment not found' })
+
+  wsBroadcast(req.params.slug, { type: 'comment.deleted', payload: { id: parseInt(req.params.id) } })
+
+  reply.code(204).send()
 })
 
-// ─── Start ────────────────────────────────────────────────────────────────────
+// ─── Shares ──────────────────────────────────────────────────────────────────
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`SandBox backend running on http://localhost:${PORT}`)
+app.post('/api/branches/:slug/shares', async (req, reply) => {
+  const { versionId, createdBy } = req.body
+  if (!versionId) return reply.code(400).send({ error: 'versionId is required' })
+
+  const db = getDb()
+  const token = nanoid(12)
+  const now = Math.floor(Date.now() / 1000)
+
+  db.prepare(
+    'INSERT INTO shares (token, branch_slug, version_id, created_by, created_at) VALUES (?, ?, ?, ?, ?)'
+  ).run(token, req.params.slug, versionId, createdBy || 'designer', now)
+
+  reply.code(201).send({ token, url: `/share/${token}` })
+})
+
+app.get('/api/shares/:token', async (req, reply) => {
+  const db = getDb()
+  const share = db.prepare('SELECT * FROM shares WHERE token = ?').get(req.params.token)
+  if (!share) return reply.code(404).send({ error: 'Share not found' })
+
+  const version = db.prepare('SELECT * FROM versions WHERE id = ?').get(share.version_id)
+  if (!version) return reply.code(404).send({ error: 'Version not found' })
+
+  const branch = db.prepare('SELECT * FROM branches WHERE slug = ?').get(share.branch_slug)
+
+  return {
+    token: share.token,
+    branchSlug: share.branch_slug,
+    versionId: share.version_id,
+    createdBy: share.created_by,
+    createdAt: new Date(share.created_at * 1000).toISOString(),
+    screen: JSON.parse(version.json_data),
+    title: branch?.title || 'Без названия',
+  }
+})
+
+app.get('/api/shares/:token/comments', async (req, reply) => {
+  const db = getDb()
+  const share = db.prepare('SELECT * FROM shares WHERE token = ?').get(req.params.token)
+  if (!share) return reply.code(404).send({ error: 'Share not found' })
+
+  const comments = db.prepare(`
+    SELECT c.*, v.version_number
+    FROM comments c
+    LEFT JOIN versions v ON c.version_id = v.id
+    WHERE c.branch_slug = ? AND c.version_id = ?
+    ORDER BY c.created_at ASC
+  `).all(share.branch_slug, share.version_id)
+
+  return comments.map(fmtComment)
+})
+
+app.post('/api/shares/:token/comments', async (req, reply) => {
+  const { parentId, nodeId, x, y, text, author, role } = req.body
+
+  if (!text?.trim()) return reply.code(400).send({ error: 'Comment text is required' })
+  if (!author?.trim()) return reply.code(400).send({ error: 'author is required' })
+
+  const validRoles = ['designer', 'analyst', 'pm', 'frontend', 'backend', 'qa']
+  const safeRole = validRoles.includes(role) ? role : 'analyst'
+  const now = Math.floor(Date.now() / 1000)
+
+  const db = getDb()
+  const share = db.prepare('SELECT * FROM shares WHERE token = ?').get(req.params.token)
+  if (!share) return reply.code(404).send({ error: 'Share not found' })
+
+  const result = db.prepare(`
+    INSERT INTO comments (parent_id, branch_slug, version_id, node_id, x, y, text, author, role, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)
+  `).run(
+    parentId ?? null,
+    share.branch_slug,
+    share.version_id,
+    nodeId ?? null,
+    x ?? null,
+    y ?? null,
+    text.trim(),
+    author.trim(),
+    safeRole,
+    now,
+    now
+  )
+
+  const comment = db.prepare(`
+    SELECT c.*, v.version_number
+    FROM comments c LEFT JOIN versions v ON c.version_id = v.id
+    WHERE c.id = ?
+  `).get(Number(result.lastInsertRowid))
+  const formatted = fmtComment(comment)
+
+  wsBroadcast(share.branch_slug, { type: 'comment.created', payload: formatted })
+
+  reply.code(201).send(formatted)
+})
+
+// ─── WebSocket ───────────────────────────────────────────────────────────────
+
+app.register(async function (fastify) {
+  fastify.get('/ws', { websocket: true }, (socket, req) => {
+    let subscribedBranch = null
+
+    socket.on('message', (raw) => {
+      let msg
+      try { msg = JSON.parse(raw.toString()) } catch { return }
+
+      if (msg.type === 'subscribe' && msg.branch) {
+        if (subscribedBranch) {
+          const set = branchSubscribers.get(subscribedBranch)
+          if (set) set.delete(socket)
+        }
+        subscribedBranch = msg.branch
+        const set = branchSubscribers.get(subscribedBranch) || new Set()
+        set.add(socket)
+        branchSubscribers.set(subscribedBranch, set)
+        socket.send(JSON.stringify({ type: 'subscribed', branch: subscribedBranch }))
+      }
+    })
+
+    socket.on('close', () => {
+      if (subscribedBranch) {
+        const set = branchSubscribers.get(subscribedBranch)
+        if (set) {
+          set.delete(socket)
+          if (set.size === 0) branchSubscribers.delete(subscribedBranch)
+        }
+      }
+    })
+  })
+})
+
+// ─── Start ───────────────────────────────────────────────────────────────────
+
+app.listen({ port: PORT, host: '0.0.0.0' }, (err, address) => {
+  if (err) {
+    app.log.error(err)
+    process.exit(1)
+  }
+  console.log(`SandBox backend running on ${address}`)
 })

@@ -40,6 +40,7 @@ function migrate(db) {
 
     CREATE TABLE IF NOT EXISTS comments (
       id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      parent_id     INTEGER,
       branch_slug   TEXT NOT NULL REFERENCES branches(slug) ON DELETE CASCADE,
       version_id    INTEGER,
       node_id       TEXT,
@@ -50,10 +51,19 @@ function migrate(db) {
       role          TEXT NOT NULL DEFAULT 'designer',
       status        TEXT NOT NULL DEFAULT 'open',
       reject_reason TEXT,
-      created_at    INTEGER NOT NULL DEFAULT (unixepoch())
+      created_at    INTEGER NOT NULL DEFAULT (unixepoch()),
+      updated_at    INTEGER
     );
 
     CREATE INDEX IF NOT EXISTS idx_comments_branch ON comments(branch_slug);
+
+    CREATE TABLE IF NOT EXISTS shares (
+      token       TEXT PRIMARY KEY,
+      branch_slug TEXT NOT NULL REFERENCES branches(slug) ON DELETE CASCADE,
+      version_id  INTEGER NOT NULL,
+      created_by  TEXT NOT NULL DEFAULT 'designer',
+      created_at  INTEGER NOT NULL DEFAULT (unixepoch())
+    );
   `)
 
   // ─── Migrate old schema: branches.json_data → versions ───────────────────
@@ -99,6 +109,12 @@ function migrate(db) {
   }
   if (!commentCols.includes('reject_reason')) {
     db.exec('ALTER TABLE comments ADD COLUMN reject_reason TEXT')
+  }
+  if (!commentCols.includes('parent_id')) {
+    db.exec('ALTER TABLE comments ADD COLUMN parent_id INTEGER')
+  }
+  if (!commentCols.includes('updated_at')) {
+    db.exec('ALTER TABLE comments ADD COLUMN updated_at INTEGER')
   }
 }
 

@@ -185,12 +185,43 @@ export interface BranchVersion {
   createdAt: string
 }
 
+// ─── API ───────────────────────────────────────────────────────────────────
+export interface ApiClient {
+  comments: Comment[]
+  commentTree: CommentTree[]
+  loading: boolean
+  connected: boolean
+  error: string | null
+  branchTitle: string
+  screenJson: ScreenJSON | null
+  versions: BranchVersion[]
+  currentVersionId: number
+  setCurrentVersionId: (id: number) => void
+  addComment: (data: AddCommentData) => Promise<void>
+  updateComment: (id: number, status: 'resolved' | 'rejected', role: UserRole, rejectReason?: string) => Promise<void>
+  deleteComment: (id: number) => Promise<void>
+  createShare: (versionId: number) => Promise<{ token: string; url: string }>
+  setScreenJson: (json: ScreenJSON) => void
+}
+
+export interface AddCommentData {
+  versionId: number
+  parentId?: number | null
+  nodeId?: string
+  x?: number
+  y?: number
+  text: string
+  author: string
+  role: UserRole
+}
+
 // ─── Comment ───────────────────────────────────────────────────────────────
 export type UserRole = 'designer' | 'analyst' | 'pm' | 'frontend' | 'backend' | 'qa'
 export type CommentStatus = 'open' | 'resolved' | 'rejected'
 
 export interface Comment {
   id: number
+  parentId?: number | null
   branchSlug?: string
   versionId: number
   versionNumber: number
@@ -203,4 +234,28 @@ export interface Comment {
   status: CommentStatus
   rejectReason?: string | null
   createdAt: string
+  updatedAt?: string | null
 }
+
+export interface CommentTree extends Comment {
+  replies?: CommentTree[]
+}
+
+// ─── Share ──────────────────────────────────────────────────────────────────
+export interface ShareInfo {
+  token: string
+  branchSlug: string
+  versionId: number
+  createdBy: string
+  createdAt: string
+  screen?: ScreenJSON
+  title?: string
+}
+
+// ─── WebSocket ──────────────────────────────────────────────────────────────
+export type WsEvent =
+  | { type: 'comment.created'; payload: Comment }
+  | { type: 'comment.updated'; payload: Comment }
+  | { type: 'comment.deleted'; payload: { id: number } }
+  | { type: 'version.created'; payload: unknown }
+  | { type: 'subscribed'; branch: string }

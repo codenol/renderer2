@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import yaml from 'js-yaml'
-import type { ScreenJSON, Comment, UserRole } from '@/renderer/types'
+import type { ScreenJSON, Comment, CommentTree, UserRole } from '@/renderer/types'
 import { Renderer } from '@/renderer/Renderer'
+import { CommentLayer } from './CommentLayer'
+import { useApiClient } from './apiClient'
 import styles from './BranchView.module.scss'
 
+const BACKEND = 'http://localhost:3001'
 const ROLE_LABELS: Record<UserRole, string> = {
   designer: 'Дизайнер',
   analyst: 'Аналитик',
@@ -13,7 +16,6 @@ const ROLE_LABELS: Record<UserRole, string> = {
   backend: 'Бэкенд',
   qa: 'QA',
 }
-
 const ROLE_COLORS: Record<UserRole, string> = {
   designer: '#8b5cf6',
   analyst: '#2d98b4',
@@ -22,35 +24,56 @@ const ROLE_COLORS: Record<UserRole, string> = {
   backend: '#4ade80',
   qa: '#ef4444',
 }
-
 const ALL_ROLES = Object.keys(ROLE_LABELS) as UserRole[]
-
-// In-memory comments store (per session, lost on reload)
-const sessionComments = new Map<string, Comment[]>()
 
 export function BranchView() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
 
-  const [branchTitle, setBranchTitle] = useState<string>('')
-  const [screenJson, setScreenJson] = useState<ScreenJSON | null>(null)
-  const [loadingScreen, setLoadingScreen] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const {
+    comments,
+    commentTree,
+    loading,
+    connected,
+    error: apiError,
+    branchTitle,
+    screenJson,
+    versions,
+    currentVersionId,
+    setCurrentVersionId,
+    addComment,
+    updateComment,
+    deleteComment,
+    createShare,
+    setScreenJson: setApiScreenJson,
+  } = useApiClient(slug || '')
 
-  // ─── Comments ──────────────────────────────────────────────────────────
-  const [comments, setComments] = useState<Comment[]>([])
+  const localScreenJson = screenJson
+  const setLocalScreenJson = setApiScreenJson
+  const localBranchTitle = branchTitle
+
+  // ─── Comment mode & toast ────────────────────────────────────────────────
   const [commentMode, setCommentMode] = useState(false)
   const [copyToast, setCopyToast] = useState(false)
+  const [toastMsg, setToastMsg] = useState('')
   const copyToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [commentError, setCommentError] = useState<string | null>(null)
 
-  // ─── YAML modal ─────────────────────────────────────────────────────────
+  function showToast(msg: string) {
+    setToastMsg(msg)
+    setCopyToast(true)
+    if (copyToastTimer.current) clearTimeout(copyToastTimer.current)
+    copyToastTimer.current = setTimeout(() => setCopyToast(false), 3000)
+  }
+
+  // ─── YAML modal ──────────────────────────────────────────────────────────
   const [yamlOpen, setYamlOpen] = useState(false)
   const [yamlText, setYamlText] = useState('')
   const [yamlCopied, setYamlCopied] = useState(false)
   const [yamlError, setYamlError] = useState<string | null>(null)
   const yamlFileRef = useRef<HTMLInputElement>(null)
 
-  // ─── User identity ──────────────────────────────────────────────────────
+  // ─── User identity ───────────────────────────────────────────────────────
   const [firstName, setFirstName] = useState(
     () => localStorage.getItem('sandbox_firstname') ?? ''
   )
@@ -69,12 +92,26 @@ export function BranchView() {
   const [identityOpen, setIdentityOpen] = useState(false)
   const identityRef = useRef<HTMLDivElement>(null)
 
-  // ─── Close dropdowns on outside click ───────────────────────────────────
+  // ─── Anonymous enforcement ───────────────────────────────────────────────
+  const [showIdentityModal, setShowIdentityModal] = useState(false)
+  const [modalFirstName, setModalFirstName] = useState('')
+  const [modalLastName, setModalLastName] = useState('')
+  const [modalRole, setModalRole] = useState<UserRole>('analyst')
+
+  // ─── Version dropdown ─────────────────────────────────────────────────────
+  const [versionOpen, setVersionOpen] = useState(false)
+  const versionRef = useRef<HTMLDivElement>(null)
+
+  // ─── Share ────────────────────────────────────────────────────────────────
+  const [shareOpen, setShareOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState('')
+  const [sharing, setSharing] = useState(false)
+
+  // ─── Close dropdowns on outside click ────────────────────────────────────
   useEffect(() => {
     function onDown(e: MouseEvent) {
-      if (identityRef.current && !identityRef.current.contains(e.target as Node)) {
-        setIdentityOpen(false)
-      }
+      if (identityRef.current && !identityRef.current.contains(e.target as Node)) setIdentityOpen(false)
+      if (versionRef.current && !versionRef.current.contains(e.target as Node)) setVersionOpen(false)
     }
     document.addEventListener('mousedown', onDown)
     return () => document.removeEventListener('mousedown', onDown)
@@ -87,80 +124,24 @@ export function BranchView() {
     localStorage.setItem('sandbox_role', userRole)
   }, [firstName, lastName, userRole])
 
-  // ─── Initial load (embedded data only — no backend) ──────────────────────
+  // ─── Escape key ──────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!slug) return
-    setLoadingScreen(true)
-
-    const embeddedEl = document.getElementById('embedded-screen')
-    const embeddedData = embeddedEl?.textContent?.trim()
-    if (embeddedData) {
-      try {
-        const screen: ScreenJSON = JSON.parse(embeddedData)
-        setBranchTitle(screen.meta?.title || 'Без названия')
-        setScreenJson(screen)
-        setLoadingScreen(false)
-        // Load session comments for this slug
-        setComments(sessionComments.get(slug) || [])
-        return
-      } catch {
-        setError('Ошибка парсинга встроенных данных экрана')
-        setLoadingScreen(false)
-        return
-      }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setCommentMode(false)
     }
-
-    setError('Экран не найден. Запустите: node sandbox/scripts/embed-screen.js <screen.yaml>')
-    setLoadingScreen(false)
-  }, [slug])
-
-  // ─── Comment mutations (in-memory only) ──────────────────────────────────
-  const addComment = useCallback((data: {
-    nodeId?: string; x?: number; y?: number
-    text: string; author: string; role: UserRole
-  }) => {
-    if (!slug) return
-    const c: Comment = {
-      id: Date.now(),
-      branchSlug: slug,
-      versionId: 1,
-      versionNumber: 1,
-      nodeId: data.nodeId ?? null,
-      x: data.x ?? null,
-      y: data.y ?? null,
-      text: data.text,
-      author: data.author,
-      role: data.role,
-      status: 'open',
-      rejectReason: null,
-      createdAt: new Date().toISOString(),
-    }
-    const list = sessionComments.get(slug) || []
-    list.push(c)
-    sessionComments.set(slug, list)
-    setComments(list)
-  }, [slug])
-
-  const updateComment = useCallback((
-    id: number, status: 'resolved' | 'rejected', rejectReason?: string
-  ) => {
-    setComments(prev => prev.map(c =>
-      c.id === id ? { ...c, status, rejectReason: rejectReason ?? null } : c
-    ))
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const deleteComment = useCallback((id: number) => {
-    setComments(prev => prev.filter(c => c.id !== id))
-  }, [])
-
-  // ─── Copy comments to clipboard ──────────────────────────────────────────
+  // ─── Copy comments to clipboard ─────────────────────────────────────────
   function copyComments() {
-    if (!comments.length) {
+    const currentComments = comments.filter(c => c.versionId === currentVersionId)
+    if (!currentComments.length) {
       navigator.clipboard.writeText('Комментариев нет.')
       return
     }
-    let text = `=== Комментарии: ${branchTitle} ===\n\n`
-    comments.forEach((c, i) => {
+    let text = `=== Комментарии: ${localBranchTitle} (версия ${getCurrentVersionNumber()}) ===\n\n`
+    currentComments.forEach((c, i) => {
       const roleLabel = ROLE_LABELS[c.role]
       const statusLabel =
         c.status === 'resolved' ? '  ✓ Выполнено' :
@@ -171,36 +152,33 @@ export function BranchView() {
       text += `   ${new Date(c.createdAt).toLocaleString('ru-RU')}\n\n`
     })
     navigator.clipboard.writeText(text.trim())
-    if (copyToastTimer.current) clearTimeout(copyToastTimer.current)
-    setCopyToast(true)
-    copyToastTimer.current = setTimeout(() => setCopyToast(false), 2500)
+    showToast('Скопировано в буфер')
   }
 
-  // ─── Download current version JSON ───────────────────────────────────────
-  function downloadJson() {
-    if (!screenJson) return
-    const blob = new Blob([JSON.stringify(screenJson, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${slug}-v1.json`
-    a.click()
-    URL.revokeObjectURL(url)
+  function getCurrentVersionNumber(): number {
+    return versions.find(v => v.id === currentVersionId)?.versionNumber || 1
   }
 
-  // ─── YAML modal helpers ──────────────────────────────────────────────────
-  function getYamlContent(): string {
-    if (!screenJson) return ''
+  // ─── Version switching ────────────────────────────────────────────────────
+  async function switchVersion(versionId: number) {
+    setVersionOpen(false)
+    if (versionId === currentVersionId) return
+    setCurrentVersionId(versionId)
     try {
-      return yaml.dump(screenJson, {
-        lineWidth: -1,
-        noRefs: true,
-        quotingType: '"',
-        forceQuotes: false,
-        indent: 2,
-      })
+      const res = await fetch(`${BACKEND}/api/branches/${slug}/versions/${versionId}`)
+      if (!res.ok) return
+      const data = await res.json()
+      setLocalScreenJson(data.screen)
+    } catch {}
+  }
+
+  // ─── YAML modal helpers ───────────────────────────────────────────────────
+  function getYamlContent(): string {
+    if (!localScreenJson) return ''
+    try {
+      return yaml.dump(localScreenJson, { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false, indent: 2 })
     } catch {
-      return JSON.stringify(screenJson, null, 2)
+      return JSON.stringify(localScreenJson, null, 2)
     }
   }
 
@@ -211,7 +189,7 @@ export function BranchView() {
     setYamlOpen(true)
   }
 
-  function applyYaml() {
+  async function applyYaml() {
     setYamlError(null)
     let parsed: unknown
     try {
@@ -220,17 +198,32 @@ export function BranchView() {
       setYamlError(e instanceof Error ? e.message : 'Ошибка парсинга YAML')
       return
     }
-    if (!parsed || typeof parsed !== 'object') {
-      setYamlError('YAML должен содержать объект')
-      return
-    }
+    if (!parsed || typeof parsed !== 'object') { setYamlError('YAML должен содержать объект'); return }
     const json = parsed as ScreenJSON
-    if (!json.pages || !Array.isArray(json.pages)) {
-      setYamlError('YAML должен содержать раздел pages')
-      return
+    if (!json.pages || !Array.isArray(json.pages)) { setYamlError('YAML должен содержать раздел pages'); return }
+
+    // Save as new version via backend
+    if (slug && connected) {
+      try {
+        const res = await fetch(`${BACKEND}/api/branches/${slug}/versions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/yaml' },
+          body: yamlText,
+        })
+        if (res.ok) {
+          const newVer = await res.json()
+          setCurrentVersionId(newVer.id)
+          showToast(`Создана версия ${newVer.versionNumber}`)
+        } else {
+          // Fallback: just apply locally
+          setLocalScreenJson(json)
+        }
+      } catch {
+        setLocalScreenJson(json)
+      }
+    } else {
+      setLocalScreenJson(json)
     }
-    setScreenJson(json)
-    setBranchTitle(json.meta?.title || branchTitle)
     setYamlOpen(false)
   }
 
@@ -244,9 +237,7 @@ export function BranchView() {
     const blob = new Blob([yamlText], { type: 'text/yaml' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url
-    a.download = `${slug}-v1.yaml`
-    a.click()
+    a.href = url; a.download = `${slug}-v${getCurrentVersionNumber()}.yaml`; a.click()
     URL.revokeObjectURL(url)
   }
 
@@ -264,36 +255,101 @@ export function BranchView() {
       setYamlError(err instanceof Error ? err.message : 'Ошибка парсинга YAML')
       return
     }
-    if (!parsed || typeof parsed !== 'object') {
-      setYamlError('YAML должен содержать объект')
-      return
-    }
+    if (!parsed || typeof parsed !== 'object') { setYamlError('YAML должен содержать объект'); return }
     const json = parsed as ScreenJSON
-    if (!json.pages || !Array.isArray(json.pages)) {
-      setYamlError('YAML должен содержать раздел pages')
-      return
+    if (!json.pages || !Array.isArray(json.pages)) { setYamlError('YAML должен содержать раздел pages'); return }
+
+    // Save via backend
+    if (slug && connected) {
+      try {
+        const res = await fetch(`${BACKEND}/api/branches/${slug}/versions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/yaml' },
+          body: text,
+        })
+        if (res.ok) {
+          const newVer = await res.json()
+          setCurrentVersionId(newVer.id)
+          showToast(`Создана версия ${newVer.versionNumber}`)
+        } else {
+          setLocalScreenJson(json)
+        }
+      } catch {
+        setLocalScreenJson(json)
+      }
+    } else {
+      setLocalScreenJson(json)
     }
-    setScreenJson(json)
-    setBranchTitle(json.meta?.title || branchTitle)
     setYamlOpen(false)
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-  if (error) {
+  // ─── Share ────────────────────────────────────────────────────────────────
+  async function handleShare() {
+    if (!currentVersionId) return
+    setSharing(true)
+    try {
+      const result = await createShare(currentVersionId)
+      const url = `${window.location.origin}/share/${result.token}`
+      setShareUrl(url)
+      setShareOpen(true)
+    } catch {
+      showToast('Ошибка создания ссылки')
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  function copyShareUrl() {
+    navigator.clipboard.writeText(shareUrl)
+    setShareOpen(false)
+    showToast('Ссылка скопирована в буфер')
+  }
+
+  // ─── Anonymous check ─────────────────────────────────────────────────────
+  function checkIdentity(): boolean {
+    if (!firstName.trim() || !lastName.trim()) {
+      setModalFirstName(firstName)
+      setModalLastName(lastName)
+      setModalRole(userRole)
+      setShowIdentityModal(true)
+      return false
+    }
+    return true
+  }
+
+  function confirmIdentity() {
+    setFirstName(modalFirstName)
+    setLastName(modalLastName)
+    setUserRole(modalRole)
+    setShowIdentityModal(false)
+  }
+
+  // ─── Error state ─────────────────────────────────────────────────────────
+  if (apiError && !loading && !localScreenJson) {
     return (
       <div className={styles.error}>
         <div className={styles.errorCode}>404</div>
-        <div className={styles.errorText}>{error}</div>
+        <div className={styles.errorText}>{apiError}</div>
         <button className={styles.errorBtn} onClick={() => navigate('/')}>← На главную</button>
       </div>
     )
   }
 
-  if (!screenJson || loadingScreen) {
+  if (loading) {
     return (
       <div className={styles.loading}>
         <div className={styles.spinner} />
         <span>Загружаем экран...</span>
+      </div>
+    )
+  }
+
+  if (!localScreenJson) {
+    return (
+      <div className={styles.error}>
+        <div className={styles.errorCode}>404</div>
+        <div className={styles.errorText}>Экран не найден</div>
+        <button className={styles.errorBtn} onClick={() => navigate('/')}>← На главную</button>
       </div>
     )
   }
@@ -305,11 +361,45 @@ export function BranchView() {
         <button className={styles.topBarLogo} onClick={() => navigate('/')}>S^R</button>
 
         <div className={styles.topBarInfo}>
-          <span className={styles.topBarTitle}>{branchTitle}</span>
+          <span className={styles.topBarTitle}>{localBranchTitle}</span>
           <span className={styles.topBarSlug}>{slug}</span>
         </div>
 
         <div className={styles.topBarActions}>
+          {/* Version switcher */}
+          {versions.length > 1 && (
+            <div className={styles.versionWrap} ref={versionRef}>
+              <button
+                className={styles.versionBtn}
+                onClick={() => setVersionOpen(v => !v)}
+              >
+                Версия {getCurrentVersionNumber()} из {versions.length}
+                <span className={styles.versionChevron}>▾</span>
+              </button>
+              {versionOpen && (
+                <div className={styles.versionDropdown}>
+                  {versions.map(v => (
+                    <button
+                      key={v.id}
+                      className={`${styles.versionItem} ${v.id === currentVersionId ? styles['versionItem--active'] : ''}`}
+                      onClick={() => switchVersion(v.id)}
+                    >
+                      <span>Версия {v.versionNumber}</span>
+                      <span className={styles.versionItemDate}>
+                        {new Date(v.createdAt).toLocaleString('ru-RU')}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* WS status */}
+          <span className={styles.wsStatus} title={connected ? 'Подключено' : 'Офлайн'}>
+            {connected ? '⚡' : '⏳'}
+          </span>
+
           {/* Identity selector */}
           <div className={styles.identityWrap} ref={identityRef}>
             <button
@@ -317,10 +407,7 @@ export function BranchView() {
               onClick={() => setIdentityOpen(v => !v)}
               title="Ваша роль и имя"
             >
-              <span
-                className={styles.identityDot}
-                style={{ background: ROLE_COLORS[userRole] }}
-              >
+              <span className={styles.identityDot} style={{ background: ROLE_COLORS[userRole] }}>
                 {initials}
               </span>
               <span className={styles.identityName}>{fullName}</span>
@@ -329,29 +416,17 @@ export function BranchView() {
             </button>
             {identityOpen && (
               <div className={styles.identityDropdown}>
-                <input
-                  className={styles.identityInput}
-                  placeholder="Имя"
-                  value={firstName}
-                  onChange={e => setFirstName(e.target.value)}
-                  autoFocus
-                />
-                <input
-                  className={styles.identityInput}
-                  placeholder="Фамилия"
-                  value={lastName}
-                  onChange={e => setLastName(e.target.value)}
-                />
+                <input className={styles.identityInput} placeholder="Имя" value={firstName}
+                  onChange={e => setFirstName(e.target.value)} autoFocus />
+                <input className={styles.identityInput} placeholder="Фамилия" value={lastName}
+                  onChange={e => setLastName(e.target.value)} />
                 <div className={styles.rolePills}>
                   {ALL_ROLES.map(r => (
-                    <button
-                      key={r}
+                    <button key={r}
                       className={`${styles.rolePill} ${r === userRole ? styles['rolePill--active'] : ''}`}
                       style={r === userRole ? { background: ROLE_COLORS[r], borderColor: ROLE_COLORS[r] } : {}}
                       onClick={() => setUserRole(r)}
-                    >
-                      {ROLE_LABELS[r]}
-                    </button>
+                    >{ROLE_LABELS[r]}</button>
                   ))}
                 </div>
               </div>
@@ -359,35 +434,28 @@ export function BranchView() {
           </div>
 
           {/* YAML viewer */}
-          <button
-            className={styles.topBarBtn}
-            onClick={openYamlModal}
-            title="Редактор YAML"
-          >
-            YAML
+          <button className={styles.topBarBtn} onClick={openYamlModal} title="Редактор YAML">YAML</button>
+
+          {/* Share */}
+          <button className={styles.topBarBtn} onClick={handleShare} disabled={sharing} title="Поделиться">
+            {sharing ? '...' : 'Поделиться'}
           </button>
 
           {/* Copy comments */}
-          <button
-            className={styles.topBarBtn}
-            onClick={copyComments}
-            title="Копировать комментарии в буфер"
-          >
+          <button className={styles.topBarBtn} onClick={copyComments} title="Копировать комментарии в буфер">
             Копировать комментарии в буфер
           </button>
 
-          <input
-            ref={yamlFileRef}
-            type="file"
-            accept=".yaml,.yml"
-            style={{ display: 'none' }}
-            onChange={onUploadYamlFile}
-          />
+          <input ref={yamlFileRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }}
+            onChange={onUploadYamlFile} />
 
           {/* Comment mode */}
           <button
             className={`${styles.btnComment} ${commentMode ? styles['btnComment--active'] : ''}`}
-            onClick={() => setCommentMode(v => !v)}
+            onClick={() => {
+              if (!commentMode && !checkIdentity()) return
+              setCommentMode(v => !v)
+            }}
             title={commentMode ? 'Выйти из режима комментирования' : 'Комментировать'}
           >
             {commentMode ? 'Выйти из режима комментирования' : 'Комментировать'}
@@ -401,9 +469,86 @@ export function BranchView() {
         </div>
       )}
 
+      {commentError && (
+        <div className={styles.commentError}>{commentError}</div>
+      )}
+
       {/* Copy toast */}
       {copyToast && (
-        <div className={styles.copyToast}>Скопировано в буфер</div>
+        <div className={styles.copyToast}>{toastMsg}</div>
+      )}
+
+      {/* Identity modal */}
+      {showIdentityModal && (
+        <div className={styles.yamlOverlay} onClick={() => setShowIdentityModal(false)}>
+          <div className={styles.yamlModal} onClick={e => e.stopPropagation()} style={{ maxWidth: 360 }}>
+            <div className={styles.yamlHeader}>
+              <span className={styles.yamlTitle}>Представьтесь, пожалуйста</span>
+              <button className={styles.yamlClose} onClick={() => setShowIdentityModal(false)}>✕</button>
+            </div>
+            <div className={styles.yamlBody} style={{ padding: '16px 20px' }}>
+              <p style={{ margin: '0 0 12px', fontSize: 14, color: '#64748b' }}>
+                Анонимные комментарии запрещены. Укажите имя и фамилию.
+              </p>
+              <input className={styles.identityInput} placeholder="Имя" value={modalFirstName}
+                onChange={e => setModalFirstName(e.target.value)}
+                style={{ marginBottom: 8, width: '100%', boxSizing: 'border-box' }} autoFocus />
+              <input className={styles.identityInput} placeholder="Фамилия" value={modalLastName}
+                onChange={e => setModalLastName(e.target.value)}
+                style={{ marginBottom: 12, width: '100%', boxSizing: 'border-box' }} />
+              <div className={styles.rolePills}>
+                {ALL_ROLES.filter(r => r !== 'designer').map(r => (
+                  <button key={r}
+                    className={`${styles.rolePill} ${r === modalRole ? styles['rolePill--active'] : ''}`}
+                    style={r === modalRole ? { background: ROLE_COLORS[r], borderColor: ROLE_COLORS[r] } : {}}
+                    onClick={() => setModalRole(r)}
+                  >{ROLE_LABELS[r]}</button>
+                ))}
+              </div>
+            </div>
+            <div className={styles.yamlFooter}>
+              <div style={{ flex: 1 }} />
+              <button className={`${styles.yamlBtn} ${styles.yamlBtnApply}`}
+                onClick={confirmIdentity}
+                disabled={!modalFirstName.trim() || !modalLastName.trim()}
+                style={{ opacity: (!modalFirstName.trim() || !modalLastName.trim()) ? 0.5 : 1 }}
+              >Продолжить</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share modal */}
+      {shareOpen && (
+        <div className={styles.yamlOverlay} onClick={() => setShareOpen(false)}>
+          <div className={styles.yamlModal} onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div className={styles.yamlHeader}>
+              <span className={styles.yamlTitle}>Поделиться</span>
+              <button className={styles.yamlClose} onClick={() => setShareOpen(false)}>✕</button>
+            </div>
+            <div className={styles.yamlBody} style={{ padding: '16px 20px' }}>
+              <p style={{ margin: '0 0 8px', fontSize: 14 }}>
+                Версия {getCurrentVersionNumber()} · {localBranchTitle}
+              </p>
+              <p style={{ margin: '0 0 12px', fontSize: 13, color: '#64748b' }}>
+                По этой ссылке можно просматривать страницу и оставлять комментарии.
+              </p>
+              <input
+                className={styles.identityInput}
+                value={shareUrl}
+                readOnly
+                style={{ width: '100%', boxSizing: 'border-box', cursor: 'pointer' }}
+                onClick={(e) => (e.target as HTMLInputElement).select()}
+              />
+            </div>
+            <div className={styles.yamlFooter}>
+              <div style={{ flex: 1 }} />
+              <button className={`${styles.yamlBtn} ${styles.yamlBtnCopy}`} onClick={copyShareUrl}>
+                Копировать ссылку
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* YAML modal */}
@@ -411,46 +556,24 @@ export function BranchView() {
         <div className={styles.yamlOverlay} onClick={() => setYamlOpen(false)}>
           <div className={styles.yamlModal} onClick={e => e.stopPropagation()}>
             <div className={styles.yamlHeader}>
-              <span className={styles.yamlTitle}>YAML — {branchTitle}</span>
+              <span className={styles.yamlTitle}>YAML — {localBranchTitle}</span>
               <button className={styles.yamlClose} onClick={() => setYamlOpen(false)}>✕</button>
             </div>
-            {yamlError && (
-              <div className={styles.yamlError}>{yamlError}</div>
-            )}
+            {yamlError && <div className={styles.yamlError}>{yamlError}</div>}
             <div className={styles.yamlBody}>
-              <textarea
-                className={styles.yamlTextarea}
-                value={yamlText}
+              <textarea className={styles.yamlTextarea} value={yamlText}
                 onChange={e => { setYamlText(e.target.value); setYamlError(null) }}
-                spellCheck={false}
-              />
+                spellCheck={false} />
             </div>
             <div className={styles.yamlFooter}>
-              <button
-                className={`${styles.yamlBtn} ${styles.yamlBtnApply}`}
-                onClick={applyYaml}
-              >
-                Применить
-              </button>
-              <button
-                className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`}
-                onClick={() => yamlFileRef.current?.click()}
-              >
-                Загрузить файл
-              </button>
+              <button className={`${styles.yamlBtn} ${styles.yamlBtnApply}`} onClick={applyYaml}>Применить</button>
+              <button className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`}
+                onClick={() => yamlFileRef.current?.click()}>Загрузить файл</button>
               <div style={{ flex: 1 }} />
-              <button
-                className={`${styles.yamlBtn} ${styles.yamlBtnCopy} ${yamlCopied ? styles.yamlBtnCopied : ''}`}
-                onClick={copyYaml}
-              >
-                {yamlCopied ? '✓ Скопировано' : 'Скопировать'}
-              </button>
-              <button
-                className={`${styles.yamlBtn} ${styles.yamlBtnDownload}`}
-                onClick={downloadYaml}
-              >
-                Скачать .yaml
-              </button>
+              <button className={`${styles.yamlBtn} ${styles.yamlBtnCopy} ${yamlCopied ? styles.yamlBtnCopied : ''}`}
+                onClick={copyYaml}>{yamlCopied ? '✓ Скопировано' : 'Скопировать'}</button>
+              <button className={`${styles.yamlBtn} ${styles.yamlBtnDownload}`}
+                onClick={downloadYaml}>Скачать .yaml</button>
             </div>
           </div>
         </div>
@@ -459,156 +582,29 @@ export function BranchView() {
       {/* Canvas */}
       <div className={styles.canvas}>
         <div className={styles.screen}>
-          <Renderer screen={screenJson} commentMode={commentMode} />
+          <Renderer screen={localScreenJson} commentMode={commentMode} />
           {slug && (
             <CommentLayer
               slug={slug}
               commentMode={commentMode}
-              currentVersionId={1}
+              currentVersionId={currentVersionId}
               firstName={firstName}
               lastName={lastName}
               userRole={userRole}
-              comments={comments}
-              onAdd={addComment}
-              onUpdate={updateComment}
-              onDelete={deleteComment}
+              comments={commentTree}
+              onAdd={async (data) => {
+                await addComment(data)
+              }}
+              onUpdate={async (id, status, rejectReason) => {
+                await updateComment(id, status, userRole, rejectReason)
+              }}
+              onDelete={async (id) => {
+                await deleteComment(id)
+              }}
             />
           )}
         </div>
       </div>
     </div>
-  )
-}
-
-// ─── CommentLayer (inlined, no backend dependency) ──────────────────────────
-
-interface CommentLayerProps {
-  slug: string
-  commentMode: boolean
-  currentVersionId: number
-  firstName: string
-  lastName: string
-  userRole: UserRole
-  comments: Comment[]
-  onAdd: (data: { nodeId?: string; x?: number; y?: number; text: string; author: string; role: UserRole }) => void
-  onUpdate: (id: number, status: 'resolved' | 'rejected', rejectReason?: string) => void
-  onDelete: (id: number) => void
-}
-
-function CommentLayer({
-  slug, commentMode, currentVersionId, firstName, lastName, userRole,
-  comments, onAdd, onUpdate, onDelete,
-}: CommentLayerProps) {
-  const [activeComment, setActiveComment] = useState<Comment | null>(null)
-  const [newText, setNewText] = useState('')
-  const [rejectText, setRejectText] = useState('')
-  const [showReject, setShowReject] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
-
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (!commentMode) return
-    const target = e.target as HTMLElement
-    const nodeId = target.closest('[data-node-id]')?.getAttribute('data-node-id')
-    if (!nodeId) return
-    const rect = target.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    onAdd({ nodeId, x, y, text: '', author: [firstName, lastName].filter(Boolean).join(' ') || 'Аноним', role: userRole })
-  }, [commentMode, onAdd, firstName, lastName, userRole])
-
-  useEffect(() => {
-    if (!commentMode) return
-    window.addEventListener('click', handleClick as unknown as EventListener, true)
-    return () => window.removeEventListener('click', handleClick as unknown as EventListener, true)
-  }, [commentMode, handleClick])
-
-  const handleStatus = (c: Comment, status: 'resolved' | 'rejected') => {
-    if (status === 'rejected') {
-      setEditingId(c.id)
-      setShowReject(true)
-      setRejectText('')
-    } else {
-      onUpdate(c.id, status)
-    }
-  }
-
-  const confirmReject = () => {
-    if (editingId && rejectText.trim()) {
-      onUpdate(editingId, 'rejected', rejectText.trim())
-      setShowReject(false)
-      setEditingId(null)
-    }
-  }
-
-  const filtered = comments.filter(c => c.versionId === currentVersionId)
-
-  return (
-    <>
-      {/* Comment markers */}
-      {filtered.map(c => (
-        <div
-          key={c.id}
-          className={styles.commentMarker}
-          style={{ left: c.x, top: c.y }}
-          onClick={() => setActiveComment(activeComment?.id === c.id ? null : c)}
-        >
-          <span className={styles.commentDot} style={{ background: ROLE_COLORS[c.role] }}>
-            {c.status === 'resolved' ? '✓' : c.status === 'rejected' ? '✗' : comments.indexOf(c) + 1}
-          </span>
-        </div>
-      ))}
-
-      {/* Active comment popup */}
-      {activeComment && (
-        <div className={styles.commentPopup}>
-          <div className={styles.commentPopupHeader}>
-            <span style={{ color: ROLE_COLORS[activeComment.role] }}>
-              {ROLE_LABELS[activeComment.role]} · {activeComment.author}
-            </span>
-            <button className={styles.commentPopupClose} onClick={() => setActiveComment(null)}>✕</button>
-          </div>
-          <div className={styles.commentPopupText}>{activeComment.text}</div>
-          {activeComment.nodeId && (
-            <div className={styles.commentPopupNode}>#{activeComment.nodeId}</div>
-          )}
-          {activeComment.status === 'open' && (
-            <div className={styles.commentPopupActions}>
-              <button className={styles.commentPopupBtn} onClick={() => handleStatus(activeComment, 'resolved')}>
-                ✓ Выполнено
-              </button>
-              <button className={styles.commentPopupBtn} onClick={() => handleStatus(activeComment, 'rejected')}>
-                ✗ Отклонить
-              </button>
-              <button className={styles.commentPopupBtn} onClick={() => onDelete(activeComment.id)}>
-                Удалить
-              </button>
-            </div>
-          )}
-          {activeComment.status === 'rejected' && activeComment.rejectReason && (
-            <div className={styles.commentPopupReject}>Отклонено: {activeComment.rejectReason}</div>
-          )}
-        </div>
-      )}
-
-      {/* Reject modal */}
-      {showReject && (
-        <div className={styles.rejectOverlay} onClick={() => { setShowReject(false); setEditingId(null) }}>
-          <div className={styles.rejectModal} onClick={e => e.stopPropagation()}>
-            <div className={styles.rejectTitle}>Причина отклонения</div>
-            <textarea
-              className={styles.rejectTextarea}
-              value={rejectText}
-              onChange={e => setRejectText(e.target.value)}
-              placeholder="Опишите причину..."
-              autoFocus
-            />
-            <div className={styles.rejectActions}>
-              <button className={styles.rejectBtn} onClick={() => { setShowReject(false); setEditingId(null) }}>Отмена</button>
-              <button className={`${styles.rejectBtn} ${styles.rejectBtnConfirm}`} onClick={confirmReject}>Отклонить</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
   )
 }

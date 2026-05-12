@@ -5,6 +5,7 @@ import type { ScreenJSON } from '@/renderer/types'
 import { useAuth } from '@/auth/AuthContext'
 import { LIcon } from '@/renderer/components/LIcon'
 import styles from './DashboardView.module.scss'
+import branchStyles from './BranchView.module.scss'
 
 const BACKEND = 'http://localhost:3001'
 
@@ -568,43 +569,31 @@ export function DashboardView() {
 
       {/* Version YAML modal */}
       {versionYamlOpen && (
-        <div className={styles.modalOverlay} onClick={() => setVersionYamlOpen(false)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ maxWidth: 900 }}>
-            <div className={styles.modalHeader}>
-              <span className={styles.modalTitle}>
+        <div className={branchStyles.yamlOverlay} onClick={() => setVersionYamlOpen(false)}>
+          <div className={branchStyles.yamlModal} onClick={e => e.stopPropagation()}>
+            <div className={branchStyles.yamlHeader}>
+              <span className={branchStyles.yamlTitle}>
                 Новая версия · {versionYamlFeatureTitle} · v{versionYamlNextNum}
               </span>
-              <button className={styles.modalClose} onClick={() => setVersionYamlOpen(false)}>
-                <LIcon name="x" size={18} />
-              </button>
+              <button className={branchStyles.yamlClose} onClick={() => setVersionYamlOpen(false)}>✕</button>
             </div>
-            {versionYamlError && <div className={styles.error}>{versionYamlError}</div>}
-            <div className={styles.modalBody} style={{ padding: 0 }}>
-              <textarea
-                className={styles.modalInput}
-                style={{
-                  minHeight: 400, fontFamily: '"JetBrains Mono","Fira Code",monospace',
-                  fontSize: 13, lineHeight: 1.6, resize: 'vertical',
-                  border: 'none', borderRadius: 0, padding: 20,
-                  background: 'var(--color-modal-background-primary, #f8fafc)',
-                  color: 'var(--color-modal-text-primary, #1e2433)',
-                }}
-                value={versionYamlText}
+            {versionYamlError && <div className={branchStyles.yamlError}>{versionYamlError}</div>}
+            <div className={branchStyles.yamlBody}>
+              <textarea className={branchStyles.yamlTextarea} value={versionYamlText}
                 onChange={e => { setVersionYamlText(e.target.value); setVersionYamlError('') }}
-                spellCheck={false}
-              />
+                spellCheck={false} />
             </div>
-            <div className={styles.modalFooter}>
+            <div className={branchStyles.yamlFooter}>
+              <button className={`${branchStyles.yamlBtn} ${branchStyles.yamlBtnApply}`} onClick={submitVersionYaml}
+                disabled={!versionYamlText.trim() || versionYamlSubmitting}>
+                {versionYamlSubmitting ? '...' : `Создать версию ${versionYamlNextNum}`}
+              </button>
               <input ref={yamlFileRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }} onChange={onUploadYamlFile} />
-              <button className={styles.modalSubmit} style={{ background: 'transparent', color: 'var(--color-modal-text-primary, #374151)', fontWeight: 400 }}
-                onClick={() => yamlFileRef.current?.click()}>
+              <button className={`${branchStyles.yamlBtn} ${branchStyles.yamlBtnUpload}`} onClick={() => yamlFileRef.current?.click()}>
                 Загрузить файл
               </button>
               <div style={{ flex: 1 }} />
-              <button className={styles.modalCancel} onClick={() => setVersionYamlOpen(false)}>Отмена</button>
-              <button className={styles.modalSubmit} onClick={submitVersionYaml} disabled={!versionYamlText.trim() || versionYamlSubmitting}>
-                {versionYamlSubmitting ? '...' : `Создать версию ${versionYamlNextNum}`}
-              </button>
+              <button className={`${branchStyles.yamlBtn} ${branchStyles.yamlBtnDownload}`} onClick={() => setVersionYamlOpen(false)}>Отмена</button>
             </div>
           </div>
         </div>

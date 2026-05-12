@@ -1,6 +1,8 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { Comment, CommentTree, UserRole } from '@/renderer/types'
 import styles from './CommentLayer.module.scss'
+
+const BACKEND = 'http://localhost:3001'
 
 const ROLE_LABELS: Record<UserRole, string> = {
   designer: 'Дизайнер',
@@ -86,6 +88,7 @@ interface CommentLayerProps {
 }
 
 export function CommentLayer({
+  slug,
   commentMode, currentVersionId,
   firstName, lastName, userRole,
   comments: commentTree, onAdd, onUpdate, onDelete,
@@ -98,8 +101,64 @@ export function CommentLayer({
   const [submitting, setSubmitting] = useState(false)
   const [rejectingId, setRejectingId] = useState<number | null>(null)
   const [rejectText, setRejectText] = useState('')
+  const [tooltipPos, setTooltipPos] = useState<{ left: number; top: number; flipDown: boolean } | null>(null)
 
   const popupRef = useRef<HTMLDivElement>(null)
+  const markerRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+
+  // ─── Calculate tooltip position ────────────────────────────────────────────
+  useEffect(() => {
+    if (activeComment === null) {
+      setTooltipPos(null)
+      return
+    }
+    const markerEl = markerRefs.current.get(activeComment)
+    if (!markerEl) return
+
+    const rect = markerEl.getBoundingClientRect()
+    const tooltipWidth = 300
+    const tooltipHeight = 260
+    const margin = 12
+
+    const centerX = rect.left + rect.width / 2
+    const spaceAbove = rect.top - margin
+    const flipDown = spaceAbove < tooltipHeight
+
+    let left = centerX - tooltipWidth / 2
+    left = Math.max(margin, Math.min(window.innerWidth - margin - tooltipWidth, left))
+
+    const top = flipDown
+      ? rect.bottom + margin
+      : rect.top - tooltipHeight - margin
+
+    setTooltipPos({ left, top, flipDown })
+  }, [activeComment])
+
+  // ─── LLM toggle ───────────────────────────────────────────────────────────
+  const [llmIds, setLlmIds] = useState<Set<number>>(new Set())
+
+  useEffect(() => {
+    const ids = new Set<number>()
+    for (const c of allComments) {
+      if (c.isLLM) ids.add(c.id)
+    }
+    setLlmIds(ids)
+  }, [commentTree])
+
+  async function toggleLLM(id: number) {
+    const isLLM = !llmIds.has(id)
+    setLlmIds(prev => {
+      const next = new Set(prev)
+      isLLM ? next.add(id) : next.delete(id)
+      return next
+    })
+    const token = localStorage.getItem('skala_access_token')
+    await fetch(`${BACKEND}/api/branches/${slug}/comments/${id}/llm`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ isLlm: isLLM }),
+    })
+  }
 
   const allComments = flattenCommentTree(commentTree)
   const flatMap = new Map<number, Comment>()
@@ -265,6 +324,7 @@ export function CommentLayer({
         return (
           <div
             key={c.id}
+            ref={el => { if (el) markerRefs.current.set(c.id, el); else markerRefs.current.delete(c.id) }}
             data-comment-marker
             className={`${styles.marker} ${!isCurrent ? styles['marker--old'] : ''} ${c.status !== 'open' ? styles[`marker--${c.status}`] : ''} ${replyCount > 0 ? styles['marker--thread'] : ''}`}
             style={{
@@ -286,112 +346,131 @@ export function CommentLayer({
               <span className={styles.markerVersionBadge}>v{c.versionNumber}</span>
             )}
 
-            {replyCount > 0 && (
-              <span className={styles.markerReplyBadge}>{replyCount}</span>
+            {llmIds.has(c.id) && (
+              <span className={styles.markerLlmBadge}>✦</span>
             )}
 
-            {/* Tooltip */}
-            {activeComment === c.id && (
-              <div
-                className={styles.markerTooltip}
-                onClick={e => e.stopPropagation()}
-              >
-                {/* Header */}
-                <div className={styles.tooltipHeader}>
-                  <span className={styles.tooltipDot} style={{ background: ROLE_COLORS[c.role] }} />
-                  <span className={styles.tooltipRole} style={{ color: ROLE_COLORS[c.role] }}>
-                    {ROLE_LABELS[c.role]}
-                  </span>
-                  <span className={styles.tooltipAuthor}>{c.author}</span>
-                  {!isCurrent && (
-                    <span className={styles.tooltipVersion}>v{c.versionNumber}</span>
-                  )}
-                  <button
-                    className={styles.tooltipDelete}
-                    onClick={() => { onDelete(c.id); setActiveComment(null) }}
-                    title="Удалить"
-                  >✕</button>
-                </div>
-
-                {/* Text */}
-                <div className={styles.tooltipText}>{c.text}</div>
-
-                {/* Node */}
-                {c.nodeId && (
-                  <div className={styles.tooltipNode}>
-                    Элемент: <code>#{c.nodeId}</code>
-                  </div>
-                )}
-
-                {/* Date */}
-                <div className={styles.tooltipDate}>
-                  {new Date(c.createdAt).toLocaleString('ru-RU')}
-                </div>
-
-                {/* Status badge for resolved/rejected */}
-                {c.status === 'resolved' && (
-                  <div className={styles.statusResolved}>✓ Выполнено</div>
-                )}
-                {c.status === 'rejected' && (
-                  <div className={styles.statusRejected}>
-                    ✗ Отклонено{c.rejectReason ? `: ${c.rejectReason}` : ''}
-                  </div>
-                )}
-
-                {/* Thread replies */}
-                {renderReplies(c.id)}
-
-                {/* Actions for open comments */}
-                {isOpen && rejectingId !== c.id && (
-                  <div className={styles.tooltipActions}>
-                    {isDesigner && (
-                      <>
-                        <button className={styles.btnResolve} onClick={() => resolveComment(c.id)}>
-                          ✓ Выполнено
-                        </button>
-                        <button
-                          className={styles.btnReject}
-                          onClick={() => { setRejectingId(c.id); setRejectText('') }}
-                        >
-                          ✗ Отклонить
-                        </button>
-                      </>
-                    )}
-                    <button className={styles.btnReply} onClick={() => startReply(c)}>
-                      ↩ Ответить
-                    </button>
-                  </div>
-                )}
-
-                {/* Reject form */}
-                {isOpen && rejectingId === c.id && (
-                  <div className={styles.rejectForm}>
-                    <textarea
-                      className={styles.rejectInput}
-                      placeholder="Причина отклонения..."
-                      value={rejectText}
-                      onChange={e => setRejectText(e.target.value)}
-                      rows={2}
-                      autoFocus
-                    />
-                    <div className={styles.rejectActions}>
-                      <button
-                        className={styles.rejectCancel}
-                        onClick={() => { setRejectingId(null); setRejectText('') }}
-                      >Отмена</button>
-                      <button
-                        className={styles.rejectSubmit}
-                        onClick={() => rejectComment(c.id)}
-                        disabled={!rejectText.trim()}
-                      >Отклонить</button>
-                    </div>
-                  </div>
-                )}
-              </div>
+            {replyCount > 0 && (
+              <span className={styles.markerReplyBadge}>{replyCount}</span>
             )}
           </div>
         )
       })}
+
+      {/* Active comment tooltip — fixed position, never clipped */}
+      {activeComment !== null && tooltipPos && (() => {
+        const c = allSorted.find(x => x.id === activeComment)
+        if (!c) return null
+        const isCurrent = c.versionId === currentVersionId
+        const isOpen = c.status === 'open'
+
+        return (
+          <div
+            className={styles.markerTooltip}
+            style={{ left: tooltipPos.left, top: tooltipPos.top }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className={styles.tooltipHeader}>
+              <span className={styles.tooltipDot} style={{ background: ROLE_COLORS[c.role] }} />
+              <span className={styles.tooltipRole} style={{ color: ROLE_COLORS[c.role] }}>
+                {ROLE_LABELS[c.role]}
+              </span>
+              <span className={styles.tooltipAuthor}>{c.author}</span>
+              {!isCurrent && (
+                <span className={styles.tooltipVersion}>v{c.versionNumber}</span>
+              )}
+              <button
+                className={styles.tooltipDelete}
+                onClick={() => { onDelete(c.id); setActiveComment(null) }}
+                title="Удалить"
+              >✕</button>
+            </div>
+
+            {/* Text */}
+            <div className={styles.tooltipText}>{c.text}</div>
+
+            {/* Node */}
+            {c.nodeId && (
+              <div className={styles.tooltipNode}>
+                Элемент: <code>#{c.nodeId}</code>
+              </div>
+            )}
+
+            {/* Date */}
+            <div className={styles.tooltipDate}>
+              {new Date(c.createdAt).toLocaleString('ru-RU')}
+            </div>
+
+            {/* Status badge for resolved/rejected */}
+            {c.status === 'resolved' && (
+              <div className={styles.statusResolved}>✓ Выполнено</div>
+            )}
+            {c.status === 'rejected' && (
+              <div className={styles.statusRejected}>
+                ✗ Отклонено{c.rejectReason ? `: ${c.rejectReason}` : ''}
+              </div>
+            )}
+
+            {/* Thread replies */}
+            {renderReplies(c.id)}
+
+            {/* Actions for open comments */}
+            {isOpen && rejectingId !== c.id && (
+              <div className={styles.tooltipActions}>
+                {isDesigner && (
+                  <>
+                    <button
+                      className={`${styles.btnLlm} ${llmIds.has(c.id) ? styles['btnLlm--active'] : ''}`}
+                      onClick={() => toggleLLM(c.id)}
+                      title={llmIds.has(c.id) ? 'Убрать LLM-пометку' : 'Пометить для LLM'}
+                    >
+                      ✨
+                    </button>
+                    <button className={styles.btnResolve} onClick={() => resolveComment(c.id)}>
+                      ✓ Выполнено
+                    </button>
+                    <button
+                      className={styles.btnReject}
+                      onClick={() => { setRejectingId(c.id); setRejectText('') }}
+                    >
+                       Отклонить
+                    </button>
+                  </>
+                )}
+                <button className={styles.btnReply} onClick={() => startReply(c)}>
+                  ↩ Ответить
+                </button>
+              </div>
+            )}
+
+            {/* Reject form */}
+            {isOpen && rejectingId === c.id && (
+              <div className={styles.rejectForm}>
+                <textarea
+                  className={styles.rejectInput}
+                  placeholder="Причина отклонения..."
+                  value={rejectText}
+                  onChange={e => setRejectText(e.target.value)}
+                  rows={2}
+                  autoFocus
+                />
+                <div className={styles.rejectActions}>
+                  <button
+                    className={styles.rejectCancel}
+                    onClick={() => { setRejectingId(null); setRejectText('') }}
+                  >Отмена</button>
+                  <button
+                    className={styles.rejectSubmit}
+                    onClick={() => rejectComment(c.id)}
+                    disabled={!rejectText.trim()}
+                  >Отклонить</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* New comment / Reply popup */}
       {pending && (

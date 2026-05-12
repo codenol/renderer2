@@ -246,6 +246,7 @@ export interface Comment {
   role: UserRole
   status: CommentStatus
   rejectReason?: string | null
+  isLLM?: boolean
   createdAt: string
   updatedAt?: string | null
 }

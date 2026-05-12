@@ -69,6 +69,7 @@ function fmtComment(c) {
     role: c.role,
     status: c.status ?? 'open',
     rejectReason: c.reject_reason ?? null,
+    isLLM: !!c.is_llm,
     createdAt: new Date(c.created_at * 1000).toISOString(),
     updatedAt: c.updated_at ? new Date(c.updated_at * 1000).toISOString() : null,
   }
@@ -628,6 +629,26 @@ app.patch('/api/branches/:slug/comments/:id', { preHandler: [authGuard, roleGuar
 
   wsBroadcast(req.params.slug, { type: 'comment.updated', payload: formatted })
 
+  return formatted
+})
+
+app.patch('/api/branches/:slug/comments/:id/llm', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const { isLlm } = req.body || {}
+  if (typeof isLlm !== 'boolean') return reply.code(400).send({ error: 'isLlm (boolean) required' })
+
+  const db = getDb()
+  const result = db.prepare('UPDATE comments SET is_llm = ? WHERE id = ? AND branch_slug = ?')
+    .run(isLlm ? 1 : 0, parseInt(req.params.id), req.params.slug)
+  if (result.changes === 0) return reply.code(404).send({ error: 'Comment not found' })
+
+  const comment = db.prepare(`
+    SELECT c.*, v.version_number
+    FROM comments c LEFT JOIN versions v ON c.version_id = v.id
+    WHERE c.id = ?
+  `).get(parseInt(req.params.id))
+
+  const formatted = fmtComment(comment)
+  wsBroadcast(req.params.slug, { type: 'comment.updated', payload: formatted })
   return formatted
 })
 

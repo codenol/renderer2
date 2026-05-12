@@ -36,8 +36,8 @@
 
   // Old version: dimmed
   &--old {
-    opacity: 0.35;
-    &:hover { opacity: 0.7; }
+    filter: opacity(0.35);
+    &:hover { filter: opacity(0.7); }
   }
 
   // Resolved: green ring
@@ -83,12 +83,9 @@
   margin-left: 2px;
 }
 
-// ─── Marker tooltip ───────────────────────────────────────────────────────────
+// ─── Marker tooltip — fixed position, positioned via inline style ────────────
 .markerTooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+  position: fixed;
   background: #1f2937;
   color: #fff;
   border-radius: 10px;
@@ -387,4 +384,41 @@
   background: transparent;
   color: #2d98b4;
   &:hover { background: rgba(45, 152, 180, 0.08); }
+}
+
+.btnLlm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 7px;
+  font-size: 14px;
+  background: transparent;
+  color: rgba(255,255,255,0.25);
+  border: 1px solid transparent;
+  &:hover { background: rgba(139,92,246,0.1); color: rgba(139,92,246,0.6); }
+
+  &--active {
+    background: rgba(139,92,246,0.15);
+    color: #a78bfa;
+    border-color: rgba(139,92,246,0.3);
+    &:hover { background: rgba(139,92,246,0.25); }
+  }
+}
+
+.markerLlmBadge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 10px;
 }

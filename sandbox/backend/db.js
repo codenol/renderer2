@@ -176,6 +176,9 @@ function migrate(db) {
   if (!commentCols.includes('updated_at')) {
     db.exec('ALTER TABLE comments ADD COLUMN updated_at INTEGER')
   }
+  if (!commentCols.includes('is_llm')) {
+    db.exec('ALTER TABLE comments ADD COLUMN is_llm INTEGER NOT NULL DEFAULT 0')
+  }
 }
 
 module.exports = { getDb }

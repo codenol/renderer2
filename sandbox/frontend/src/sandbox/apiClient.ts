@@ -113,12 +113,16 @@ export function useApiClient(branchSlug: string): ApiClient {
           setConnected(true)
           break
         case 'comment.created':
-          setComments(prev => [...prev, parsed.payload])
+          setComments(prev => {
+            if (prev.some(c => c.id === parsed.payload.id)) return prev
+            return [...prev, parsed.payload]
+          })
           break
         case 'comment.updated':
-          setComments(prev => prev.map(c =>
-            c.id === parsed.payload.id ? parsed.payload : c
-          ))
+          setComments(prev => {
+            if (!prev.some(c => c.id === parsed.payload.id)) return prev
+            return prev.map(c => c.id === parsed.payload.id ? parsed.payload : c)
+          })
           break
         case 'comment.deleted':
           setComments(prev => prev.filter(c => c.id !== parsed.payload.id))
@@ -150,7 +154,11 @@ export function useApiClient(branchSlug: string): ApiClient {
       const err = await res.json().catch(() => ({}))
       throw new Error(err.error || 'Ошибка создания комментария')
     }
-    // Comment will arrive via WebSocket — don't double-add
+    const created: Comment = await res.json()
+    setComments(prev => {
+      if (prev.some(c => c.id === created.id)) return prev
+      return [...prev, created]
+    })
   }, [branchSlug])
 
   const updateComment = useCallback(async (
@@ -165,6 +173,8 @@ export function useApiClient(branchSlug: string): ApiClient {
       const err = await res.json().catch(() => ({}))
       throw new Error(err.error || 'Ошибка обновления')
     }
+    const updated: Comment = await res.json()
+    setComments(prev => prev.map(c => c.id === updated.id ? updated : c))
   }, [branchSlug])
 
   const deleteComment = useCallback(async (id: number) => {
@@ -173,6 +183,7 @@ export function useApiClient(branchSlug: string): ApiClient {
       headers: getAuthHeaders(),
     })
     if (!res.ok) throw new Error('Ошибка удаления')
+    setComments(prev => prev.filter(c => c.id !== id))
   }, [branchSlug])
 
   const createShare = useCallback(async (versionId: number) => {

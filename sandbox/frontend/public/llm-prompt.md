@@ -19,28 +19,1008 @@ HTML-артефакты не используются.
 - Числа и булевы (`true`/`false`) — без кавычек
 - Массивы через `- `
 - Отступы — 2 пробела
+- YAML flow-синтаксис `{ key: value }` разрешён для строк с одним объектом
 
-Пример:
+### Узел всегда имеет структуру
+
+Каждый узел (node) — это объект с полями `type`, `id`, `props` (опционально), `children` (опционально):
+
+```yaml
+type: "<тип компонента>"
+id: "<уникальный kebab-case идентификатор>"
+props:
+  propName: value
+children:
+  - type: "..."
+    id: "..."
+```
+
+**Правила id:**
+- Формат: `<префикс типа>-<описание>`, например `btn-save`, `tbl-devices`, `mc-cpu`
+- Без пробелов, без кириллицы (латиница, цифры, дефис)
+- Уникальный в пределах YAML-файла
+
+---
+
+## Полный рабочий пример (эталон)
+
+Это минимальный корректный экран. **Используй точно такую же структуру sidebar и breadcrumbs — они обязаны быть полными узлами с type/id/props.**
+
 ```yaml
 meta:
   title: "Устройства"
+
+state:
+  selectedFields:
+    - device_id
+    - type
+    - status
+
+data:
+  devices:
+    - { device_id: 1, type: router, status: ok }
+    - { device_id: 2, type: sensor, status: error }
+
+computed:
+  tableColumns:
+    source: "$state.selectedFields"
+    map:
+      device_id: { key: device_id, label: "ID", width: "120px" }
+      type: { key: type, label: "Тип", width: "140px" }
+      status: { key: status, label: "Статус", width: "120px", type: status-badge }
+
 pages:
   - id: "main"
     path: "/"
+    title: "Устройства"
     layout:
       type: "app-shell"
       id: "shell"
       props:
         sidebar:
-          items: []
-        breadcrumbs: []
+          type: "sidebar"
+          id: "sidebar-main"
+          props:
+            items:
+              - { id: "nav-devices", label: "Устройства", icon: "server", href: "/", state: "active" }
+
+        breadcrumbs:
+          type: "breadcrumbs"
+          id: "bc-main"
+          props:
+            items:
+              - { label: "Главная", href: "/" }
+              - { label: "Устройства" }
+
         content:
           type: "vstack"
-          id: "c"
+          id: "content-root"
           props:
             gap: 16
-          children: []
+          children:
+            - type: "card"
+              id: "card-filters"
+              props:
+                title: "Фильтры"
+                padding: 16
+              children:
+                - type: "hstack"
+                  id: "row-chips"
+                  props:
+                    gap: 8
+                  children:
+                    - type: "button-chip"
+                      id: "chip-id"
+                      props:
+                        label: "ID"
+                        variant: "accent"
+                        selected: "%includes($state.selectedFields, 'device_id')"
+                      on:
+                        click:
+                          type: "TOGGLE_ARRAY"
+                          target: "selectedFields"
+                          value: "device_id"
+                    - type: "button-chip"
+                      id: "chip-type"
+                      props:
+                        label: "Тип"
+                        variant: "accent"
+                        selected: "%includes($state.selectedFields, 'type')"
+                      on:
+                        click:
+                          type: "TOGGLE_ARRAY"
+                          target: "selectedFields"
+                          value: "type"
+
+            - type: "table"
+              id: "tbl-devices"
+              props:
+                columns: "$computed.tableColumns"
+                data: "$data.devices"
+
 modals: []
+```
+
+---
+
+## Справочник компонентов
+
+Ниже **исчерпывающий список ВСЕХ доступных типов** с допустимыми пропсами.
+Ты **не имеешь права** использовать пропсы, не перечисленные здесь, и не имеешь права выдумывать новые типы.
+
+### Layout (компоновка)
+
+#### `app-shell`
+Корневая обёртка страницы: sidebar (249px) + breadcrumbs + контент.
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `sidebar` | node | да | Полный узел `{ type: "sidebar", id: "...", props: { items: [...] } }` |
+| `breadcrumbs` | node | да | Полный узел `{ type: "breadcrumbs", id: "...", props: { items: [...] } }` |
+| `content` | node | да | Корневой узел контента (обычно vstack) |
+
+#### `vstack`
+Вертикальный стек. Дети: любые узлы.
+| Пропс | Тип | По умолчанию | Описание |
+|---|---|---|---|
+| `gap` | number | 16 | Отступ между детьми, макс 24 |
+| `align` | `"start"` `"center"` `"end"` `"stretch"` | `"stretch"` | Вертикальное выравнивание |
+
+```yaml
+- type: "vstack"
+  id: "c"
+  props: { gap: 16 }
+  children: [...]
+```
+
+#### `hstack`
+Горизонтальный стек. Дети: любые узлы.
+| Пропс | Тип | По умолчанию | Описание |
+|---|---|---|---|
+| `gap` | number | 16 | Отступ между детьми, макс 24 |
+| `justify` | `"start"` `"center"` `"end"` `"space-between"` | `"start"` | Горизонтальное выравнивание |
+| `align` | `"start"` `"center"` `"end"` `"baseline"` `"stretch"` | `"center"` | Вертикальное выравнивание |
+
+```yaml
+- type: "hstack"
+  id: "h"
+  props: { gap: 12, justify: "space-between", align: "center" }
+  children: [...]
+```
+
+#### `grid`
+Сетка. Дети: любые узлы, раскладываются по колонкам.
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `columns` | number | да | Число колонок (или CSS-строка `"repeat(4, 1fr)"`) |
+| `gap` | number | 16 | Отступ между ячейками, макс 24 |
+
+```yaml
+- type: "grid"
+  id: "g"
+  props: { columns: 4, gap: 16 }
+  children: [...]
+```
+
+#### `card`
+Карточка с рамкой и тенью. Дети: любые узлы.
+| Пропс | Тип | По умолчанию | Описание |
+|---|---|---|---|
+| `title` | string | — | Заголовок карточки |
+| `padding` | number | 24 | Внутренний отступ (px) |
+
+```yaml
+- type: "card"
+  id: "card-filters"
+  props: { title: "Фильтры", padding: 16 }
+  children:
+    - type: "vstack"
+      id: "inner"
+      props: { gap: 12 }
+      children: [...]
+```
+
+#### `text`
+Текстовый элемент. **Пропс называется `text`, НЕ `value`.**
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `text` | string | да | — | Текстовое содержимое |
+| `variant` | `"h1"` `"h2"` `"h3"` `"h4"` `"body"` `"body-sm"` `"caption"` | нет | `"body"` | Стиль текста |
+
+```yaml
+- type: "text"
+  id: "txt-label"
+  props: { text: "Выберите поля:", variant: "body-sm" }
+```
+
+#### `divider`
+Горизонтальный разделитель. Пропсов нет.
+
+```yaml
+- type: "divider"
+  id: "div-1"
+```
+
+---
+
+### Navigation (навигация)
+
+#### `sidebar`
+Боковое меню (249px). **Это ПОЛНЫЙ узел, а не просто объект с items.**
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `items` | array | да | Пункты меню |
+
+**Пункт меню (sidebar item):**
+| Поле | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `id` | string | да | Уникальный id пункта, например `"nav-devices"` |
+| `label` | string | да | Текст пункта |
+| `icon` | string | нет | Имя иконки lucide-react: `activity`, `server`, `settings`, `monitor`, `file-text`, `network`, `bar-chart-3`, `database`, `git-branch` |
+| `href` | string | нет | Путь страницы из `pages[].path` |
+| `state` | `"active"` `"default"` | нет | `"default"` | Состояние выделения |
+
+```yaml
+sidebar:
+  type: "sidebar"
+  id: "sidebar-main"
+  props:
+    items:
+      - { id: "nav-overview", label: "Обзор", icon: "activity", href: "/", state: "active" }
+      - { id: "nav-devices", label: "Устройства", icon: "server", href: "/devices", state: "default" }
+```
+
+#### `breadcrumbs`
+Хлебные крошки. **Это ПОЛНЫЙ узел, а не просто массив.**
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `items` | array | да | Элементы пути |
+
+**Элемент крошки (breadcrumb item):**
+| Поле | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `label` | string | да | Текст |
+| `href` | string | нет | Ссылка (опционально, последний элемент — без ссылки) |
+
+```yaml
+breadcrumbs:
+  type: "breadcrumbs"
+  id: "bc-main"
+  props:
+    items:
+      - { label: "Главная", href: "/" }
+      - { label: "Устройства" }
+```
+
+#### `tab-menu` + `tab-panel`
+Панель вкладок. Дети: только `tab-panel`.
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `items` | `Array<{id, label}>` | да | Определения вкладок |
+| `activeId` | string | нет | Активная вкладка (можно `"$state.viewMode"`) |
+
+`tab-panel`:
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `tabId` | string | да | Совпадает с `id` вкладки в tab-menu.items |
+
+```yaml
+- type: "tab-menu"
+  id: "tabs-view"
+  props:
+    items:
+      - { id: "tab-flat", label: "Плоский вид" }
+      - { id: "tab-hier", label: "Иерархический вид" }
+    activeId: "$state.viewMode"
+  on:
+    tabChange:
+      type: "SET"
+      target: "viewMode"
+  children:
+    - type: "tab-panel"
+      id: "panel-flat"
+      props:
+        tabId: "tab-flat"
+      children:
+        - type: "table"
+          id: "tbl-flat"
+          props: { ... }
+    - type: "tab-panel"
+      id: "panel-hier"
+      props:
+        tabId: "tab-hier"
+      children:
+        - type: "table"
+          id: "tbl-hier"
+          props: { ... }
+```
+
+---
+
+### Actions (кнопки)
+
+#### `button`
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `label` | string | да | — | Текст кнопки |
+| `variant` | `"accent"` `"default"` `"ghost"` | нет | `"accent"` | **Только эти 3 значения. НЕ `primary`, НЕ `secondary`.** |
+| `size` | `"sm"` `"lg"` | нет | `"lg"` | Размер |
+
+```yaml
+- type: "button"
+  id: "btn-save"
+  props: { label: "Сохранить", variant: "accent", size: "lg" }
+- type: "button"
+  id: "btn-cancel"
+  props: { label: "Отмена", variant: "ghost", size: "lg" }
+```
+
+Обработчики клика — через `on.click`:
+```yaml
+  on:
+    click:
+      type: "SET"
+      target: "selectedFields"
+      value: ["device_id", "type"]
+```
+
+#### `button-chip`
+Компактный чип-переключатель.
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `label` | string | да | — | Текст чипа |
+| `selected` | boolean | нет | false | Состояние выбран |
+| `variant` | `"accent"` | нет | — | Акцентный стиль |
+| `size` | `"sm"` | нет | — | Маленький размер |
+
+```yaml
+- type: "button-chip"
+  id: "chip-type"
+  props: { label: "Тип", variant: "accent", selected: true }
+```
+
+#### `button-dropdown`
+Кнопка с выпадающим меню.
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `label` | string | нет | `"Menu"` | Текст кнопки |
+| `icon` | string | нет | — | Иконка lucide-react |
+| `variant` | `"accent"` | нет | — | Акцентный стиль |
+| `size` | `"sm"` | нет | — | Размер |
+| `items` | `Array<{id, label, icon?}>` | нет | `[]` | Пункты меню |
+
+```yaml
+- type: "button-dropdown"
+  id: "btn-export"
+  props:
+    label: "Экспорт"
+    icon: "download"
+    variant: "accent"
+    size: "sm"
+    items:
+      - { id: "csv", label: "CSV", icon: "file-spreadsheet" }
+      - { id: "pdf", label: "PDF", icon: "file-text" }
+```
+
+---
+
+### Icons (иконки)
+
+#### `icon`
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `name` | string | да | — | Имя из lucide-react |
+| `size` | number | нет | 20 | Размер в px |
+
+```yaml
+- type: "icon"
+  id: "ic-search"
+  props: { name: "search", size: 16 }
+```
+
+#### `menu-button`
+Кнопка минибара (40×40).
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `icon` | string | да | — | Имя иконки |
+| `active` | boolean | нет | false | Активное состояние |
+| `title` | string | нет | — | Подсказка |
+
+```yaml
+- type: "menu-button"
+  id: "mb-settings"
+  props: { icon: "settings", active: false, title: "Настройки" }
+```
+
+---
+
+### Forms (формы)
+
+#### `input`
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `label` | string | нет | Метка над полем |
+| `placeholder` | string | нет | Placeholder |
+| `value` | string | нет | Значение по умолчанию |
+| `disabled` | boolean | нет | Заблокировано |
+| `size` | `"sm"` | нет | Маленький размер |
+
+```yaml
+- type: "input"
+  id: "input-search"
+  props: { placeholder: "Поиск...", size: "sm" }
+```
+
+#### `dropdown`
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `label` | string | нет | Метка |
+| `options` | `Array<{value, label}>` | да | Список опций |
+| `value` | string | нет | Выбранное значение |
+| `size` | `"sm"` | нет | Маленький размер |
+
+```yaml
+- type: "dropdown"
+  id: "dd-sort"
+  props:
+    options:
+      - { value: "name", label: "По имени" }
+      - { value: "date", label: "По дате" }
+    value: "name"
+    size: "sm"
+```
+
+#### `multi-select-dropdown`
+Мультиселект с группами и поиском.
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `label` | string | нет | Метка |
+| `options` | array | да | Опции: `{value, label, children?}` |
+| `value` | string[] | да | Выбранные значения |
+| `placeholder` | string | нет | Placeholder |
+| `allLabel` | string | нет | Текст "Выбрать все" |
+
+```yaml
+- type: "multi-select-dropdown"
+  id: "ms-type"
+  props:
+    label: "Тип узла"
+    placeholder: "Все типы"
+    allLabel: "Все типы"
+    options:
+      - value: "group1"
+        label: "Группа 1"
+        children:
+          - { value: "val1", label: "Значение 1" }
+          - { value: "val2", label: "Значение 2" }
+      - { value: "val3", label: "Значение 3" }
+    value: "$state.filters"
+  on:
+    change:
+      type: "SET"
+      target: "filters"
+```
+
+#### `textarea`
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `label` | string | нет | — | Метка |
+| `placeholder` | string | нет | — | Placeholder |
+| `value` | string | нет | — | Значение |
+| `rows` | number | нет | 4 | Число строк |
+| `disabled` | boolean | нет | false | Заблокировано |
+
+#### `checkbox`
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `label` | string | нет | — | Текст |
+| `checked` | boolean | нет | false | Состояние |
+| `disabled` | boolean | нет | false | Заблокирован |
+
+#### `switch`
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `label` | string | нет | — | Текст |
+| `checked` | boolean | нет | false | Состояние |
+| `disabled` | boolean | нет | false | Заблокирован |
+
+---
+
+### Tables (таблицы)
+
+#### `table`
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `columns` | array | да | Определения столбцов |
+| `data` | array | да | Строки данных |
+
+**Столбец (`columns[]`):**
+| Поле | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `key` | string | да | — | Ключ поля в data |
+| `label` | string | да | — | Заголовок столбца |
+| `width` | string | нет | — | CSS-ширина: `"200px"`, `"auto"` |
+| `type` | `"text"` `"status-badge"` `"badge"` `"button"` `"progress"` | нет | `"text"` | Тип ячейки |
+| `sortable` | boolean | нет | — | Можно сортировать |
+| `align` | `"left"` `"center"` `"right"` | нет | `"left"` | Выравнивание |
+
+Для `type: "button"` значение в data — объект `{ label, variant?, size? }`.
+Для `type: "status-badge"` значение — `"active"` / `"warning"` / `"critical"`.
+Для `type: "progress"` значение — число 0–100.
+
+```yaml
+- type: "table"
+  id: "tbl-services"
+  props:
+    columns:
+      - { key: "name", label: "Компонент", width: "auto" }
+      - { key: "status", label: "Статус", width: "160px", type: "status-badge" }
+      - { key: "version", label: "Версия", width: "120px", type: "badge" }
+      - { key: "cpu", label: "CPU", width: "140px", type: "progress" }
+      - { key: "action", label: "", width: "140px", type: "button" }
+    data:
+      - { name: "Auth Service", status: "active", version: "2.1.3", cpu: 43, action: { label: "Открыть", variant: "ghost", size: "sm" } }
+      - { name: "Metrics", status: "warning", version: "1.8.0", cpu: 78, action: { label: "Диагностика", variant: "default", size: "sm" } }
+```
+
+#### `table-controls`
+Панель управления таблицей (поиск + фильтры + кнопки действий).
+| Пропс | Тип | Описание |
+|---|---|---|
+| `search` | `{ placeholder? }` | Строка поиска |
+| `filters` | `Array<{id, label, active?}>` | Чипы фильтров |
+| `actions` | `Array<{id, label?, icon?, variant?, size?}>` | Кнопки действий справа |
+
+---
+
+### Data Display (отображение данных)
+
+#### `status-badge`
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `status` | `"active"` `"warning"` `"critical"` | да | — | Тип статуса |
+| `label` | string | нет | авто | Текст (по умолчанию: Активен / Внимание / Критично) |
+
+```yaml
+- type: "status-badge"
+  id: "sb-status"
+  props: { status: "active", label: "Работает" }
+```
+
+#### `badge`
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `label` | string | да | — | Текст |
+| `variant` | `"gray-strong"` `"blue"` `"green"` `"red"` `"orange"` `"purple"` | нет | `"gray-strong"` | Цвет |
+
+```yaml
+- type: "badge"
+  id: "b-version"
+  props: { label: "v2.1.3", variant: "blue" }
+```
+
+#### `progress`
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `value` | number | да | Значение 0–100 |
+| `label` | string | нет | Подпись |
+
+```yaml
+- type: "progress"
+  id: "pr-cpu"
+  props: { value: 78, label: "CPU 78%" }
+```
+
+#### `metric-card`
+Карточка метрики — для отображения ключевых показателей в гриде.
+**Это отдельный тип, НЕ `card`.** У `card` нет пропсов `value`/`description`.
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `label` | string | да | — | Название метрики |
+| `value` | number | да | — | **Число.** Не строка. |
+| `unit` | string | нет | — | Единица: `"%"`, `"GB"`, `"Мбит/с"` |
+| `status` | `"normal"` `"warning"` `"critical"` | нет | `"normal"` | Цвет индикатора |
+| `showProgress` | boolean | нет | true | Показывать прогресс-бар |
+
+```yaml
+- type: "metric-card"
+  id: "mc-cpu"
+  props: { label: "CPU", value: 78, unit: "%", status: "warning", showProgress: true }
+- type: "metric-card"
+  id: "mc-disk"
+  props: { label: "Диск", value: 120, unit: "GB", status: "normal", showProgress: false }
+```
+
+---
+
+### Feedback (обратная связь)
+
+#### `message`
+Информационная плашка.
+| Пропс | Тип | Обязателен | По умолчанию | Описание |
+|---|---|---|---|---|
+| `type` | `"info"` `"warning"` `"error"` `"success"` | да | — | Тип сообщения |
+| `text` | string | да | — | Текст сообщения |
+| `title` | string | нет | — | Заголовок |
+
+```yaml
+- type: "message"
+  id: "msg-warning"
+  props: { type: "warning", title: "Внимание", text: "Сервис перегружен" }
+```
+
+#### `tooltip`
+Подсказка при наведении. Дети: элемент-триггер.
+| Пропс | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `text` | string | да | Текст подсказки |
+| `position` | `"top"` `"bottom"` `"left"` `"right"` | `"top"` | Положение |
+
+#### `modal-trigger`
+Кликабельная область для открытия модалки. Дети: элемент-триггер.
+| Пропс | Тип | Описание |
+|---|---|---|
+| `onClick` | action | `"modal:<id>"` |
+
+#### `toast`
+Всплывающее уведомление. (Редко используется напрямую — чаще через `onClick: "toast:..."`)
+
+---
+
+### Interactive (интерактивные)
+
+#### `reorder-list`
+Перетаскиваемый список.
+| Пропс | Тип | Описание |
+|---|---|---|
+| `options` | `Array<{value, label}>` | Доступные опции |
+| `value` | string[] | Порядок элементов |
+
+#### `filter-group`
+Группа динамических фильтров по колонкам.
+| Пропс | Тип | Описание |
+|---|---|---|
+| `fields` | `Array<{key, label}>` | Поля фильтрации |
+| `values` | `Record<string, string[]>` | Доступные значения |
+| `activeFilters` | `Record<string, string[]>` | Активные фильтры |
+
+---
+
+### Report Builders (конструкторы отчётов)
+
+#### `report-builder` / `report-builder2` / `report-builder3`
+Специализированные компоненты для интерактивного построения отчётов.
+Используются когда нужен полноценный table builder с выбором полей, группировкой и фильтрацией.
+Для обычных таблиц используй `table`.
+
+---
+
+## Модальные окна
+
+Модалки определяются в верхнеуровневом массиве `modals[]`. **Это НЕ узлы (не имеют type/props).**
+Открываются через `onClick: "modal:<id>"` или `modal-trigger`.
+
+**Структура элемента в `modals[]`:**
+| Поле | Тип | Обязателен | Описание |
+|---|---|---|---|
+| `id` | string | да | Уникальный идентификатор |
+| `title` | string | да | Заголовок окна |
+| `size` | `"sm"` `"md"` `"lg"` | нет | Размер, по умолчанию `"md"` |
+| `children` | node[] | нет | Содержимое — массив узлов |
+
+```yaml
+modals:
+  - id: "confirm-restart"
+    title: "Перезапустить сервис?"
+    size: "sm"
+    children:
+      - type: "text"
+        id: "txt-confirm"
+        props:
+          text: "Сервис будет перезапущен. Возможен кратковременный сбой."
+          variant: "body"
+      - type: "hstack"
+        id: "modal-actions"
+        props:
+          gap: 12
+          justify: "end"
+        children:
+          - type: "button"
+            id: "btn-modal-cancel"
+            props:
+              label: "Отмена"
+              variant: "ghost"
+          - type: "button"
+            id: "btn-modal-confirm"
+            props:
+              label: "Перезапустить"
+              variant: "accent"
+```
+
+Открытие модалки:
+```yaml
+- type: "button"
+  id: "btn-open-modal"
+  props:
+    label: "Перезапустить"
+    variant: "accent"
+    onClick: "modal:confirm-restart"
+```
+
+---
+
+## State, Data, Computed (реактивность)
+
+### `state` — runtime-состояние
+```yaml
+state:
+  selectedFields: ["device_id", "type"]
+  page: 1
+  filters:
+    nodeType: []
+```
+Обращение в пропсах: `"$state.selectedFields"`, `"$state.page"`.
+
+### `data` — статические мок-данные
+```yaml
+data:
+  devices:
+    - { id: 1, name: "Router", status: "active" }
+    - { id: 2, name: "Switch", status: "warning" }
+```
+Обращение: `"$data.devices"`.
+
+### `computed` — производные значения
+Три вида:
+1. **`map`** — трансформация массива в новый массив:
+```yaml
+computed:
+  tableColumns:
+    source: "$state.selectedFields"
+    map:
+      device_id: { key: device_id, label: "ID", width: "120px" }
+      type: { key: type, label: "Тип", width: "140px" }
+```
+Обращение: `"$computed.tableColumns"`.
+
+2. **`filter`** — фильтрация массива:
+```yaml
+computed:
+  filteredData:
+    source: "$data.devices"
+    filter:
+      - { key: status, value: "$state.filters.status" }
+```
+
+3. **`expr`** — JavaScript-выражение:
+```yaml
+computed:
+  totalPages:
+    expr: "Math.ceil($computed.filteredData.length / $state.rowsPerPage)"
+```
+
+### `%if()` и `%includes()` — inline-выражения
+```yaml
+# Условное значение
+variant: "%if($state.page === 1, 'accent', 'ghost')"
+
+# Проверка вхождения в массив
+selected: "%includes($state.selectedFields, 'device_id')"
+```
+
+---
+
+## Event Handlers (обработчики событий)
+
+Современный формат — через `on:`:
+```yaml
+on:
+  click:                            # или change, tabChange
+    type: "SET"                     # Тип действия
+    target: "selectedFields"        # Куда пишем ($state.xxx)
+    value: ["device_id", "type"]    # Что пишем
+```
+
+Доступные действия (`type`):
+| Тип | Описание | Параметры |
+|---|---|---|
+| `SET` | Установить значение | `target`, `value` |
+| `TOGGLE` | Переключить boolean | `target` |
+| `TOGGLE_ARRAY` | Добавить/удалить из массива | `target`, `value` |
+| `INCREMENT` | +1 | `target`, `min?`, `max?` |
+| `DECREMENT` | -1 | `target`, `min?`, `max?` |
+| `NAVIGATE` | Переход на страницу | `target` (path) |
+| `MODAL_OPEN` | Открыть модалку | `target` (modal id) |
+| `MODAL_CLOSE` | Закрыть модалку | — |
+| `TOAST` | Показать тост | `text` |
+
+Доступные события (`on.*`):
+- `click` — для `button`, `button-chip`, `button-dropdown`
+- `change` — для `input`, `dropdown`, `switch`, `checkbox`, `multi-select-dropdown`, `reorder-list`, `filter-group`
+- `tabChange` — для `tab-menu`
+
+**Устаревший формат** (строка в `onClick`):
+```yaml
+onClick: "navigate:/devices"
+onClick: "modal:confirm-restart"
+onClick: "toast:Сохранено"
+```
+Предпочитай новый формат `on.click`.
+
+---
+
+## Многостраничные экраны (навигация)
+
+Если экран содержит несколько страниц — несколько элементов в `pages[]`:
+```yaml
+pages:
+  - id: "overview"
+    path: "/"
+    title: "Обзор"
+    layout: { ... }
+  - id: "devices"
+    path: "/devices"
+    title: "Устройства"
+    layout: { ... }
+```
+Каждая страница — свой `app-shell` со своим sidebar/breadcrumbs/content.
+
+В sidebar дублируй одинаковый набор `items`, меняя `state: "active"` у текущей страницы:
+```yaml
+# На странице /overview
+items:
+  - { id: "nav-overview", label: "Обзор", icon: "activity", href: "/", state: "active" }
+  - { id: "nav-devices", label: "Устройства", icon: "server", href: "/devices", state: "default" }
+
+# На странице /devices
+items:
+  - { id: "nav-overview", label: "Обзор", icon: "activity", href: "/", state: "default" }
+  - { id: "nav-devices", label: "Устройства", icon: "server", href: "/devices", state: "active" }
+```
+
+---
+
+## Частые ошибки LLM — НЕ ДЕЛАЙ ТАК
+
+### ❌ Упрощённый sidebar (без type/id)
+```yaml
+# НЕПРАВИЛЬНО
+sidebar:
+  items:
+    - label: "Обзор"
+```
+```yaml
+# ПРАВИЛЬНО
+sidebar:
+  type: "sidebar"
+  id: "sidebar-main"
+  props:
+    items:
+      - { id: "nav-overview", label: "Обзор", icon: "activity", href: "/", state: "active" }
+```
+
+### ❌ Упрощённый breadcrumbs (массив вместо узла)
+```yaml
+# НЕПРАВИЛЬНО
+breadcrumbs:
+  - label: "Главная"
+  - label: "Устройства"
+```
+```yaml
+# ПРАВИЛЬНО
+breadcrumbs:
+  type: "breadcrumbs"
+  id: "bc-main"
+  props:
+    items:
+      - { label: "Главная", href: "/" }
+      - { label: "Устройства" }
+```
+
+### ❌ Пропс `value` вместо `text` у text-компонента
+```yaml
+# НЕПРАВИЛЬНО
+- type: "text"
+  props:
+    value: "Привет"
+```
+```yaml
+# ПРАВИЛЬНО
+- type: "text"
+  props:
+    text: "Привет"
+```
+
+### ❌ Выдуманные пропсы у card
+`card` принимает только `title`, `padding` и `children`. НЕ используй `value`, `description`, `status` на `card`.
+
+```yaml
+# НЕПРАВИЛЬНО
+- type: "card"
+  props:
+    title: "CPU"
+    value: "78%"         # ❌ нет такого пропса
+    description: "..."   # ❌ нет такого пропса
+```
+```yaml
+# ПРАВИЛЬНО — используй metric-card для метрик
+- type: "metric-card"
+  props:
+    label: "CPU"
+    value: 78            # число, не строка
+    unit: "%"
+
+# ПРАВИЛЬНО — card с текстом внутри
+- type: "card"
+  props:
+    title: "Статус"
+  children:
+    - type: "text"
+      id: "txt-status"
+      props:
+        text: "Healthy"
+        variant: "h3"
+```
+
+### ❌ Невалидные variant у button
+Только три значения: `"accent"`, `"default"`, `"ghost"`.
+```yaml
+# НЕПРАВИЛЬНО
+variant: "primary"       # ❌
+variant: "secondary"     # ❌
+variant: "outline"       # ❌
+```
+```yaml
+# ПРАВИЛЬНО
+variant: "accent"        # ✅ основной
+variant: "ghost"         # ✅ второстепенный
+variant: "default"       # ✅ нейтральный
+```
+
+### ❌ Неправильная структура модалки
+```yaml
+# НЕПРАВИЛЬНО
+modals:
+  - id: "modal-1"
+    type: "modal"        # ❌ не узел, не нужно type
+    props:               # ❌ не нужно props
+      title: "..."
+      content:           # ❌ не content, а children
+        type: "vstack"
+```
+```yaml
+# ПРАВИЛЬНО
+modals:
+  - id: "modal-1"
+    title: "Заголовок"
+    size: "md"
+    children:
+      - type: "text"
+        id: "txt-modal"
+        props:
+          text: "Содержимое"
+```
+
+### ❌ Строка вместо числа в metric-card
+```yaml
+# НЕПРАВИЛЬНО
+value: "Healthy"         # ❌ metric-card.value обязан быть числом
+```
+```yaml
+# ПРАВИЛЬНО
+value: 1                 # ✅ число
+```
+
+### ❌ Отсутствие id у sidebar items
+Каждый sidebar item ОБЯЗАН иметь `id`.
+```yaml
+# НЕПРАВИЛЬНО
+items:
+  - { label: "Обзор", icon: "activity" }
+```
+```yaml
+# ПРАВИЛЬНО
+items:
+  - { id: "nav-overview", label: "Обзор", icon: "activity", href: "/", state: "default" }
 ```
 
 ---
@@ -130,7 +1110,7 @@ Figma REST API с Personal Access Token, **не требует плагина и
 Перед генерацией загрузи:
 1. `schema/components/_index.json` — список всех компонентов с кратким описанием
 2. `schema/components/<type>.json` — детали нужных компонентов (props, examples)
-3. `schema/example.json` — эталонный пример экрана
+3. Справочник компонентов выше — исчерпывающий список всех пропсов
 
 Стили и токены — в `tokens.json` (CSS-переменные), не задавай цвета вручную.
 
@@ -175,7 +1155,7 @@ mcp__figma-console__figma_get_styles        →  стили
 | `Table / Basic table` | `table` | `node.type === 'table'` | ✅ / ❌ |
 | ... | ... | ... | ... |
 
-- **Есть в рендерере** → помечай ✅, используй в JSON
+- **Есть в рендерере** → помечай ✅, используй в YAML
 - **Нет в рендерере** → помечай ❌, **остановись** (см. блок ниже)
 
 ---
@@ -192,7 +1172,7 @@ mcp__figma-console__figma_get_styles        →  стили
 | `VariableID:1932:1100` | `--color-button-filled-accent-background-default` | ✅ / ❌ |
 | ... | ... | ... |
 
-- **Токен найден** → используй его CSS-переменную в JSON/схеме
+- **Токен найден** → используй его CSS-переменную
 - **Токена нет** → помечай ❌, **остановись** (см. блок ниже)
 
 ---
@@ -227,7 +1207,7 @@ mcp__figma-console__figma_get_styles        →  стили
 2. **Компоненты** → создай `schema/components/<type>.json`, добавь запись в `_index.json`,
    реализуй рендеринг в `NodeRenderer.tsx`
 3. Убедись, что sandbox frontend компилируется без ошибок
-4. Только после этого переходи к Шагу 3 (генерация YAML)
+4. Только после этого переходи к генерации YAML
 
 ---
 
@@ -235,7 +1215,8 @@ mcp__figma-console__figma_get_styles        →  стили
 
 - Определи структуру: sidebar + страницы + компоненты
 - Сопоставь каждый визуальный элемент с типом из `_index.json`
-- Генерируй YAML строго по схеме из Шага 3
+- **Используй только те пропсы, которые перечислены в Справочнике компонентов**
+- Генерируй YAML строго по эталонному примеру
 
 ---
 
@@ -271,161 +1252,46 @@ node sandbox/scripts/embed-screen.js sandbox/screens/<screen-name>.yaml
 
 Обнови страницу в браузере — изменения появятся сразу.
 
-### Для OpenChamber Preview
-
-Страница работает в Preview без бэкенда — JSON экрана встроен в `index.html`.
-После каждого изменения экрана запускай `embed-screen.js` чтобы обновить встроенные данные.
-
----
-
-## Правила YAML/JSON
-
-### Структура узла
-```yaml
-type: "<тип из _index.json>"
-id: "<уникальный kebab-case id>"
-props: { ... }
-children: [ ... ]
-```
-
-### id — обязательно уникальный
-- Формат: `<тип>-<описание>`, например `btn-save`, `tbl-services`, `mc-cpu`
-- Нет пробелов, нет кириллицы
-
-### Структура экрана
-```yaml
-meta:
-  title: "Название экрана"
-pages:
-  - id: "main"
-    path: "/"
-    layout:
-      type: "app-shell"
-      id: "shell"
-      props:
-        sidebar: { ... }
-        breadcrumbs: { ... }
-        content: { ... }
-modals: []
-```
-
-### Навигация между страницами
-- Если экран многостраничный — добавляй несколько элементов в `pages[]`
-- В `sidebar.props.items[]` указывай `href` = `path` нужной страницы
-- Переходы через `onClick: 'navigate:<path>'`
-
-### Модалки
-- Определяй в верхнеуровневом `modals[]`
-- Открывай через `onClick: 'modal:<id>'`
-
-### Компоненты контента
-
-**Лейаут** (только gap, без padding — padding только внутри card):
-```yaml
-- type: "vstack"
-  id: "c"
-  props:
-    gap: 16
-  children: []
-- type: "hstack"
-  id: "h"
-  props:
-    gap: 12
-  children: []
-- type: "grid"
-  id: "g"
-  props:
-    columns: 3
-    gap: 16
-  children: []
-```
-
-**Таблица** (типы ячеек: text, status-badge, badge, progress, button):
-```yaml
-- type: "table"
-  id: "tbl-example"
-  props:
-    columns:
-      - key: "name"
-        label: "Имя"
-        width: "auto"
-      - key: "status"
-        label: "Статус"
-        width: "160px"
-        type: "status-badge"
-      - key: "version"
-        label: "Версия"
-        width: "120px"
-        type: "badge"
-      - key: "progress"
-        label: "Прогресс"
-        width: "160px"
-        type: "progress"
-      - key: "action"
-        label: ""
-        width: "140px"
-        type: "button"
-    data:
-      - name: "Сервис авторизации"
-        status: "active"
-        version: "2.1.3"
-        progress: 87
-        action:
-          label: "Открыть"
-          variant: "ghost"
-          size: "sm"
-```
-
-**Иконки** (имена из lucide-react):
-```yaml
-- type: "icon"
-  id: "ic-activity"
-  props:
-    name: "activity"
-    size: 20
-```
-
-**Кнопка минибара** (40×40, 4 состояния):
-```yaml
-- type: "menu-button"
-  id: "mb-settings"
-  props:
-    icon: "settings"
-    active: false
-    title: "Настройки"
-```
-
-### Мок-данные
-- Все данные в `props.data[]` — мок, максимально реалистичный
-- Используй русскоязычные названия для продуктовых сущностей
-
----
-
-## Обновление правил компонента
-
-Если дизайнер хочет изменить внешний вид компонента:
-1. Дизайнер описывает изменение (или показывает макет в Figma через `mcp__figma-console__figma_get_component_for_development_deep`)
-2. Обнови `schema/components/<type>.json`:
-   - Добавь/измени props и examples
-   - При необходимости измени figmaKey/figmaNodeId
-3. Внеси правки в `NodeRenderer.tsx` и CSS
-4. Сгенерируй обновлённый YAML и загрузи как новую версию в sandbox
-
 ---
 
 ## Что НЕ делать
 
 - Не создавай HTML-артефакты — только YAML
+- **Не упрощай sidebar до `{ items: [...] }`** — всегда полный узел `{ type: "sidebar", id: "...", props: { items: [...] } }`
+- **Не упрощай breadcrumbs до `[{ label: "..." }]`** — всегда полный узел `{ type: "breadcrumbs", id: "...", props: { items: [...] } }`
+- **Не используй `value` у `text`** — пропс называется `text`
+- **Не используй `primary`/`secondary` у `button`** — только `accent`/`default`/`ghost`
+- **Не добавляй `value`/`description` на `card`** — используй `metric-card` или вкладывай `text` в `children`
+- **Не передавай строку в `metric-card.value`** — это число
+- **Не оборачивай модалку в `type: "modal"` и `props`** — модалка это `{ id, title, size?, children: [...] }`
+- Не забывай `id` у sidebar items
+- **Не выдумывай пропсы, которых нет в Справочнике компонентов**
+- **Не выдумывай новые типы компонентов**
 - Не используй JSON для загрузки — используй YAML
-- **Не забывай запускать `embed-screen.js` после создания/обновления экрана** — иначе страница не откроется
+- **Не забывай запускать `embed-screen.js` после создания/обновления экрана**
 - Не показывай YAML дизайнеру — сразу встраивай в sandbox и давай ссылку
-- Не используй для работы с Figma ничего кроме `mcp__Framelink_Figma_MCP__*`
-- Не обращайся к Figma без проверки наличия figma-console MCP (Шаг 0)
-- Не используй для работы с Figma ничего кроме `mcp__figma-console__*`
+- Не используй для работы с Figma ничего кроме `mcp__Framelink_Figma_MCP__*` или `mcp__figma-console__*`
 - **Не генерируй YAML до завершения аудита компонентов и токенов** (Шаги 2.2–2.3)
-- **Не пропускай стоп при наличии ❌** — не используй заглушки вместо отсутствующих компонентов
-- Не используй компоненты вне палитры (`_index.json`)
+- **Не пропускай стоп при наличии ❌**
 - Не задавай hex-цвета напрямую — только CSS-переменные из токенов
 - Не создавай страницы шире 1920px
-- Не придумывай новые типы компонентов без обновления `_index.json` и соответствующего файла схемы
-- Не добавляй padding в vstack/hstack/grid — только gap (макс. 16)
+- Не добавляй padding в vstack/hstack/grid — только gap (макс. 24)
+
+---
+
+## Памятка: критическая структура узла
+
+```
+Каждый узел:
+  type:    обязательно
+  id:      обязательно, kebab-case, уникальный
+  props:   опционально (строго по справочнику)
+  children: опционально (массив узлов)
+
+Исключения:
+  - Элементы modals[]: не узлы → { id, title, size?, children }
+  - sidebar items: { id, label, icon?, href?, state? }
+  - breadcrumbs items: { label, href? }
+  - table columns: { key, label, width?, type?, sortable?, align? }
+  - table data rows: произвольные ключи для columns
+```

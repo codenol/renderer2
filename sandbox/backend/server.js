@@ -318,15 +318,30 @@ app.get('/api/hierarchy', { preHandler: [authGuard] }, async (req) => {
           nodeType: pg.node_type,
           isArchived: !!pg.is_archived,
           createdAt: new Date(pg.created_at * 1000).toISOString(),
-          features: features.map(f => ({
-            slug: f.slug,
-            title: f.title,
-            nodeType: 'feature',
-            isArchived: !!f.is_archived,
-            versionCount: f.version_count,
-            latestVersion: f.latest_version,
-            createdAt: new Date(f.created_at * 1000).toISOString(),
-          })),
+          features: features.map(f => {
+            const versions = db.prepare(`
+              SELECT v.* FROM versions v
+              WHERE v.branch_slug = ? AND v.is_archived = 0
+              ORDER BY v.version_number DESC
+              LIMIT 10
+            `).all(f.slug)
+
+            return {
+              slug: f.slug,
+              title: f.title,
+              nodeType: 'feature',
+              isArchived: !!f.is_archived,
+              versionCount: f.version_count,
+              latestVersion: f.latest_version,
+              createdAt: new Date(f.created_at * 1000).toISOString(),
+              versions: versions.map(v => ({
+                id: v.id,
+                versionNumber: v.version_number,
+                isArchived: !!v.is_archived,
+                createdAt: new Date(v.created_at * 1000).toISOString(),
+              })),
+            }
+          }),
         }
       }),
     }

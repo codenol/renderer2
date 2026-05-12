@@ -14,6 +14,7 @@ interface HierarchyFeature {
   versionCount: number
   latestVersion: number
   createdAt: string
+  versions: { id: number; versionNumber: number; isArchived: boolean; createdAt: string }[]
 }
 
 interface HierarchyPage {
@@ -287,31 +288,60 @@ export function DashboardView() {
                                   <span className={styles.emptyRowText}>Нет фич</span>
                                 </div>
                               ) : (
-                                pg.features.map(f => (
-                                  <div
-                                    key={f.slug}
-                                    className={`${styles.featRow} ${f.isArchived ? styles['card--archived'] : ''}`}
-                                    onClick={() => navigate(`/branch/${f.slug}`)}
-                                  >
-                                    <span className={styles.cardIcon}>
-                                      <LIcon name="layout" size={16} strokeWidth={1.6} />
-                                    </span>
-                                    <span className={styles.featTitle}>{f.title}</span>
-                                    {f.versionCount > 0 && (
-                                      <span className={styles.featVersion}>
-                                        v{f.latestVersion} ({f.versionCount})
-                                      </span>
-                                    )}
-                                    {f.versionCount === 0 && (
-                                      <span className={styles.featNoVersion}>нет версий</span>
-                                    )}
-                                    {isDesigner && (
-                                      <button className={styles.cardMenu} onClick={e => openContext(e, f.slug, 'feature', f.title, f.isArchived)}>
-                                        <LIcon name="more-vertical" size={16} />
-                                      </button>
-                                    )}
-                                  </div>
-                                ))
+                                pg.features.map(f => {
+                                  const isFExp = expanded.has(f.slug)
+                                  return (
+                                    <div key={f.slug} className={`${f.isArchived ? styles['card--archived'] : ''}`}>
+                                      <div className={styles.subCardHeader} onClick={() => toggleExpand(f.slug)}
+                                        style={{ paddingLeft: 54 }}>
+                                        <span className={styles.cardChevron}>
+                                          <LIcon name={isFExp ? 'chevron-down' : 'chevron-right'} size={14} />
+                                        </span>
+                                        <span className={styles.cardIcon}>
+                                          <LIcon name="layout" size={16} strokeWidth={1.6} />
+                                        </span>
+                                        <span className={styles.cardTitle}>{f.title}</span>
+                                        {f.versionCount > 0 && (
+                                          <span className={styles.featVersion}>
+                                            v{f.latestVersion} ({f.versionCount})
+                                          </span>
+                                        )}
+                                        {f.versionCount === 0 && (
+                                          <span className={styles.featNoVersion}>нет версий</span>
+                                        )}
+                                        {isDesigner && (
+                                          <button className={styles.cardMenu} onClick={e => openContext(e, f.slug, 'feature', f.title, f.isArchived)}>
+                                            <LIcon name="more-vertical" size={16} />
+                                          </button>
+                                        )}
+                                      </div>
+                                      {isFExp && (
+                                        <div className={styles.cardChildren}>
+                                          {f.versions.length === 0 ? (
+                                            <div className={styles.emptyRow}>
+                                              <span className={styles.emptyRowText}>Нет версий</span>
+                                            </div>
+                                          ) : (
+                                            f.versions.map(v => (
+                                              <div
+                                                key={v.id}
+                                                className={styles.featRow}
+                                                onClick={() => navigate(`/branch/${f.slug}`)}
+                                                style={{ paddingLeft: 70 }}
+                                              >
+                                                <LIcon name="git-branch" size={14} style={{ flexShrink: 0, color: 'var(--color-icon-secondary, #9ca3af)' }} />
+                                                <span className={styles.featTitle} style={{ flex: 1 }}>Версия {v.versionNumber}</span>
+                                                <span className={styles.featVersion}>
+                                                  {new Date(v.createdAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </span>
+                                              </div>
+                                            ))
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })
                               )}
                             </div>
                           )}

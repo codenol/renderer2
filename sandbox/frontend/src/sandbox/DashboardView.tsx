@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/auth/AuthContext'
+import { LIcon } from '@/renderer/components/LIcon'
 import styles from './DashboardView.module.scss'
 
 const BACKEND = 'http://localhost:3001'
@@ -191,7 +192,9 @@ export function DashboardView() {
 
       {products.length === 0 && !showArchived && (
         <div className={styles.empty}>
-          <div className={styles.emptyIcon}>📦</div>
+          <div className={styles.emptyIcon}>
+            <LIcon name="package" size={48} strokeWidth={1.2} />
+          </div>
           <div className={styles.emptyText}>Нет продуктов</div>
           {isDesigner && (
             <button className={styles.createBtn} onClick={() => openCreate('product')}>
@@ -207,13 +210,17 @@ export function DashboardView() {
           return (
             <div key={p.slug} className={`${styles.card} ${p.isArchived ? styles['card--archived'] : ''}`}>
               <div className={styles.cardHeader} onClick={() => toggleExpand(p.slug)}>
-                <span className={styles.cardChevron}>{isExp ? '▾' : '▸'}</span>
-                <span className={styles.cardIcon}>📦</span>
+                <span className={styles.cardChevron}>
+                  <LIcon name={isExp ? 'chevron-down' : 'chevron-right'} size={14} />
+                </span>
+                <span className={styles.cardIcon}>
+                  <LIcon name="package" size={18} strokeWidth={1.6} />
+                </span>
                 <span className={styles.cardTitle}>{p.title}</span>
                 {p.isArchived && <span className={styles.cardBadge}>архив</span>}
                 {isDesigner && (
                   <button className={styles.cardMenu} onClick={e => openContext(e, p.slug, 'product', p.title, p.isArchived)}>
-                    ⋯
+                    <LIcon name="more-vertical" size={16} />
                   </button>
                 )}
               </div>
@@ -235,8 +242,12 @@ export function DashboardView() {
                       return (
                         <div key={pg.slug} className={`${styles.subCard} ${pg.isArchived ? styles['card--archived'] : ''}`}>
                           <div className={styles.subCardHeader} onClick={() => toggleExpand(pg.slug)}>
-                            <span className={styles.cardChevron}>{isPgExp ? '▾' : '▸'}</span>
-                            <span className={styles.cardIcon}>📄</span>
+                            <span className={styles.cardChevron}>
+                              <LIcon name={isPgExp ? 'chevron-down' : 'chevron-right'} size={14} />
+                            </span>
+                            <span className={styles.cardIcon}>
+                              <LIcon name="file-text" size={18} strokeWidth={1.6} />
+                            </span>
                             <span className={styles.cardTitle}>{pg.title}</span>
                             {pg.isArchived && <span className={styles.cardBadge}>архив</span>}
                             {isDesigner && (
@@ -245,7 +256,7 @@ export function DashboardView() {
                                   + Фича
                                 </button>
                                 <button className={styles.cardMenu} onClick={e => openContext(e, pg.slug, 'page', pg.title, pg.isArchived)}>
-                                  ⋯
+                                  <LIcon name="more-vertical" size={16} />
                                 </button>
                               </>
                             )}
@@ -264,7 +275,9 @@ export function DashboardView() {
                                     className={`${styles.featRow} ${f.isArchived ? styles['card--archived'] : ''}`}
                                     onClick={() => navigate(`/branch/${f.slug}`)}
                                   >
-                                    <span className={styles.cardIcon}>📑</span>
+                                    <span className={styles.cardIcon}>
+                                      <LIcon name="layout" size={16} strokeWidth={1.6} />
+                                    </span>
                                     <span className={styles.featTitle}>{f.title}</span>
                                     {f.versionCount > 0 && (
                                       <span className={styles.featVersion}>
@@ -276,7 +289,7 @@ export function DashboardView() {
                                     )}
                                     {isDesigner && (
                                       <button className={styles.cardMenu} onClick={e => openContext(e, f.slug, 'feature', f.title, f.isArchived)}>
-                                        ⋯
+                                        <LIcon name="more-vertical" size={16} />
                                       </button>
                                     )}
                                   </div>
@@ -299,13 +312,16 @@ export function DashboardView() {
       {ctxMenu && (
         <div ref={ctxRef} className={styles.contextMenu} style={{ left: ctxMenu.x, top: ctxMenu.y }}>
           <button className={styles.contextItem} onClick={() => renameItem(ctxMenu.slug)}>
-            ✏️ Переименовать
+            <LIcon name="edit" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            Переименовать
           </button>
           <button className={styles.contextItem} onClick={() => archiveItem(ctxMenu.slug, !ctxMenu.isArchived)}>
-            {ctxMenu.isArchived ? '📂 Разархивировать' : '📦 Архивировать'}
+            <LIcon name={ctxMenu.isArchived ? 'archive' : 'archive'} size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            {ctxMenu.isArchived ? 'Разархивировать' : 'Архивировать'}
           </button>
           <button className={`${styles.contextItem} ${styles['contextItem--danger']}`} onClick={() => deleteItem(ctxMenu.slug)}>
-            🗑 Удалить
+            <LIcon name="trash-2" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            Удалить
           </button>
         </div>
       )}
@@ -318,7 +334,9 @@ export function DashboardView() {
               <span className={styles.modalTitle}>
                 {createType === 'product' ? 'Новый продукт' : createType === 'page' ? 'Новая страница' : 'Новая фича'}
               </span>
-              <button className={styles.modalClose} onClick={() => setCreateOpen(false)}>✕</button>
+              <button className={styles.modalClose} onClick={() => setCreateOpen(false)}>
+                <LIcon name="x" size={18} />
+              </button>
             </div>
             {createError && <div className={styles.error}>{createError}</div>}
             <div className={styles.modalBody}>

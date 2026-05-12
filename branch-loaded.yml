@@ -1,0 +1,139 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "Список продуктов" [ref=e6] [cursor=pointer]:
+      - img [ref=e7]
+    - generic [ref=e12]:
+      - button "Комментировать" [ref=e13] [cursor=pointer]:
+        - img [ref=e14]
+      - button "Редактор YAML" [ref=e16] [cursor=pointer]:
+        - img [ref=e17]
+      - button "Поделиться" [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+    - generic [ref=e27]:
+      - button "Настройки" [ref=e28] [cursor=pointer]:
+        - img [ref=e29]
+      - button "S" [ref=e33] [cursor=pointer]:
+        - generic [ref=e34]: S
+  - main [ref=e35]:
+    - generic [ref=e40]:
+      - complementary [ref=e41]:
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - button "Безопасность" [ref=e45] [cursor=pointer]:
+              - img [ref=e46]
+            - button "Уведомления" [ref=e49] [cursor=pointer]:
+              - img [ref=e50]
+            - button "Обзор" [ref=e53] [cursor=pointer]:
+              - img [ref=e54]
+            - button "Закладки" [ref=e59] [cursor=pointer]:
+              - img [ref=e60]
+          - generic [ref=e62]:
+            - button "Настройки" [ref=e63] [cursor=pointer]:
+              - img [ref=e64]
+            - button "Тёмная тема" [ref=e67] [cursor=pointer]:
+              - img [ref=e68]
+            - button "Галерея" [ref=e70] [cursor=pointer]:
+              - img [ref=e71]
+            - button "Помощь" [ref=e75] [cursor=pointer]:
+              - img [ref=e76]
+            - button "AB" [ref=e79]
+        - generic [ref=e80]:
+          - img "^геном 2.0" [ref=e82]
+          - navigation [ref=e91]:
+            - button "Здоровье ПАК" [ref=e92] [cursor=pointer]:
+              - img [ref=e94]
+              - generic [ref=e99]: Здоровье ПАК
+            - button "Обзор" [ref=e100] [cursor=pointer]:
+              - generic [ref=e103]: Обзор
+            - button "Объекты" [ref=e104] [cursor=pointer]:
+              - img [ref=e106]
+              - generic [ref=e113]: Объекты
+          - button "Свернуть" [ref=e116] [cursor=pointer]:
+            - img [ref=e117]
+            - generic [ref=e119]: Свернуть
+      - generic [ref=e122]:
+        - navigation "breadcrumb" [ref=e123]:
+          - button "ПАК" [ref=e125] [cursor=pointer]
+          - generic [ref=e126]:
+            - generic [ref=e127]: •
+            - generic [ref=e128]: Здоровье ПАК
+        - generic [ref=e129]:
+          - generic [ref=e130]: ⚠️
+          - generic [ref=e132]: Компонент Event Processor работает в деградированном режиме. Требуется проверка конфигурации.
+        - generic [ref=e133]:
+          - generic [ref=e134]:
+            - generic [ref=e135]: CPU
+            - generic [ref=e136]:
+              - text: "75"
+              - generic [ref=e137]: "%"
+            - generic [ref=e141]: 75%
+          - generic [ref=e142]:
+            - generic [ref=e143]: RAM
+            - generic [ref=e144]:
+              - text: "50"
+              - generic [ref=e145]: "%"
+            - generic [ref=e149]: 50%
+          - generic [ref=e150]:
+            - generic [ref=e151]: Диск
+            - generic [ref=e152]:
+              - text: "25"
+              - generic [ref=e153]: "%"
+            - generic [ref=e157]: 25%
+          - generic [ref=e158]:
+            - generic [ref=e159]: Сеть
+            - generic [ref=e160]:
+              - text: "100"
+              - generic [ref=e161]: Мбит/с
+        - table [ref=e163]:
+          - rowgroup [ref=e164]:
+            - row "Компонент Статус Версия Действие" [ref=e165]:
+              - columnheader "Компонент" [ref=e166]
+              - columnheader "Статус" [ref=e167]
+              - columnheader "Версия" [ref=e168]
+              - columnheader "Действие" [ref=e169]
+          - rowgroup [ref=e170]:
+            - row "Auth Service Работает v2.1.4 Перезапуск" [ref=e171]:
+              - cell "Auth Service" [ref=e172]
+              - cell "Работает" [ref=e173]:
+                - generic [ref=e174]: Работает
+              - cell "v2.1.4" [ref=e176]:
+                - generic [ref=e177]: v2.1.4
+              - cell "Перезапуск" [ref=e178]:
+                - button "Перезапуск" [ref=e179] [cursor=pointer]:
+                  - generic [ref=e180]: Перезапуск
+            - row "Metrics Collector Деградация v1.8.2 Диагностика" [ref=e181]:
+              - cell "Metrics Collector" [ref=e182]
+              - cell "Деградация" [ref=e183]:
+                - generic [ref=e184]: Деградация
+              - cell "v1.8.2" [ref=e186]:
+                - generic [ref=e187]: v1.8.2
+              - cell "Диагностика" [ref=e188]:
+                - button "Диагностика" [ref=e189] [cursor=pointer]:
+                  - generic [ref=e190]: Диагностика
+            - row "Storage Engine Работает v3.0.1 Перезапуск" [ref=e191]:
+              - cell "Storage Engine" [ref=e192]
+              - cell "Работает" [ref=e193]:
+                - generic [ref=e194]: Работает
+              - cell "v3.0.1" [ref=e196]:
+                - generic [ref=e197]: v3.0.1
+              - cell "Перезапуск" [ref=e198]:
+                - button "Перезапуск" [ref=e199] [cursor=pointer]:
+                  - generic [ref=e200]: Перезапуск
+            - row "Event Processor Недоступен v2.0.0 Диагностика" [ref=e201]:
+              - cell "Event Processor" [ref=e202]
+              - cell "Недоступен" [ref=e203]:
+                - generic [ref=e204]: Недоступен
+              - cell "v2.0.0" [ref=e206]:
+                - generic [ref=e207]: v2.0.0
+              - cell "Диагностика" [ref=e208]:
+                - button "Диагностика" [ref=e209] [cursor=pointer]:
+                  - generic [ref=e210]: Диагностика
+            - row "Config Manager Работает v1.5.9 Перезапуск" [ref=e211]:
+              - cell "Config Manager" [ref=e212]
+              - cell "Работает" [ref=e213]:
+                - generic [ref=e214]: Работает
+              - cell "v1.5.9" [ref=e216]:
+                - generic [ref=e217]: v1.5.9
+              - cell "Перезапуск" [ref=e218]:
+                - button "Перезапуск" [ref=e219] [cursor=pointer]:
+                  - generic [ref=e220]: Перезапуск

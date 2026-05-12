@@ -52,17 +52,20 @@ export function YamlEditorModal({
           >
             {submitting ? '...' : submitLabel}
           </button>
-          <label className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`} style={{ cursor: 'pointer' }}>
+          <label className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`} style={{ cursor: 'pointer' }}
+            onClick={() => console.log('[YamlEditor] Загрузить файл — label clicked')}>
             Загрузить файл
             <input
               type="file"
               accept=".yaml,.yml"
               style={{ display: 'none' }}
               onChange={async e => {
+                console.log('[YamlEditor] input onChange, files:', e.target.files?.length ?? 0)
                 const file = e.target.files?.[0]
                 if (!file) return
                 e.target.value = ''
                 const text = await file.text()
+                console.log('[YamlEditor] file loaded:', file.name, text.length, 'chars')
                 onFileSelect(text)
               }}
             />

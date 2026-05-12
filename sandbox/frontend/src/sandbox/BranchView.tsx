@@ -99,6 +99,11 @@ export function BranchView() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  // ─── Toast on comment mode ────────────────────────────────────────────────
+  useEffect(() => {
+    if (commentMode) showToast('Режим комментариев — кликните на элемент экрана · Esc — выйти')
+  }, [commentMode])
+
   function showToast(msg: string) {
     setToastMsg(msg)
     setCopyToast(true)
@@ -242,10 +247,6 @@ export function BranchView() {
 
   return (
     <div className={styles.wrap}>
-  // Show toast when entering comment mode
-  useEffect(() => {
-    if (commentMode) showToast('Режим комментариев — кликните на элемент экрана · Esc — выйти')
-  }, [commentMode])
       {commentError && <div className={styles.commentError}>{commentError}</div>}
       {copyToast && <div className={styles.copyToast}>{toastMsg}</div>}
 

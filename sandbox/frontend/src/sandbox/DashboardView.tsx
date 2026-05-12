@@ -413,12 +413,12 @@ export function DashboardView() {
                                       </div>
                                       {isFExp && (
                                         <div className={styles.cardChildren}>
-                                          {f.versions.length === 0 ? (
+                                          {(f.versions || []).length === 0 ? (
                                             <div className={styles.emptyRow}>
                                               <span className={styles.emptyRowText}>Нет версий</span>
                                             </div>
                                           ) : (
-                                            f.versions.map(v => (
+                                            (f.versions || []).map(v => (
                                               <div
                                                 key={v.id}
                                                 className={styles.featRow}

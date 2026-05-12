@@ -34,6 +34,7 @@ CLAUDE.md
 _tokens.scss
 after-filter-removal
 cmdb-snapshot
+component-map.json
 current-state
 embedded-test.png
 export-button.png

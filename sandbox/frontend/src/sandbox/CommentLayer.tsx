@@ -115,6 +115,12 @@ export function CommentLayer({
   const popupRef = useRef<HTMLDivElement>(null)
   const markerRefs = useRef<Map<number, HTMLDivElement>>(new Map())
   const tooltipRef = useRef<HTMLDivElement>(null)
+  const rafRef = useRef<number>(0)
+
+  // ─── Block hover state ────────────────────────────────────────────────────
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null)
+  const [hoveredRect, setHoveredRect] = useState<DOMRect | null>(null)
+  const layerRef = useRef<HTMLDivElement>(null)
 
   // ─── Flatten comments (needed early for LLM init) ─────────────────────────
   const allComments = flattenCommentTree(commentTree)
@@ -183,18 +189,44 @@ export function CommentLayer({
     setTooltipVisible(true)
   }, [activeComment])
 
+  // ─── Mousemove: detect block under cursor for highlight ───────────────────
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!commentMode) return
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    rafRef.current = requestAnimationFrame(() => {
+      const elements = document.elementsFromPoint(e.clientX, e.clientY)
+      const nodeEl = elements.find(el => (el as HTMLElement).hasAttribute?.('data-node-id')) as HTMLElement | undefined
+      if (nodeEl) {
+        const nodeId = nodeEl.getAttribute('data-node-id')
+        const rect = nodeEl.getBoundingClientRect()
+        setHoveredNodeId(nodeId)
+        setHoveredRect(rect)
+      } else {
+        setHoveredNodeId(null)
+        setHoveredRect(null)
+      }
+    })
+  }, [commentMode])
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredNodeId(null)
+    setHoveredRect(null)
+  }, [])
+
   // ─── Click to place comment ──────────────────────────────────────────────
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!commentMode) return
     if (popupRef.current?.contains(e.target as Node)) return
     if ((e.target as HTMLElement).closest('[data-comment-marker]')) return
 
+    // Require a hovered block to place a comment
+    if (!hoveredNodeId) return
+
     const rect = e.currentTarget.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
 
-    const nodeEl = (e.target as HTMLElement).closest('[data-node-id]')
-    const nodeId = nodeEl?.getAttribute('data-node-id') ?? undefined
+    const nodeId = hoveredNodeId
 
     const popupWidth = 280
     const popupHeight = 260
@@ -207,7 +239,9 @@ export function CommentLayer({
     setActiveComment(null)
     setRejectingId(null)
     setReplyText('')
-  }, [commentMode])
+    setHoveredNodeId(null)
+    setHoveredRect(null)
+  }, [commentMode, hoveredNodeId])
 
   // ─── Submit new comment ──────────────────────────────────────────────────
   async function submitComment() {
@@ -321,7 +355,7 @@ export function CommentLayer({
                 <span className={styles.replyDate}>
                   {new Date(r.createdAt).toLocaleString('ru-RU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </span>
-                {isDesigner && (
+                {commentMode && isDesigner && (
                   <button
                     className={`${styles.btnLlmMini} ${llmIds.has(r.id) ? styles['btnLlmMini--active'] : ''}`}
                     onClick={() => toggleLLM(r.id)}
@@ -334,7 +368,7 @@ export function CommentLayer({
               <div className={styles.replyText}>{r.text}</div>
               {r.status === 'resolved' && <div className={styles.statusResolvedMini}>✓ Выполнено</div>}
               {r.status === 'rejected' && <div className={styles.statusRejectedMini}>✗ Отклонено{r.rejectReason ? `: ${r.rejectReason}` : ''}</div>}
-              {isOpen && isDesigner && (
+              {commentMode && isOpen && isDesigner && (
                 <div className={styles.replyActions}>
                   <button className={styles.btnResolveMini} onClick={() => resolveComment(r.id)}>✓</button>
                   <button className={styles.btnRejectMini} onClick={() => { setRejectingId(r.id); setRejectText('') }}>✗</button>
@@ -350,9 +384,25 @@ export function CommentLayer({
 
   return (
     <div
+      ref={layerRef}
       className={`${styles.layer} ${commentMode ? styles['layer--active'] : ''}`}
       onClick={handleClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
+      {/* Block highlight on hover */}
+      {commentMode && hoveredRect && (
+        <div
+          className={styles.highlight}
+          style={{
+            left: hoveredRect.left,
+            top: hoveredRect.top,
+            width: hoveredRect.width,
+            height: hoveredRect.height,
+          }}
+        />
+      )}
+
       {/* Existing comment markers */}
       {allSorted.map(c => {
         const isCurrent = c.versionId === currentVersionId
@@ -424,7 +474,7 @@ export function CommentLayer({
               {!isCurrent && (
                 <span className={styles.tooltipVersion}>v{c.versionNumber}</span>
               )}
-              {isDesigner && (
+              {commentMode && isDesigner && (
                 <button
                   className={`${styles.btnLlm} ${llmIds.has(c.id) ? styles['btnLlm--active'] : ''}`}
                   onClick={() => toggleLLM(c.id)}
@@ -433,18 +483,20 @@ export function CommentLayer({
                   ✨
                 </button>
               )}
+              {commentMode && (
               <button
                 className={styles.tooltipDelete}
                 onClick={() => { onDelete(c.id); setActiveComment(null) }}
                 title="Удалить"
               >✕</button>
+              )}
             </div>
 
             {/* Text */}
             <div className={styles.tooltipText}>{c.text}</div>
 
             {/* LLM button near root comment text */}
-            {isDesigner && (
+            {commentMode && isDesigner && (
               <button
                 className={`${styles.btnLlmMini} ${llmIds.has(c.id) ? styles['btnLlmMini--active'] : ''}`}
                 onClick={(e) => { e.stopPropagation(); toggleLLM(c.id) }}
@@ -479,8 +531,8 @@ export function CommentLayer({
             {/* Thread replies */}
             {renderReplies(c.id)}
 
-            {/* Inline reply (for open comments) */}
-            {isOpen && (
+            {/* Inline reply (for open comments, only in comment mode) */}
+            {commentMode && isOpen && (
               <div className={styles.replyInline}>
                 <textarea
                   className={styles.replyInput}
@@ -503,8 +555,8 @@ export function CommentLayer({
               </div>
             )}
 
-            {/* Actions for open comments (designer only) */}
-            {isOpen && rejectingId !== c.id && isDesigner && (
+            {/* Actions for open comments (designer only, only in comment mode) */}
+            {commentMode && isOpen && rejectingId !== c.id && isDesigner && (
               <div className={styles.tooltipActions}>
                 <button className={styles.btnResolve} onClick={() => resolveComment(c.id)}>
                   ✓ Выполнено
@@ -519,7 +571,7 @@ export function CommentLayer({
             )}
 
             {/* Reject form */}
-            {isOpen && rejectingId === c.id && (
+            {commentMode && isOpen && rejectingId === c.id && (
               <div className={styles.rejectForm}>
                 <textarea
                   className={styles.rejectInput}

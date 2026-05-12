@@ -1,0 +1,222 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  min-width: 180px;
+  flex: 1;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-default, #d1d5db);
+  background: #fff;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: #9ca3af;
+  }
+
+  &Open {
+    border-color: #2d98b4;
+    box-shadow: 0 0 0 3px rgba(45, 152, 180, 0.12);
+  }
+}
+
+.triggerText {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.triggerChevron {
+  flex-shrink: 0;
+  color: #9ca3af;
+  transition: transform 0.15s;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  min-width: 260px;
+  background: #fff;
+  border: 1px solid var(--color-border-default, #d1d5db);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-default, #d1d5db);
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+.searchInput {
+  flex: 1;
+  height: 30px;
+  border: 1px solid var(--color-border-default, #d1d5db);
+  border-radius: 8px;
+  padding: 0 10px;
+  outline: none;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  background: #fff;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: #2d98b4;
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+}
+
+.list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 36px;
+  padding-right: 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+
+  &Checked {
+    // subtle highlight for checked rows
+  }
+
+  &All {
+    font-weight: 600;
+    border-bottom: 1px solid var(--color-border-default, #d1d5db);
+    margin-bottom: 2px;
+    padding-bottom: 6px;
+  }
+}
+
+.expandBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 4px;
+  transition: background 0.1s, color 0.1s;
+
+  &:hover {
+    background: #e5e7eb;
+    color: #6b7280;
+  }
+}
+
+.expandSpacer {
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  color: #fff;
+  background: transparent;
+
+  &--checked {
+    background: #2d98b4;
+    border-color: #2d98b4;
+  }
+
+  &--partial {
+    background: #2d98b4;
+    border-color: #2d98b4;
+  }
+
+  &--unchecked {
+    background: transparent;
+    border-color: #d1d5db;
+
+    .optionRow:hover & {
+      border-color: #9ca3af;
+    }
+  }
+}
+
+.checkboxDash {
+  width: 10px;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
+}
+
+.optionLabel {
+  flex: 1;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a2e);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.children {
+  // children are rendered inline with padding via paddingLeft on optionRow
+}
+
+.empty {
+  padding: 16px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+}

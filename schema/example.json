@@ -1,0 +1,145 @@
+{
+  "meta": {
+    "title": "Здоровье ПАК",
+    "version": "1.0",
+    "description": "Экран мониторинга состояния программно-аппаратного комплекса",
+    "figmaUrl": "https://www.figma.com/design/hf0n4mADFCmnjGBFCi0c0y"
+  },
+
+  "pages": [
+    {
+      "id": "pak-health",
+      "path": "/",
+      "title": "Здоровье ПАК",
+      "layout": {
+        "type": "app-shell",
+        "id": "root",
+        "props": {
+          "sidebar": {
+            "type": "sidebar",
+            "id": "main-sidebar",
+            "props": {
+              "items": [
+                { "id": "nav-health",   "label": "Здоровье ПАК", "icon": "network",       "href": "/",          "state": "active" },
+                { "id": "nav-overview", "label": "Обзор",        "icon": "binoculars",    "href": "/overview",  "state": "default" },
+                { "id": "nav-objects",  "label": "Объекты",      "icon": "pencil-ruler",  "href": "/objects",   "state": "default" }
+              ]
+            }
+          },
+          "content": {
+            "type": "vstack",
+            "id": "content-root",
+            "props": { "gap": 24, "padding": "32 40" },
+            "children": [
+
+              {
+                "type": "breadcrumbs",
+                "id": "bc-main",
+                "props": {
+                  "items": [
+                    { "label": "ПАК", "href": "/pak" },
+                    { "label": "Здоровье ПАК" }
+                  ]
+                }
+              },
+
+              {
+                "type": "message",
+                "id": "msg-warning",
+                "props": {
+                  "type": "warning",
+                  "text": "Компонент Event Processor работает в деградированном режиме. Требуется проверка конфигурации."
+                }
+              },
+
+              {
+                "type": "grid",
+                "id": "metrics-grid",
+                "props": { "columns": 4, "gap": 16 },
+                "children": [
+                  { "type": "metric-card", "id": "mc-cpu",  "props": { "label": "CPU",  "value": 75,  "unit": "%",       "status": "warning", "showProgress": true } },
+                  { "type": "metric-card", "id": "mc-ram",  "props": { "label": "RAM",  "value": 50,  "unit": "%",       "status": "normal",  "showProgress": true } },
+                  { "type": "metric-card", "id": "mc-disk", "props": { "label": "Диск", "value": 25,  "unit": "%",       "status": "normal",  "showProgress": true } },
+                  { "type": "metric-card", "id": "mc-net",  "props": { "label": "Сеть", "value": 100, "unit": "Мбит/с", "status": "normal",  "showProgress": false } }
+                ]
+              },
+
+              {
+                "type": "table",
+                "id": "tbl-services",
+                "props": {
+                  "columns": [
+                    { "key": "name",    "label": "Компонент", "width": "auto" },
+                    { "key": "status",  "label": "Статус",    "width": "160px", "type": "status-badge" },
+                    { "key": "version", "label": "Версия",    "width": "120px", "type": "badge" },
+                    { "key": "action",  "label": "Действие",  "width": "160px", "type": "button" }
+                  ],
+                  "data": [
+                    {
+                      "name": "Auth Service",
+                      "status": "active",
+                      "version": "v2.1.4",
+                      "action": { "label": "Перезапуск", "variant": "ghost", "size": "sm", "onClick": "modal:confirm-restart" }
+                    },
+                    {
+                      "name": "Metrics Collector",
+                      "status": "warning",
+                      "version": "v1.8.2",
+                      "action": { "label": "Диагностика", "variant": "default", "size": "sm", "onClick": "none" }
+                    },
+                    {
+                      "name": "Storage Engine",
+                      "status": "active",
+                      "version": "v3.0.1",
+                      "action": { "label": "Перезапуск", "variant": "ghost", "size": "sm", "onClick": "modal:confirm-restart" }
+                    },
+                    {
+                      "name": "Event Processor",
+                      "status": "critical",
+                      "version": "v2.0.0",
+                      "action": { "label": "Диагностика", "variant": "accent", "size": "sm", "onClick": "none" }
+                    },
+                    {
+                      "name": "Config Manager",
+                      "status": "active",
+                      "version": "v1.5.9",
+                      "action": { "label": "Перезапуск", "variant": "ghost", "size": "sm", "onClick": "modal:confirm-restart" }
+                    }
+                  ]
+                }
+              }
+
+            ]
+          }
+        }
+      }
+    }
+  ],
+
+  "modals": [
+    {
+      "id": "confirm-restart",
+      "title": "Перезапустить сервис?",
+      "size": "sm",
+      "children": [
+        {
+          "type": "text",
+          "id": "modal-text",
+          "props": {
+            "text": "Сервис будет перезапущен. Это может вызвать кратковременный сбой в обработке запросов.",
+            "variant": "body"
+          }
+        },
+        {
+          "type": "hstack",
+          "id": "modal-actions",
+          "props": { "gap": 12, "justify": "end" },
+          "children": [
+            { "type": "button", "id": "btn-cancel",  "props": { "label": "Отмена",       "variant": "ghost",  "size": "lg", "onClick": "none" } },
+            { "type": "button", "id": "btn-confirm", "props": { "label": "Перезапустить", "variant": "accent", "size": "lg", "onClick": "toast:Сервис перезапущен" } }
+          ]
+        }
+      ]
+    }
+  ]
+}

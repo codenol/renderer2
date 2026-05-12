@@ -1,0 +1,699 @@
+{
+  "meta": {
+    "title": "Фича: Интеграция с внешним API",
+    "version": "1.0",
+    "description": "Управление фичей: обсуждение, оформление, аналитика, макеты"
+  },
+
+  "pages": [
+    {
+      "id": "oformlenie",
+      "path": "/oformlenie",
+      "layout": {
+        "type": "app-shell",
+        "id": "shell-oformlenie",
+        "props": {
+          "sidebar": {
+            "type": "sidebar",
+            "id": "sidebar-1",
+            "props": {
+              "items": [
+                { "id": "nav-obsuzhdenie", "label": "Обсуждение", "href": "/obsuzhdenie", "icon": "message-circle", "state": "default" },
+                { "id": "nav-oformlenie",  "label": "Оформление", "href": "/oformlenie",  "icon": "palette",       "state": "active" },
+                { "id": "nav-analitika",   "label": "Аналитика",  "href": "/analitika",   "icon": "bar-chart-3",   "state": "default" },
+                { "id": "nav-makety",      "label": "Макеты",     "href": "/makety",      "icon": "layout",        "state": "default" }
+              ]
+            }
+          },
+          "content": {
+            "type": "vstack",
+            "id": "content-oformlenie",
+            "props": { "gap": 24, "padding": "32 40" },
+            "children": [
+              {
+                "type": "breadcrumbs",
+                "id": "bc-oformlenie",
+                "props": {
+                  "items": [
+                    { "label": "Фичи", "href": "/" },
+                    { "label": "Интеграция с внешним API" }
+                  ]
+                }
+              },
+              {
+                "type": "hstack",
+                "id": "header-oformlenie",
+                "props": { "gap": 12, "justify": "space-between" },
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "title-oformlenie",
+                    "props": { "text": "Оформление", "variant": "h1" }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "id": "card-description",
+                "props": { "padding": 24 },
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "desc-title",
+                    "props": { "text": "Описание фичи", "variant": "h3" }
+                  },
+                  {
+                    "type": "divider",
+                    "id": "div-desc"
+                  },
+                  {
+                    "type": "vstack",
+                    "id": "desc-fields",
+                    "props": { "gap": 16 },
+                    "children": [
+                      {
+                        "type": "input",
+                        "id": "field-title",
+                        "props": { "label": "Название", "value": "Интеграция с внешним API", "placeholder": "Название фичи" }
+                      },
+                      {
+                        "type": "textarea",
+                        "id": "field-desc",
+                        "props": { "label": "Описание", "value": "Подключение к внешнему REST API для синхронизации данных кластеров в реальном времени. Требуется поддержка OAuth 2.0 и WebSocket-канала.", "placeholder": "Описание фичи", "rows": 4 }
+                      },
+                      {
+                        "type": "hstack",
+                        "id": "row-priority",
+                        "props": { "gap": 16 },
+                        "children": [
+                          {
+                            "type": "dropdown",
+                            "id": "dd-priority",
+                            "props": {
+                              "label": "Приоритет",
+                              "value": "high",
+                              "options": [
+                                { "value": "critical", "label": "Критический" },
+                                { "value": "high", "label": "Высокий" },
+                                { "value": "medium", "label": "Средний" },
+                                { "value": "low", "label": "Низкий" }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "dropdown",
+                            "id": "dd-status",
+                            "props": {
+                              "label": "Статус",
+                              "value": "in-progress",
+                              "options": [
+                                { "value": "draft", "label": "Черновик" },
+                                { "value": "in-progress", "label": "В работе" },
+                                { "value": "review", "label": "Ревью" },
+                                { "value": "done", "label": "Готово" }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "hstack",
+                        "id": "row-actions",
+                        "props": { "gap": 12, "justify": "end" },
+                        "children": [
+                          {
+                            "type": "button",
+                            "id": "btn-save",
+                            "props": { "label": "Сохранить", "variant": "accent", "size": "lg", "onClick": "toast:Сохранено" }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+
+    {
+      "id": "obsuzhdenie",
+      "path": "/obsuzhdenie",
+      "layout": {
+        "type": "app-shell",
+        "id": "shell-obsuzhdenie",
+        "props": {
+          "sidebar": {
+            "type": "sidebar",
+            "id": "sidebar-2",
+            "props": {
+              "items": [
+                { "id": "nav-obsuzhdenie", "label": "Обсуждение", "href": "/obsuzhdenie", "icon": "message-circle", "state": "active" },
+                { "id": "nav-oformlenie",  "label": "Оформление", "href": "/oformlenie",  "icon": "palette",       "state": "default" },
+                { "id": "nav-analitika",   "label": "Аналитика",  "href": "/analitika",   "icon": "bar-chart-3",   "state": "default" },
+                { "id": "nav-makety",      "label": "Макеты",     "href": "/makety",      "icon": "layout",        "state": "default" }
+              ]
+            }
+          },
+          "content": {
+            "type": "vstack",
+            "id": "content-obsuzhdenie",
+            "props": { "gap": 24, "padding": "32 40" },
+            "children": [
+              {
+                "type": "breadcrumbs",
+                "id": "bc-obsuzhdenie",
+                "props": {
+                  "items": [
+                    { "label": "Фичи", "href": "/" },
+                    { "label": "Интеграция с внешним API" }
+                  ]
+                }
+              },
+              {
+                "type": "hstack",
+                "id": "header-obsuzhdenie",
+                "props": { "gap": 12, "justify": "space-between" },
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "title-obsuzhdenie",
+                    "props": { "text": "Обсуждение", "variant": "h1" }
+                  }
+                ]
+              },
+              {
+                "type": "message",
+                "id": "msg-discussion-hint",
+                "props": {
+                  "type": "info",
+                  "title": "Чтобы оставить комментарий",
+                  "text": "Нажмите кнопку «Комментировать» в верхней панели и кликните на любой элемент экрана. Маркер с вашими инициалами появится в выбранном месте."
+                }
+              },
+              {
+                "type": "grid",
+                "id": "grid-discussion",
+                "props": { "columns": 2, "gap": 16 },
+                "children": [
+                  {
+                    "type": "card",
+                    "id": "card-qa",
+                    "props": { "padding": 24 },
+                    "children": [
+                      {
+                        "type": "text",
+                        "id": "qa-title",
+                        "props": { "text": "Вопросы и ответы", "variant": "h3" }
+                      },
+                      {
+                        "type": "divider",
+                        "id": "div-qa"
+                      },
+                      {
+                        "type": "vstack",
+                        "id": "qa-list",
+                        "props": { "gap": 12 },
+                        "children": [
+                          {
+                            "type": "hstack",
+                            "id": "qa-1",
+                            "props": { "gap": 8 },
+                            "children": [
+                              { "type": "badge", "id": "bd-qa-1", "props": { "label": "Q", "variant": "blue" } },
+                              { "type": "text", "id": "txt-qa-1", "props": { "text": "Какой протокол аутентификации?", "variant": "body" } }
+                            ]
+                          },
+                          {
+                            "type": "hstack",
+                            "id": "qa-2",
+                            "props": { "gap": 8 },
+                            "children": [
+                              { "type": "badge", "id": "bd-qa-2", "props": { "label": "A", "variant": "green" } },
+                              { "type": "text", "id": "txt-qa-2", "props": { "text": "OAuth 2.0 с поддержкой PKCE", "variant": "body" } }
+                            ]
+                          },
+                          {
+                            "type": "hstack",
+                            "id": "qa-3",
+                            "props": { "gap": 8 },
+                            "children": [
+                              { "type": "badge", "id": "bd-qa-3", "props": { "label": "Q", "variant": "blue" } },
+                              { "type": "text", "id": "txt-qa-3", "props": { "text": "Лимит на количество запросов?", "variant": "body" } }
+                            ]
+                          },
+                          {
+                            "type": "hstack",
+                            "id": "qa-4",
+                            "props": { "gap": 8 },
+                            "children": [
+                              { "type": "badge", "id": "bd-qa-4", "props": { "label": "A", "variant": "green" } },
+                              { "type": "text", "id": "txt-qa-4", "props": { "text": "1000 запросов/мин на тенант", "variant": "body" } }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "card",
+                    "id": "card-decisions",
+                    "props": { "padding": 24 },
+                    "children": [
+                      {
+                        "type": "text",
+                        "id": "dec-title",
+                        "props": { "text": "Принятые решения", "variant": "h3" }
+                      },
+                      {
+                        "type": "divider",
+                        "id": "div-dec"
+                      },
+                      {
+                        "type": "vstack",
+                        "id": "dec-list",
+                        "props": { "gap": 12 },
+                        "children": [
+                          {
+                            "type": "hstack",
+                            "id": "dec-1",
+                            "props": { "gap": 8 },
+                            "children": [
+                              { "type": "status-badge", "id": "sb-dec-1", "props": { "status": "active" } },
+                              { "type": "text", "id": "txt-dec-1", "props": { "text": "Использовать REST, не GraphQL", "variant": "body" } }
+                            ]
+                          },
+                          {
+                            "type": "hstack",
+                            "id": "dec-2",
+                            "props": { "gap": 8 },
+                            "children": [
+                              { "type": "status-badge", "id": "sb-dec-2", "props": { "status": "active" } },
+                              { "type": "text", "id": "txt-dec-2", "props": { "text": "WebSocket для real-time событий", "variant": "body" } }
+                            ]
+                          },
+                          {
+                            "type": "hstack",
+                            "id": "dec-3",
+                            "props": { "gap": 8 },
+                            "children": [
+                              { "type": "status-badge", "id": "sb-dec-3", "props": { "status": "active" } },
+                              { "type": "text", "id": "txt-dec-3", "props": { "text": "Кэширование — 5 мин TTL", "variant": "body" } }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+
+    {
+      "id": "analitika",
+      "path": "/analitika",
+      "layout": {
+        "type": "app-shell",
+        "id": "shell-analitika",
+        "props": {
+          "sidebar": {
+            "type": "sidebar",
+            "id": "sidebar-3",
+            "props": {
+              "items": [
+                { "id": "nav-obsuzhdenie", "label": "Обсуждение", "href": "/obsuzhdenie", "icon": "message-circle", "state": "default" },
+                { "id": "nav-oformlenie",  "label": "Оформление", "href": "/oformlenie",  "icon": "palette",       "state": "default" },
+                { "id": "nav-analitika",   "label": "Аналитика",  "href": "/analitika",   "icon": "bar-chart-3",   "state": "active" },
+                { "id": "nav-makety",      "label": "Макеты",     "href": "/makety",      "icon": "layout",        "state": "default" }
+              ]
+            }
+          },
+          "content": {
+            "type": "vstack",
+            "id": "content-analitika",
+            "props": { "gap": 24, "padding": "32 40" },
+            "children": [
+              {
+                "type": "breadcrumbs",
+                "id": "bc-analitika",
+                "props": {
+                  "items": [
+                    { "label": "Фичи", "href": "/" },
+                    { "label": "Интеграция с внешним API" }
+                  ]
+                }
+              },
+              {
+                "type": "hstack",
+                "id": "header-analitika",
+                "props": { "gap": 12, "justify": "space-between" },
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "title-analitika",
+                    "props": { "text": "Аналитика", "variant": "h1" }
+                  },
+                  {
+                    "type": "button",
+                    "id": "btn-demo-analitika",
+                    "props": { "label": "▶ Демо", "variant": "accent", "size": "lg", "onClick": "modal:demo-analitika" }
+                  }
+                ]
+              },
+              {
+                "type": "message",
+                "id": "msg-analitika-empty",
+                "props": {
+                  "type": "info",
+                  "text": "Аналитика по фиче будет доступна после подключения источников данных. Нажмите «Демо» чтобы посмотреть пример."
+                }
+              },
+              {
+                "type": "card",
+                "id": "card-requests",
+                "props": { "padding": 24 },
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "req-title",
+                    "props": { "text": "Прогноз нагрузки", "variant": "h3" }
+                  },
+                  {
+                    "type": "divider",
+                    "id": "div-req"
+                  },
+                  {
+                    "type": "grid",
+                    "id": "grid-metrics-empty",
+                    "props": { "columns": 3, "gap": 16 },
+                    "children": [
+                      { "type": "metric-card", "id": "mc-rps",   "props": { "label": "Запросов/с",   "value": 0,  "unit": "RPS", "status": "normal", "showProgress": false } },
+                      { "type": "metric-card", "id": "mc-lat",   "props": { "label": "Средняя задержка", "value": 0,  "unit": "мс",  "status": "normal", "showProgress": false } },
+                      { "type": "metric-card", "id": "mc-err",   "props": { "label": "Ошибки",      "value": 0,  "unit": "%",   "status": "normal", "showProgress": false } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+
+    {
+      "id": "makety",
+      "path": "/makety",
+      "layout": {
+        "type": "app-shell",
+        "id": "shell-makety",
+        "props": {
+          "sidebar": {
+            "type": "sidebar",
+            "id": "sidebar-4",
+            "props": {
+              "items": [
+                { "id": "nav-obsuzhdenie", "label": "Обсуждение", "href": "/obsuzhdenie", "icon": "message-circle", "state": "default" },
+                { "id": "nav-oformlenie",  "label": "Оформление", "href": "/oformlenie",  "icon": "palette",       "state": "default" },
+                { "id": "nav-analitika",   "label": "Аналитика",  "href": "/analitika",   "icon": "bar-chart-3",   "state": "default" },
+                { "id": "nav-makety",      "label": "Макеты",     "href": "/makety",      "icon": "layout",        "state": "active" }
+              ]
+            }
+          },
+          "content": {
+            "type": "vstack",
+            "id": "content-makety",
+            "props": { "gap": 24, "padding": "32 40" },
+            "children": [
+              {
+                "type": "breadcrumbs",
+                "id": "bc-makety",
+                "props": {
+                  "items": [
+                    { "label": "Фичи", "href": "/" },
+                    { "label": "Интеграция с внешним API" }
+                  ]
+                }
+              },
+              {
+                "type": "hstack",
+                "id": "header-makety",
+                "props": { "gap": 12, "justify": "space-between" },
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "title-makety",
+                    "props": { "text": "Макеты", "variant": "h1" }
+                  },
+                  {
+                    "type": "button",
+                    "id": "btn-demo-makety",
+                    "props": { "label": "▶ Демо", "variant": "accent", "size": "lg", "onClick": "modal:demo-makety" }
+                  }
+                ]
+              },
+              {
+                "type": "card",
+                "id": "card-yaml",
+                "props": { "padding": 24 },
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "yaml-label",
+                    "props": { "text": "Дизайн-спецификация (YAML)", "variant": "h3" }
+                  },
+                  {
+                    "type": "divider",
+                    "id": "div-yaml"
+                  },
+                  {
+                    "type": "textarea",
+                    "id": "ta-yaml",
+                    "props": { "label": "YAML", "placeholder": "Вставьте YAML-спецификацию или нажмите «Демо»...", "rows": 10 }
+                  },
+                  {
+                    "type": "hstack",
+                    "id": "row-yaml-actions",
+                    "props": { "gap": 12, "justify": "end" },
+                    "children": [
+                      {
+                        "type": "button",
+                        "id": "btn-preview",
+                        "props": { "label": "Сгенерировать превью", "variant": "default", "size": "lg", "onClick": "toast:Превью сгенерировано" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "message",
+                "id": "msg-makety-empty",
+                "props": {
+                  "type": "info",
+                  "text": "Вставьте YAML-спецификацию макета или нажмите «Демо» чтобы посмотреть пример спецификации и трёх вариантов превью."
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+
+  "modals": [
+    {
+      "id": "demo-analitika",
+      "title": "Демо — Аналитика",
+      "size": "lg",
+      "children": [
+        {
+          "type": "vstack",
+          "id": "demo-a-content",
+          "props": { "gap": 16 },
+          "children": [
+            {
+              "type": "text",
+              "id": "demo-a-subtitle",
+              "props": { "text": "Прогнозные метрики интеграции с внешним API", "variant": "h3" }
+            },
+            {
+              "type": "grid",
+              "id": "demo-a-metrics",
+              "props": { "columns": 4, "gap": 16 },
+              "children": [
+                { "type": "metric-card", "id": "dm-rps",  "props": { "label": "Пиковый RPS",    "value": 850,  "unit": "RPS",       "status": "normal",  "showProgress": true } },
+                { "type": "metric-card", "id": "dm-lat",  "props": { "label": "P99 задержка",   "value": 120,  "unit": "мс",        "status": "warning", "showProgress": true } },
+                { "type": "metric-card", "id": "dm-err",  "props": { "label": "Доля ошибок",    "value": 2.4, "unit": "%",         "status": "warning", "showProgress": true } },
+                { "type": "metric-card", "id": "dm-upt",  "props": { "label": "Uptime (SLA)",   "value": 99.9,"unit": "%",         "status": "normal",  "showProgress": true } }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "demo-a-table-title",
+              "props": { "text": "Эндпоинты и ожидаемая нагрузка", "variant": "h3" }
+            },
+            {
+              "type": "table",
+              "id": "demo-a-table",
+              "props": {
+                "columns": [
+                  { "key": "endpoint",  "label": "Эндпоинт",     "width": "auto" },
+                  { "key": "method",    "label": "Метод",        "width": "100px", "type": "badge" },
+                  { "key": "rps",       "label": "RPS (пик)",    "width": "120px" },
+                  { "key": "latency",   "label": "Задержка P99", "width": "140px" },
+                  { "key": "status",    "label": "Статус",       "width": "140px", "type": "status-badge" }
+                ],
+                "data": [
+                  { "endpoint": "GET /api/v1/clusters",          "method": "GET",    "rps": "320",   "latency": "45 мс",  "status": "active" },
+                  { "endpoint": "POST /api/v1/clusters",         "method": "POST",   "rps": "85",    "latency": "120 мс", "status": "active" },
+                  { "endpoint": "GET /api/v1/clusters/:id",      "method": "GET",    "rps": "250",   "latency": "38 мс",  "status": "active" },
+                  { "endpoint": "PUT /api/v1/clusters/:id",      "method": "PUT",    "rps": "60",    "latency": "110 мс", "status": "warning" },
+                  { "endpoint": "DELETE /api/v1/clusters/:id",   "method": "DELETE", "rps": "15",    "latency": "55 мс",  "status": "active" },
+                  { "endpoint": "GET /api/v1/events/ws",         "method": "WS",     "rps": "120",   "latency": "8 мс",   "status": "active" }
+                ]
+              }
+            },
+            {
+              "type": "message",
+              "id": "demo-a-msg",
+              "props": {
+                "type": "warning",
+                "text": "Эндпоинт PUT /api/v1/clusters/:id приближается к порогу по задержке. Рекомендуется добавить кэширование."
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "demo-makety",
+      "title": "Демо — Макеты (YAML + превью)",
+      "size": "lg",
+      "children": [
+        {
+          "type": "vstack",
+          "id": "demo-m-content",
+          "props": { "gap": 16 },
+          "children": [
+            {
+              "type": "text",
+              "id": "demo-m-subtitle",
+              "props": { "text": "Дизайн-спецификация формы регистрации", "variant": "h3" }
+            },
+            {
+              "type": "textarea",
+              "id": "demo-m-yaml",
+              "props": {
+                "label": "YAML-спецификация",
+                "rows": 12,
+                "value": "# Спецификация: Форма регистрации\nversion: \"1.0\"\ntheme: skala\n\ncomponents:\n  - id: form-registration\n    type: form\n    layout: vertical\n    gap: 16\n    padding: 32\n    fields:\n      - id: field-email\n        type: input\n        label: \"Email\"\n        placeholder: \"user@example.com\"\n        required: true\n      - id: field-password\n        type: input\n        label: \"Пароль\"\n        inputType: password\n        placeholder: \"••••••••\"\n        required: true\n      - id: field-name\n        type: input\n        label: \"Имя\"\n        placeholder: \"Иван Петров\"\n      - id: field-role\n        type: dropdown\n        label: \"Роль\"\n        options:\n          - value: admin\n            label: \"Администратор\"\n          - value: user\n            label: \"Пользователь\"\n    actions:\n      - id: btn-submit\n        type: button\n        label: \"Зарегистрироваться\"\n        variant: accent\n        size: lg\n      - id: btn-cancel\n        type: button\n        label: \"Отмена\"\n        variant: ghost\n        size: lg"
+              }
+            },
+            {
+              "type": "text",
+              "id": "demo-m-preview-title",
+              "props": { "text": "Превью (3 варианта)", "variant": "h3" }
+            },
+            {
+              "type": "grid",
+              "id": "demo-m-previews",
+              "props": { "columns": 3, "gap": 16 },
+              "children": [
+                {
+                  "type": "card",
+                  "id": "preview-light",
+                  "props": { "padding": 20 },
+                  "children": [
+                    {
+                      "type": "vstack",
+                      "id": "vw-light",
+                      "props": { "gap": 12 },
+                      "children": [
+                        { "type": "text", "id": "pv-l-title", "props": { "text": "☀️  Light", "variant": "h4" } },
+                        { "type": "divider", "id": "pv-l-div" },
+                        { "type": "input", "id": "pv-l-email", "props": { "label": "Email", "placeholder": "user@example.com" } },
+                        { "type": "input", "id": "pv-l-pass",  "props": { "label": "Пароль", "placeholder": "••••••••" } },
+                        { "type": "input", "id": "pv-l-name",  "props": { "label": "Имя", "placeholder": "Иван Петров" } },
+                        {
+                          "type": "hstack",
+                          "id": "pv-l-actions",
+                          "props": { "gap": 8, "justify": "end" },
+                          "children": [
+                            { "type": "button", "id": "pv-l-cancel", "props": { "label": "Отмена", "variant": "ghost", "size": "sm", "onClick": "none" } },
+                            { "type": "button", "id": "pv-l-submit", "props": { "label": "OK", "variant": "accent", "size": "sm", "onClick": "toast:Light" } }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "id": "preview-dark",
+                  "props": { "padding": 20 },
+                  "children": [
+                    {
+                      "type": "vstack",
+                      "id": "vw-dark",
+                      "props": { "gap": 12 },
+                      "children": [
+                        { "type": "text", "id": "pv-d-title", "props": { "text": "🌙  Dark", "variant": "h4" } },
+                        { "type": "divider", "id": "pv-d-div" },
+                        { "type": "input", "id": "pv-d-email", "props": { "label": "Email", "placeholder": "user@example.com" } },
+                        { "type": "input", "id": "pv-d-pass",  "props": { "label": "Пароль", "placeholder": "••••••••" } },
+                        { "type": "input", "id": "pv-d-name",  "props": { "label": "Имя", "placeholder": "Иван Петров" } },
+                        {
+                          "type": "hstack",
+                          "id": "pv-d-actions",
+                          "props": { "gap": 8, "justify": "end" },
+                          "children": [
+                            { "type": "button", "id": "pv-d-cancel", "props": { "label": "Отмена", "variant": "ghost", "size": "sm", "onClick": "none" } },
+                            { "type": "button", "id": "pv-d-submit", "props": { "label": "OK", "variant": "accent", "size": "sm", "onClick": "toast:Dark" } }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "id": "preview-compact",
+                  "props": { "padding": 20 },
+                  "children": [
+                    {
+                      "type": "vstack",
+                      "id": "vw-compact",
+                      "props": { "gap": 12 },
+                      "children": [
+                        { "type": "text", "id": "pv-c-title", "props": { "text": "📐  Compact", "variant": "h4" } },
+                        { "type": "divider", "id": "pv-c-div" },
+                        { "type": "input", "id": "pv-c-email", "props": { "label": "Email", "placeholder": "user@example.com" } },
+                        { "type": "input", "id": "pv-c-pass",  "props": { "label": "Пароль", "placeholder": "••••••••" } },
+                        { "type": "input", "id": "pv-c-name",  "props": { "label": "Имя", "placeholder": "Иван Петров" } },
+                        {
+                          "type": "hstack",
+                          "id": "pv-c-actions",
+                          "props": { "gap": 8, "justify": "end" },
+                          "children": [
+                            { "type": "button", "id": "pv-c-cancel", "props": { "label": "Отмена", "variant": "ghost", "size": "sm", "onClick": "none" } },
+                            { "type": "button", "id": "pv-c-submit", "props": { "label": "OK", "variant": "accent", "size": "sm", "onClick": "toast:Compact" } }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

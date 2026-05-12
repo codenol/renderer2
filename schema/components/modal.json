@@ -1,0 +1,39 @@
+{
+  "type": "modal",
+  "figmaName": "modal new slot",
+  "figmaKey": "d32a0e0f6b767342fb5bdeb3f6412b8ec8816a88",
+  "figmaNodeId": "4023:37973",
+  "description": "Модальное окно. Определяется в секции 'modals' на верхнем уровне JSON-схемы. Открывается через action 'modal:<id>' у кнопки или другого триггера.",
+  "usageNote": "Этот тип НЕ вставляется как дочерний узел в layout. Вместо этого добавляется в верхнеуровневый массив 'modals[]', а открывается через кнопку с onClick: 'modal:<id>'.",
+  "props": {
+    "id": { "type": "string", "required": true, "description": "Уникальный id модалки" },
+    "title": { "type": "string", "required": true, "description": "Заголовок модального окна" },
+    "size": {
+      "type": "enum",
+      "values": ["sm", "md", "lg"],
+      "default": "md"
+    }
+  },
+  "children": {
+    "description": "Содержимое модалки. Любые узлы из компонентной палитры."
+  },
+  "examples": [
+    {
+      "id": "confirm-restart",
+      "title": "Перезапустить сервис?",
+      "size": "sm",
+      "children": [
+        { "type": "text", "id": "txt-confirm", "props": { "text": "Сервис Auth Service будет перезапущен. Это может вызвать кратковременный сбой.", "variant": "body" } },
+        {
+          "type": "hstack",
+          "id": "modal-actions",
+          "props": { "gap": 12, "justify": "end" },
+          "children": [
+            { "type": "button", "id": "btn-cancel", "props": { "label": "Отмена", "variant": "ghost" } },
+            { "type": "button", "id": "btn-confirm", "props": { "label": "Перезапустить", "variant": "accent" } }
+          ]
+        }
+      ]
+    }
+  ]
+}

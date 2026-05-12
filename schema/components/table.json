@@ -1,0 +1,49 @@
+{
+  "type": "table",
+  "figmaName": "basic table",
+  "figmaKey": "0ffe8608a75af84c8cf4f36cb42dcdecaf7589dd",
+  "figmaNodeId": "3461:83670",
+  "reactImport": "@skala/ui/TableHeaderCell + @skala/ui/TableCell",
+  "description": "Таблица данных. Отображает структурированные данные с заголовком и строками.",
+  "props": {
+    "columns": {
+      "type": "array",
+      "required": true,
+      "description": "Описание столбцов",
+      "itemSchema": {
+        "key": { "type": "string", "required": true, "description": "Ключ поля из data[]" },
+        "label": { "type": "string", "required": true, "description": "Заголовок столбца" },
+        "width": { "type": "string", "description": "Ширина (CSS): '200px', '1fr', 'auto'" },
+        "type": {
+          "type": "enum",
+          "values": ["text", "status-badge", "badge", "button", "progress"],
+          "default": "text",
+          "description": "Тип отображения ячейки"
+        }
+      }
+    },
+    "data": {
+      "type": "array",
+      "required": true,
+      "description": "Строки таблицы. Каждый объект — запись с полями, совпадающими с columns[].key"
+    }
+  },
+  "examples": [
+    {
+      "type": "table",
+      "id": "tbl-services",
+      "props": {
+        "columns": [
+          { "key": "name", "label": "Компонент", "width": "auto" },
+          { "key": "status", "label": "Статус", "width": "160px", "type": "status-badge" },
+          { "key": "version", "label": "Версия", "width": "120px", "type": "badge" },
+          { "key": "action", "label": "Действие", "width": "140px", "type": "button" }
+        ],
+        "data": [
+          { "name": "Auth Service", "status": "active", "version": "2.1.3", "action": { "label": "Перезапуск", "variant": "ghost", "size": "sm" } },
+          { "name": "Metrics Collector", "status": "warning", "version": "1.8.0", "action": { "label": "Диагностика", "variant": "default", "size": "sm" } }
+        ]
+      }
+    }
+  ]
+}

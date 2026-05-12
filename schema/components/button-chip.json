@@ -1,0 +1,28 @@
+{
+  "type": "button-chip",
+  "figmaName": "Buttonchip",
+  "figmaKey": "c716476082b9682589d61bd317b88c61f10d2d33",
+  "figmaNodeId": "1079:12249",
+  "description": "Компактная кнопка-чип. Используется для фильтров, тегов, выбора опций.",
+  "props": {
+    "label": {
+      "type": "string",
+      "required": true,
+      "description": "Текст чипа"
+    },
+    "selected": {
+      "type": "boolean",
+      "default": false,
+      "description": "Выбранное состояние"
+    },
+    "onClick": {
+      "type": "action",
+      "description": "Действие по клику",
+      "default": "none"
+    }
+  },
+  "examples": [
+    { "type": "button-chip", "id": "chip-active", "props": { "label": "Активные", "selected": true } },
+    { "type": "button-chip", "id": "chip-all", "props": { "label": "Все", "selected": false } }
+  ]
+}

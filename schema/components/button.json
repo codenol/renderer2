@@ -1,0 +1,39 @@
+{
+  "type": "button",
+  "figmaName": "button",
+  "figmaKey": "188831bc7993b3634ed337d824ebcc83ac18d877",
+  "figmaNodeId": "13:40",
+  "reactImport": "@skala/ui/Button",
+  "description": "Кнопка действия. Используется для основных действий на странице.",
+  "props": {
+    "label": {
+      "type": "string",
+      "required": true,
+      "description": "Текст кнопки"
+    },
+    "size": {
+      "type": "enum",
+      "values": ["sm", "lg"],
+      "default": "lg",
+      "figmaProp": "Size",
+      "figmaValues": { "sm": "Small", "lg": "Large" }
+    },
+    "variant": {
+      "type": "enum",
+      "values": ["accent", "default", "ghost"],
+      "default": "accent",
+      "figmaProp": "Type",
+      "figmaValues": { "accent": "Accent", "default": "Default", "ghost": "Ghost" }
+    },
+    "onClick": {
+      "type": "action",
+      "description": "Действие по клику. Формат: 'modal:<id>' | 'navigate:<path>' | 'none'",
+      "default": "none"
+    }
+  },
+  "examples": [
+    { "type": "button", "id": "btn-apply", "props": { "label": "Применить", "variant": "accent", "size": "lg" } },
+    { "type": "button", "id": "btn-cancel", "props": { "label": "Отмена", "variant": "ghost", "size": "lg" } },
+    { "type": "button", "id": "btn-small", "props": { "label": "Добавить", "variant": "default", "size": "sm" } }
+  ]
+}

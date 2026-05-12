@@ -1,0 +1,17 @@
+{
+  "name": "skala-sandbox-backend",
+  "version": "1.0.0",
+  "description": "SandBox backend for Skala^R Design System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "js-yaml": "^4.1.1",
+    "nanoid": "^3.3.7"
+  }
+}

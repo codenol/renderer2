@@ -1,0 +1,18 @@
+{
+  "type": "tooltip",
+  "figmaName": "tooltip",
+  "figmaKey": "641ee2ee9311618a5fc425305a34d44da7cb70fa",
+  "figmaNodeId": "3992:33305",
+  "description": "Всплывающая подсказка при наведении на элемент.",
+  "props": {
+    "text": { "type": "string", "required": true, "description": "Текст подсказки" },
+    "position": {
+      "type": "enum",
+      "values": ["top", "bottom", "left", "right"],
+      "default": "top"
+    }
+  },
+  "children": {
+    "description": "Элемент-триггер, на который наводят курсор"
+  }
+}

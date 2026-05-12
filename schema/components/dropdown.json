@@ -1,0 +1,38 @@
+{
+  "type": "dropdown",
+  "figmaName": "dropdown",
+  "figmaKey": "722cb92c5579f47e46d424df806fd2d5059dfe15",
+  "figmaNodeId": "2999:306",
+  "description": "Выпадающий список для выбора одного значения.",
+  "props": {
+    "label": { "type": "string" },
+    "placeholder": { "type": "string", "default": "Выберите..." },
+    "options": {
+      "type": "array",
+      "required": true,
+      "description": "Список опций",
+      "itemSchema": {
+        "value": { "type": "string", "required": true },
+        "label": { "type": "string", "required": true }
+      }
+    },
+    "value": { "type": "string", "description": "Выбранное значение (для моков)" },
+    "disabled": { "type": "boolean", "default": false }
+  },
+  "examples": [
+    {
+      "type": "dropdown",
+      "id": "dd-region",
+      "props": {
+        "label": "Регион",
+        "placeholder": "Выберите регион...",
+        "options": [
+          { "value": "msk", "label": "Москва" },
+          { "value": "spb", "label": "Санкт-Петербург" },
+          { "value": "ekb", "label": "Екатеринбург" }
+        ],
+        "value": "msk"
+      }
+    }
+  ]
+}

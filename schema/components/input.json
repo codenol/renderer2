@@ -1,0 +1,20 @@
+{
+  "type": "input",
+  "figmaName": "input",
+  "figmaKey": "e13081133d6e966d3707b6ed67a7f3bad9a5339d",
+  "figmaNodeId": "2980:29980",
+  "description": "Текстовое поле ввода.",
+  "props": {
+    "label": { "type": "string", "description": "Подпись над полем" },
+    "placeholder": { "type": "string", "description": "Плейсхолдер" },
+    "hint": { "type": "string", "description": "Подсказка под полем" },
+    "value": { "type": "string", "description": "Начальное значение (для моков)" },
+    "disabled": { "type": "boolean", "default": false },
+    "error": { "type": "boolean", "default": false },
+    "errorText": { "type": "string", "description": "Текст ошибки (показывается при error: true)" }
+  },
+  "examples": [
+    { "type": "input", "id": "inp-search", "props": { "label": "Поиск", "placeholder": "Введите название..." } },
+    { "type": "input", "id": "inp-email", "props": { "label": "Email", "placeholder": "user@example.com", "error": true, "errorText": "Неверный формат" } }
+  ]
+}

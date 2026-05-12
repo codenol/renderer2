@@ -1,0 +1,36 @@
+{
+  "type": "sidebar",
+  "figmaName": "Sidebar new slot",
+  "figmaKey": "1cbf63eb57b27126962eec1392ebc77b6f0dc0d4",
+  "figmaNodeId": "1839:18501",
+  "reactImport": "@skala/ui/Sidebar",
+  "description": "Боковое навигационное меню. Содержит логотип, иконки быстрого доступа и список пунктов меню. Ширина фиксирована: 249px.",
+  "note": "В Figma — слот-компонент. Не детачить. Пункты меню добавляются через slot. Подробнее: sidebar-menu-slot-guide.md",
+  "props": {
+    "items": {
+      "type": "array",
+      "required": true,
+      "description": "Список пунктов меню",
+      "itemSchema": {
+        "id": { "type": "string", "required": true },
+        "label": { "type": "string", "required": true },
+        "icon": { "type": "string", "description": "Имя иконки из lucide-react" },
+        "href": { "type": "string", "description": "Путь страницы (path из JSON-схемы)" },
+        "state": { "type": "enum", "values": ["active", "default"], "default": "default" }
+      }
+    }
+  },
+  "examples": [
+    {
+      "type": "sidebar",
+      "id": "main-sidebar",
+      "props": {
+        "items": [
+          { "id": "nav-health", "label": "Здоровье ПАК", "icon": "activity", "href": "/", "state": "active" },
+          { "id": "nav-overview", "label": "Обзор", "icon": "layout-dashboard", "href": "/overview", "state": "default" },
+          { "id": "nav-objects", "label": "Объекты", "icon": "server", "href": "/objects", "state": "default" }
+        ]
+      }
+    }
+  ]
+}

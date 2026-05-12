@@ -1,0 +1,161 @@
+{
+  "meta": {
+    "title": "Геораспределённые кластеры ПАК",
+    "version": "1.0",
+    "description": "Список геораспределённых кластеров с регионами, статусами и версиями",
+    "figmaUrl": "https://www.figma.com/design/hf0n4mADFCmnjGBFCi0c0y"
+  },
+
+  "pages": [
+    {
+      "id": "pak-geo-clusters",
+      "path": "/geo-clusters",
+      "title": "Геораспределённые кластеры",
+      "layout": {
+        "type": "app-shell",
+        "id": "root",
+        "props": {
+          "sidebar": {
+            "type": "sidebar",
+            "id": "main-sidebar",
+            "props": {
+              "items": [
+                { "id": "nav-health",   "label": "Здоровье ПАК",        "icon": "activity",       "href": "/",              "state": "default" },
+                { "id": "nav-geo",      "label": "Геораспр. кластеры",  "icon": "network",        "href": "/geo-clusters",  "state": "active" },
+                { "id": "nav-overview", "label": "Обзор",               "icon": "layout-dashboard","href": "/overview",     "state": "default" },
+                { "id": "nav-objects",  "label": "Объекты",             "icon": "server",         "href": "/objects",       "state": "default" },
+                { "id": "nav-journal",  "label": "Журнал событий",      "icon": "list",           "href": "/journal",       "state": "default" }
+              ]
+            }
+          },
+          "breadcrumbs": {
+            "type": "breadcrumbs",
+            "id": "bc-main",
+            "props": {
+              "items": [
+                { "label": "ПАК", "href": "/pak" },
+                { "label": "Геораспределённые кластеры" }
+              ]
+            }
+          },
+          "content": {
+            "type": "vstack",
+            "id": "content-root",
+            "props": { "gap": 24, "padding": "32 40" },
+            "children": [
+
+              {
+                "type": "hstack",
+                "id": "page-header",
+                "props": { "justify": "space-between", "align": "center" },
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "page-title",
+                    "props": { "text": "Геораспределённые кластеры", "variant": "h2" }
+                  },
+                  {
+                    "type": "button",
+                    "id": "btn-add-cluster",
+                    "props": { "label": "Добавить кластер", "variant": "accent", "size": "lg", "onClick": "none" }
+                  }
+                ]
+              },
+
+              {
+                "type": "table",
+                "id": "tbl-clusters",
+                "props": {
+                  "columns": [
+                    { "key": "name",    "label": "Кластер",  "width": "auto",  "type": "text" },
+                    { "key": "region",  "label": "Регион",   "width": "auto",  "type": "text" },
+                    { "key": "status",  "label": "Статус",   "width": "160px", "type": "status-badge" },
+                    { "key": "nodes",   "label": "Ноды",     "width": "100px", "type": "badge" },
+                    { "key": "version", "label": "Версия",   "width": "120px", "type": "badge" },
+                    { "key": "created", "label": "Дата создания", "width": "140px", "type": "text" },
+                    { "key": "action",  "label": "Действия", "width": "140px", "type": "button" }
+                  ],
+                  "data": [
+                    {
+                      "name": "Москва-ЦОД-1",
+                      "region": "Москва, Россия",
+                      "status": "active",
+                      "nodes": "12 нод",
+                      "version": "v3.2.1",
+                      "created": "12.01.2025",
+                      "action": { "label": "Подробнее", "variant": "ghost", "size": "sm", "onClick": "none" }
+                    },
+                    {
+                      "name": "Санкт-Петербург",
+                      "region": "Санкт-Петербург, Россия",
+                      "status": "active",
+                      "nodes": "8 нод",
+                      "version": "v3.2.1",
+                      "created": "28.02.2025",
+                      "action": { "label": "Подробнее", "variant": "ghost", "size": "sm", "onClick": "none" }
+                    },
+                    {
+                      "name": "Екатеринбург",
+                      "region": "Свердловская обл., Россия",
+                      "status": "warning",
+                      "nodes": "6 нод",
+                      "version": "v3.1.8",
+                      "created": "15.03.2025",
+                      "action": { "label": "Подробнее", "variant": "ghost", "size": "sm", "onClick": "none" }
+                    },
+                    {
+                      "name": "Новосибирск",
+                      "region": "Новосибирская обл., Россия",
+                      "status": "active",
+                      "nodes": "10 нод",
+                      "version": "v3.2.0",
+                      "created": "03.04.2025",
+                      "action": { "label": "Подробнее", "variant": "ghost", "size": "sm", "onClick": "none" }
+                    },
+                    {
+                      "name": "Казань",
+                      "region": "Республика Татарстан, Россия",
+                      "status": "critical",
+                      "nodes": "4 ноды",
+                      "version": "v3.0.5",
+                      "created": "20.05.2025",
+                      "action": { "label": "Подробнее", "variant": "ghost", "size": "sm", "onClick": "none" }
+                    },
+                    {
+                      "name": "Владивосток",
+                      "region": "Приморский край, Россия",
+                      "status": "active",
+                      "nodes": "6 нод",
+                      "version": "v3.2.1",
+                      "created": "08.06.2025",
+                      "action": { "label": "Подробнее", "variant": "ghost", "size": "sm", "onClick": "none" }
+                    },
+                    {
+                      "name": "Краснодар",
+                      "region": "Краснодарский край, Россия",
+                      "status": "active",
+                      "nodes": "8 нод",
+                      "version": "v3.2.1",
+                      "created": "14.07.2025",
+                      "action": { "label": "Подробнее", "variant": "ghost", "size": "sm", "onClick": "none" }
+                    },
+                    {
+                      "name": "Минск",
+                      "region": "Минская обл., Беларусь",
+                      "status": "warning",
+                      "nodes": "4 ноды",
+                      "version": "v3.1.9",
+                      "created": "01.08.2025",
+                      "action": { "label": "Подробнее", "variant": "ghost", "size": "sm", "onClick": "none" }
+                    }
+                  ]
+                }
+              }
+
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

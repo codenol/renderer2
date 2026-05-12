@@ -1,0 +1,34 @@
+{
+  "type": "menuitem",
+  "figmaName": "menuitem",
+  "figmaKey": "94f05d6dacc27fd284b41d314eb48a6e311f98c1",
+  "figmaNodeId": "1844:21672",
+  "reactImport": "@skala/ui/MenuItem",
+  "description": "Пункт бокового меню. Обычно используется внутри sidebar, но может применяться и в других списках.",
+  "props": {
+    "label": {
+      "type": "string",
+      "required": true,
+      "figmaProp": "Title"
+    },
+    "state": {
+      "type": "enum",
+      "values": ["active", "default"],
+      "default": "default",
+      "figmaProp": "State",
+      "figmaValues": { "active": "Active", "default": "Default" }
+    },
+    "href": {
+      "type": "string",
+      "description": "Путь для навигации"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Имя иконки из lucide-react"
+    }
+  },
+  "examples": [
+    { "type": "menuitem", "id": "mi-active", "props": { "label": "Здоровье ПАК", "state": "active", "href": "/" } },
+    { "type": "menuitem", "id": "mi-default", "props": { "label": "Обзор", "state": "default", "href": "/overview" } }
+  ]
+}

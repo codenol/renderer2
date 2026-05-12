@@ -1,0 +1,67 @@
+{
+  "type": "table-controls",
+  "figmaName": "TableControls",
+  "description": "Панель управления таблицей. Две зоны: левая (поиск + фильтры) и правая (кнопки управления). Используется над компонентом table.",
+  "props": {
+    "search": {
+      "type": "object",
+      "required": false,
+      "description": "Поле поиска. Если не передано — поиск не отображается.",
+      "schema": {
+        "placeholder": { "type": "string", "default": "Поиск" }
+      }
+    },
+    "filters": {
+      "type": "array",
+      "required": false,
+      "description": "Чипы-фильтры. Располагаются левее от поиска → правее. Каждый — button-chip.",
+      "itemSchema": {
+        "id": { "type": "string", "required": true },
+        "label": { "type": "string", "required": true },
+        "active": { "type": "boolean", "default": false }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "required": false,
+      "description": "Кнопки управления в правой зоне. Порядок в массиве — слева направо. Последний элемент — главная акцентная кнопка (всегда крайняя справа). Variant: accent (только последний) | default | ghost. Никогда не используй filled.active.",
+      "itemSchema": {
+        "id": { "type": "string", "required": true },
+        "label": { "type": "string" },
+        "icon": { "type": "string", "description": "Имя иконки из lucide-react. Если указан без label — кнопка иконочная." },
+        "variant": {
+          "type": "enum",
+          "values": ["accent", "default", "ghost"],
+          "description": "accent — только для главной кнопки (последней справа). Остальные: default или ghost."
+        },
+        "size": { "type": "enum", "values": ["sm", "lg"], "default": "sm" },
+        "onClick": { "type": "action", "default": "none" }
+      }
+    }
+  },
+  "rules": [
+    "Левая зона: сначала поиск (input), затем фильтры (button-chip) — строго слева направо.",
+    "Правая зона: кнопки идут справа налево по убыванию важности. В массиве actions[] — порядок слева направо, последний элемент — акцентная кнопка.",
+    "Главная кнопка (accent) — всегда одна, всегда крайняя справа.",
+    "Кнопки в actions[] могут быть variant: default или ghost. Никогда не используй filled.active.",
+    "Если кнопка только с иконкой — указывай icon без label."
+  ],
+  "examples": [
+    {
+      "type": "table-controls",
+      "id": "tc-events",
+      "props": {
+        "search": { "placeholder": "Поиск по событиям" },
+        "filters": [
+          { "id": "fc-critical", "label": "Критические", "active": true },
+          { "id": "fc-warning", "label": "Предупреждения", "active": false }
+        ],
+        "actions": [
+          { "id": "act-export", "icon": "download", "variant": "ghost", "size": "sm", "onClick": "none" },
+          { "id": "act-settings", "icon": "settings-2", "variant": "ghost", "size": "sm", "onClick": "none" },
+          { "id": "act-create", "label": "Создать событие", "variant": "accent", "size": "sm", "onClick": "modal:create-event" }
+        ]
+      }
+    }
+  ]
+}

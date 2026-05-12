@@ -1,0 +1,17 @@
+{
+  "type": "textarea",
+  "figmaName": "Textarea new slot",
+  "figmaKey": "36d61c85113e7bd50fcca9b5a6f5185a3763a19f",
+  "figmaNodeId": "3817:37009",
+  "description": "Многострочное поле ввода текста.",
+  "props": {
+    "label": { "type": "string" },
+    "placeholder": { "type": "string" },
+    "value": { "type": "string", "description": "Начальное значение (для моков)" },
+    "rows": { "type": "number", "default": 4 },
+    "disabled": { "type": "boolean", "default": false }
+  },
+  "examples": [
+    { "type": "textarea", "id": "ta-comment", "props": { "label": "Комментарий", "placeholder": "Введите комментарий...", "rows": 4 } }
+  ]
+}

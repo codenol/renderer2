@@ -1,0 +1,27 @@
+{
+  "type": "metric-card",
+  "figmaName": null,
+  "description": "Карточка метрики. Составной компонент (не имеет отдельного Figma-аналога). Показывает ключевой показатель с единицей измерения и визуальным индикатором.",
+  "props": {
+    "label": { "type": "string", "required": true, "description": "Название метрики" },
+    "value": { "type": "number", "required": true, "description": "Числовое значение" },
+    "unit": { "type": "string", "description": "Единица измерения: '%', 'GB', 'Мбит/с'" },
+    "status": {
+      "type": "enum",
+      "values": ["normal", "warning", "critical"],
+      "default": "normal",
+      "description": "Цветовой индикатор состояния"
+    },
+    "showProgress": {
+      "type": "boolean",
+      "default": true,
+      "description": "Показывать прогресс-бар (если value — процент)"
+    }
+  },
+  "examples": [
+    { "type": "metric-card", "id": "mc-cpu", "props": { "label": "CPU", "value": 78, "unit": "%", "status": "warning", "showProgress": true } },
+    { "type": "metric-card", "id": "mc-ram", "props": { "label": "RAM", "value": 45, "unit": "%", "status": "normal", "showProgress": true } },
+    { "type": "metric-card", "id": "mc-disk", "props": { "label": "Диск", "value": 120, "unit": "GB", "status": "normal", "showProgress": false } },
+    { "type": "metric-card", "id": "mc-net", "props": { "label": "Сеть", "value": 850, "unit": "Мбит/с", "status": "normal", "showProgress": false } }
+  ]
+}

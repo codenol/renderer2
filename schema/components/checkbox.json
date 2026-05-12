@@ -1,0 +1,15 @@
+{
+  "type": "checkbox",
+  "figmaName": "Checkbox",
+  "figmaKey": "5d95a818429cc129882e87d2a68c4436d5826779",
+  "figmaNodeId": "2827:23951",
+  "description": "Чекбокс для выбора одного или нескольких значений.",
+  "props": {
+    "label": { "type": "string", "required": true },
+    "checked": { "type": "boolean", "default": false },
+    "disabled": { "type": "boolean", "default": false }
+  },
+  "examples": [
+    { "type": "checkbox", "id": "chk-agree", "props": { "label": "Я согласен с условиями", "checked": false } }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "_meta": {
+    "description": "Индекс компонентов дизайн-системы Skala^R. Единый источник правды для LLM при генерации JSON-экранов. Каждый тип соответствует файлу в schema/components/.",
+    "version": "1.0",
+    "updatedAt": "2026-03-31",
+    "usage": "Загружай этот файл перед генерацией JSON-экрана. Для деталей конкретного компонента читай schema/components/<type>.json."
+  },
+
+  "layout": {
+    "_description": "Служебные узлы компоновки. Не имеют Figma-аналогов.",
+    "app-shell": "Корневая обёртка: sidebar 249px + content 1615px (1920×1080)",
+    "vstack": "Вертикальный контейнер (AutoLayout, column)",
+    "hstack": "Горизонтальный контейнер (AutoLayout, row)",
+    "grid": "Сеточная раскладка",
+    "card": "Карточка с рамкой и фоном",
+    "text": "Текст: h1–h4, body, body-sm, caption",
+    "divider": "Горизонтальный разделитель"
+  },
+
+  "navigation": {
+    "_description": "Компоненты навигации. Figma DS: Layout, Sidebar, breadcrumbs.",
+    "sidebar": "Боковое меню (249px, logo + menuitem[]). figmaKey: 1cbf63eb...",
+    "menuitem": "Пункт меню (state: active|default). figmaKey: 94f05d6d...",
+    "breadcrumbs": "Хлебные крошки (items[]). figmaKey: d3135031...",
+    "tab": "Вкладка (используется внутри tab-menu). figmaKey: 965dd049...",
+    "tab-menu": "Панель вкладок с контентом. figmaKey: 5aed2348..."
+  },
+
+  "actions": {
+    "_description": "Кнопки и интерактивные элементы.",
+    "button": "Кнопка (variant: accent|default|ghost, size: sm|lg). figmaKey: 188831bc...",
+    "button-chip": "Компактный чип-переключатель. figmaKey: c7164760..."
+  },
+
+  "forms": {
+    "_description": "Элементы форм ввода.",
+    "input": "Текстовое поле. figmaKey: e1308113...",
+    "textarea": "Многострочное поле. figmaKey: 36d61c85...",
+    "checkbox": "Чекбокс. figmaKey: 5d95a818...",
+    "switch": "Переключатель вкл/выкл. figmaKey: c1825bf0...",
+    "dropdown": "Выпадающий список. figmaKey: 722cb92c..."
+  },
+
+  "tables": {
+    "_description": "Табличные компоненты.",
+    "table": "Таблица данных (columns[] + data[]). figmaKey: 0ffe8608...",
+    "table-controls": "Панель управления таблицей: левая зона (search + filters) + правая зона (actions). Главная кнопка — крайняя справа (accent), остальные default|ghost."
+  },
+
+  "dataDisplay": {
+    "_description": "Компоненты отображения данных и статусов.",
+    "status-badge": "Статус-индикатор (active|warning|critical). figmaKey: 77be1df0...",
+    "badge": "Метка-ярлык (variant: gray-strong|blue|green|...). figmaKey: 11b62b32...",
+    "progress": "Прогресс-бар (value: 0–100). figmaKey: 3dc5c876...",
+    "metric-card": "Карточка метрики (label + value + unit + status)"
+  },
+
+  "feedback": {
+    "_description": "Компоненты обратной связи и уведомлений.",
+    "message": "Информационная плашка (type: info|warning|error|success). figmaKey: 750f9ddc...",
+    "toast": "Всплывающее уведомление. figmaKey: da31beb9...",
+    "tooltip": "Подсказка при наведении. figmaKey: 641ee2ee...",
+    "modal": "Модальное окно (определяется в modals[]). figmaKey: d32a0e0f..."
+  },
+
+  "actions_reference": {
+    "_description": "Форматы действий для props.onClick и аналогичных полей.",
+    "navigate:<path>": "Переход на другую страницу: 'navigate:/overview'",
+    "modal:<id>": "Открыть модалку: 'modal:confirm-restart'",
+    "toast:<message>": "Показать тост: 'toast:Сохранено'",
+    "none": "Без действия (заглушка для моков)"
+  }
+}

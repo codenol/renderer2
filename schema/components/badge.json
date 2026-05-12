@@ -1,0 +1,25 @@
+{
+  "type": "badge",
+  "figmaName": "badge (v2)",
+  "figmaKey": "11b62b3213b60ad7492bdf4595b880d3347ad087",
+  "figmaNodeId": "1128:3616",
+  "reactImport": "@skala/ui/Badge",
+  "description": "Бейдж-метка. Небольшой цветной ярлык для маркировки категорий, приоритетов, версий.",
+  "props": {
+    "label": {
+      "type": "string",
+      "required": true,
+      "description": "Текст метки"
+    },
+    "variant": {
+      "type": "enum",
+      "values": ["gray-strong", "blue", "green", "red", "orange", "purple"],
+      "default": "gray-strong",
+      "figmaProp": "variant"
+    }
+  },
+  "examples": [
+    { "type": "badge", "id": "badge-v", "props": { "label": "v2.1.3", "variant": "gray-strong" } },
+    { "type": "badge", "id": "badge-new", "props": { "label": "Новый", "variant": "blue" } }
+  ]
+}

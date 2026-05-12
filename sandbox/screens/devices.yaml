@@ -1,0 +1,343 @@
+meta:
+  title: Устройства
+  description: Table builder для устройств
+
+state:
+  selectedFields:
+    - device_id
+    - type
+    - status
+    - model
+    - version
+    - uptime
+  filters:
+    - { field: status, operator: includes, value: "" }
+    - { field: status, operator: includes, value: "" }
+    - { field: status, operator: includes, value: "" }
+    - { field: status, operator: includes, value: "" }
+  groupBy: ""
+  sortBy: id
+  sortDir: asc
+
+data:
+  devices:
+    - { device_id: 1, type: router,   status: ok,    model: RTX-1000, version: "1.0", uptime: 120 }
+    - { device_id: 2, type: router,   status: error, model: RTX-2000, version: "1.2", uptime: 80 }
+    - { device_id: 3, type: sensor,   status: ok,    model: SNS-9,    version: "2.0", uptime: 300 }
+
+computed:
+  tableColumns:
+    source: "$state.selectedFields"
+    map:
+      device_id: { key: device_id, label: "device_id", width: "120px", sortable: true }
+      type: { key: type, label: "type", width: "140px", sortable: true }
+      status: { key: status, label: "status", width: "120px", sortable: true }
+      model: { key: model, label: "model", width: "140px", sortable: true }
+      version: { key: version, label: "version", width: "100px", sortable: true }
+      uptime: { key: uptime, label: "uptime", width: "100px", sortable: true }
+
+pages:
+  - id: devices
+    path: "/devices"
+    title: Устройства
+    layout:
+      type: app-shell
+      id: root
+      props:
+        sidebar:
+          type: sidebar
+          id: main-sidebar
+          props:
+            items:
+              - { id: nav-health,    label: "Здоровье ПАК",   icon: activity,    href: "/",          state: default }
+              - { id: nav-structure, label: "Структура ПАК",  icon: network,     href: "/structure", state: default }
+              - { id: nav-devices,   label: "Устройства",     icon: server,      href: "/devices",   state: active }
+
+        breadcrumbs:
+          type: breadcrumbs
+          id: bc-devices
+          props:
+            items:
+              - { label: ПАК, href: "/" }
+              - { label: Устройства }
+
+        content:
+          type: vstack
+          id: content-root
+          props: { gap: 16 }
+          children:
+
+            # ─── Карточка table builder ────────────────────────────────────
+            - type: card
+              id: card-builder
+              props:
+                title: Query builder
+                padding: 16
+              children:
+                - type: vstack
+                  id: builder-content
+                  props: { gap: 12 }
+                  children:
+
+                    # Поля: акцентные чипы-тогглы
+                    - type: hstack
+                      id: field-selector
+                      props: { gap: 6, align: center }
+                      children:
+                        - type: text
+                          id: txt-fields-label
+                          props:
+                            text: "Поля:"
+                            variant: body-sm
+                        - type: button-chip
+                          id: chip-device_id
+                          props:
+                            label: "ID"
+                            variant: accent
+                            selected: "%includes($state.selectedFields, 'device_id')"
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: device_id
+                        - type: button-chip
+                          id: chip-type
+                          props:
+                            label: "Тип"
+                            variant: accent
+                            selected: "%includes($state.selectedFields, 'type')"
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: type
+                        - type: button-chip
+                          id: chip-model
+                          props:
+                            label: "Модель"
+                            variant: accent
+                            selected: "%includes($state.selectedFields, 'model')"
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: model
+                        - type: button-chip
+                          id: chip-version
+                          props:
+                            label: "Версия ПО"
+                            variant: accent
+                            selected: "%includes($state.selectedFields, 'version')"
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: version
+                        - type: button-chip
+                          id: chip-status
+                          props:
+                            label: "Статус"
+                            variant: accent
+                            selected: "%includes($state.selectedFields, 'status')"
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: status
+                        - type: button-chip
+                          id: chip-uptime
+                          props:
+                            label: "Uptime"
+                            variant: accent
+                            selected: "%includes($state.selectedFields, 'uptime')"
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: uptime
+
+                    # Выбранные поля: removable chips
+                    - type: hstack
+                      id: selected-fields
+                      props: { gap: 6, align: center }
+                      children:
+                        - type: button-chip
+                          id: sel-device_id
+                          props:
+                            label: "device_id ×"
+                            size: sm
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: device_id
+                        - type: button-chip
+                          id: sel-type
+                          props:
+                            label: "type ×"
+                            size: sm
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: type
+                        - type: button-chip
+                          id: sel-status
+                          props:
+                            label: "status ×"
+                            size: sm
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: status
+                        - type: button-chip
+                          id: sel-model
+                          props:
+                            label: "model ×"
+                            size: sm
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: model
+                        - type: button-chip
+                          id: sel-version
+                          props:
+                            label: "version ×"
+                            size: sm
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: version
+                        - type: button-chip
+                          id: sel-uptime
+                          props:
+                            label: "uptime ×"
+                            size: sm
+                          on:
+                            click:
+                              type: TOGGLE_ARRAY
+                              target: selectedFields
+                              value: uptime
+
+                    # Фильтры: field + operator + value + add
+                    - type: hstack
+                      id: filter-row
+                      props: { gap: 8, align: center }
+                      children:
+                        - type: text
+                          id: txt-filters-label
+                          props:
+                            text: "Фильтры:"
+                            variant: body-sm
+                        - type: dropdown
+                          id: dd-filter-field
+                          props:
+                            size: sm
+                            options:
+                              - { value: "status", label: "status" }
+                              - { value: "type", label: "type" }
+                              - { value: "model", label: "model" }
+                            value: "status"
+                        - type: dropdown
+                          id: dd-filter-op
+                          props:
+                            size: sm
+                            options:
+                              - { value: "contains", label: "contains" }
+                              - { value: "equals", label: "equals" }
+                            value: "contains"
+                        - type: input
+                          id: input-filter-value
+                          props:
+                            size: sm
+                            placeholder: "value"
+                        - type: button
+                          id: btn-add-filter
+                          props:
+                            label: "+"
+                            variant: ghost
+                            size: sm
+
+                    # Активные фильтры: chips
+                    - type: hstack
+                      id: active-filters
+                      props: { gap: 6, align: center }
+                      children:
+                        - type: button-chip
+                          id: af-status-1
+                          props:
+                            label: "status includes ×"
+                            size: sm
+                        - type: button-chip
+                          id: af-status-2
+                          props:
+                            label: "status includes ×"
+                            size: sm
+                        - type: button-chip
+                          id: af-status-3
+                          props:
+                            label: "status includes ×"
+                            size: sm
+                        - type: button-chip
+                          id: af-status-4
+                          props:
+                            label: "status includes ×"
+                            size: sm
+
+                    # Группировка
+                    - type: hstack
+                      id: group-row
+                      props: { gap: 8, align: center }
+                      children:
+                        - type: text
+                          id: txt-group-label
+                          props:
+                            text: "Группировка:"
+                            variant: body-sm
+                        - type: dropdown
+                          id: dd-group
+                          props:
+                            size: sm
+                            options:
+                              - { value: "", label: "—" }
+                              - { value: "type", label: "type" }
+                              - { value: "status", label: "status" }
+                            value: ""
+
+                    # Сортировка
+                    - type: hstack
+                      id: sort-row
+                      props: { gap: 8, align: center }
+                      children:
+                        - type: text
+                          id: txt-sort-label
+                          props:
+                            text: "Сортировка:"
+                            variant: body-sm
+                        - type: dropdown
+                          id: dd-sort
+                          props:
+                            size: sm
+                            options:
+                              - { value: "id", label: "id" }
+                              - { value: "type", label: "type" }
+                              - { value: "status", label: "status" }
+                            value: "id"
+                        - type: button
+                          id: btn-sort
+                          props:
+                            label: "Sort"
+                            variant: ghost
+                            size: sm
+
+            # ── Таблица ───────────────────────────────────────────────────
+            - type: table
+              id: tbl-devices
+              props:
+                columns: "$computed.tableColumns"
+                data: "$data.devices"
+
+modals: []

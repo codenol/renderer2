@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://skala-ds/screen-schema.json",
+  "title": "Skala^R Screen JSON",
+  "description": "Формат описания экранов для дизайн-системы Skala^R. Читается рендерером и LLM.",
+  "type": "object",
+
+  "required": ["meta", "pages"],
+
+  "properties": {
+
+    "meta": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "title":       { "type": "string", "description": "Название экрана/фичи" },
+        "version":     { "type": "string", "description": "Версия артефакта, например '1.0'" },
+        "description": { "type": "string" },
+        "author":      { "type": "string" },
+        "figmaUrl":    { "type": "string", "description": "Ссылка на исходный Figma-макет" }
+      }
+    },
+
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Список страниц. Первая страница — стартовая (path: '/').",
+      "items": { "$ref": "#/definitions/Page" }
+    },
+
+    "modals": {
+      "type": "array",
+      "description": "Модальные окна, доступные на всех страницах. Открываются через onClick: 'modal:<id>'.",
+      "items": { "$ref": "#/definitions/Modal" }
+    }
+  },
+
+  "definitions": {
+
+    "Page": {
+      "type": "object",
+      "required": ["id", "path", "layout"],
+      "properties": {
+        "id":     { "type": "string", "description": "Уникальный идентификатор страницы" },
+        "path":   { "type": "string", "description": "URL-путь: '/', '/overview', '/objects/:id'" },
+        "title":  { "type": "string", "description": "Заголовок вкладки браузера" },
+        "layout": { "$ref": "#/definitions/Node" }
+      }
+    },
+
+    "Modal": {
+      "type": "object",
+      "required": ["id", "title"],
+      "properties": {
+        "id":       { "type": "string" },
+        "title":    { "type": "string" },
+        "size":     { "type": "string", "enum": ["sm", "md", "lg"], "default": "md" },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Node" }
+        }
+      }
+    },
+
+    "Node": {
+      "type": "object",
+      "required": ["type", "id"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Тип компонента из палитры",
+          "enum": [
+            "app-shell", "vstack", "hstack", "grid", "card", "text", "divider",
+            "sidebar", "menuitem", "breadcrumbs", "tab", "tab-menu", "tab-panel",
+            "button", "button-chip",
+            "input", "textarea", "checkbox", "switch", "dropdown",
+            "table",
+            "status-badge", "badge", "progress", "metric-card",
+            "message", "toast", "tooltip", "modal-trigger"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "description": "Уникальный id узла внутри всего JSON. Используется для привязки комментариев."
+        },
+        "props": {
+          "type": "object",
+          "description": "Пропсы компонента. Состав зависит от type — см. schema/components/<type>.json"
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Node" }
+        }
+      }
+    }
+  }
+}

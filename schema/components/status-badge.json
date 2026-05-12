@@ -1,0 +1,26 @@
+{
+  "type": "status-badge",
+  "figmaName": "status (v2)",
+  "figmaKey": "77be1df06e1edf36b6377a9d5301967f063dd801",
+  "figmaNodeId": "3713:15058",
+  "reactImport": "@skala/ui/StatusBadge",
+  "description": "Индикатор статуса. Показывает текущее состояние объекта цветной точкой с подписью.",
+  "props": {
+    "status": {
+      "type": "enum",
+      "values": ["active", "warning", "critical"],
+      "required": true,
+      "figmaProp": "variant",
+      "figmaValues": { "active": "success", "warning": "warning", "critical": "critical" }
+    },
+    "label": {
+      "type": "string",
+      "description": "Текст статуса. Если не указан — отображается значение status"
+    }
+  },
+  "examples": [
+    { "type": "status-badge", "id": "st-ok", "props": { "status": "active", "label": "Работает" } },
+    { "type": "status-badge", "id": "st-warn", "props": { "status": "warning", "label": "Деградация" } },
+    { "type": "status-badge", "id": "st-crit", "props": { "status": "critical", "label": "Недоступен" } }
+  ]
+}

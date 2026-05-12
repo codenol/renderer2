@@ -1,0 +1,81 @@
+{
+  "_description": "Layout-примитивы — служебные узлы для компоновки. Не имеют Figma-аналогов, генерируются из AutoLayout-контейнеров.",
+
+  "types": {
+
+    "app-shell": {
+      "type": "app-shell",
+      "description": "Корневая обёртка страницы: sidebar (249px) + область контента (1615px). Соответствует Figma-компоненту 'Layout slots' (1920×1080).",
+      "props": {
+        "sidebar": { "type": "node", "description": "Узел типа 'sidebar'" },
+        "content": { "type": "node", "description": "Корневой узел контента (обычно vstack)" }
+      }
+    },
+
+    "vstack": {
+      "type": "vstack",
+      "description": "Вертикальный AutoLayout. Дочерние элементы располагаются сверху вниз.",
+      "props": {
+        "gap": { "type": "number", "default": 16, "description": "Отступ между детьми (px)" },
+        "padding": { "type": "number|string", "description": "Внутренний отступ: число или '16 24'" },
+        "align": { "type": "enum", "values": ["start", "center", "end", "stretch"], "default": "stretch" },
+        "fullHeight": { "type": "boolean", "default": false }
+      },
+      "children": "any[]"
+    },
+
+    "hstack": {
+      "type": "hstack",
+      "description": "Горизонтальный AutoLayout. Дочерние элементы располагаются слева направо.",
+      "props": {
+        "gap": { "type": "number", "default": 16 },
+        "padding": { "type": "number|string" },
+        "align": { "type": "enum", "values": ["start", "center", "end", "baseline", "stretch"], "default": "center" },
+        "justify": { "type": "enum", "values": ["start", "center", "end", "space-between"], "default": "start" },
+        "wrap": { "type": "boolean", "default": false }
+      },
+      "children": "any[]"
+    },
+
+    "grid": {
+      "type": "grid",
+      "description": "Сеточная раскладка.",
+      "props": {
+        "columns": { "type": "number|string", "required": true, "description": "Число столбцов или CSS-значение: 4 или 'repeat(4,1fr)'" },
+        "gap": { "type": "number", "default": 16 },
+        "padding": { "type": "number|string" }
+      },
+      "children": "any[]"
+    },
+
+    "card": {
+      "type": "card",
+      "description": "Карточка с рамкой, фоном и тенью. Обёртка для логически связанного контента.",
+      "props": {
+        "title": { "type": "string", "description": "Заголовок карточки (опционально)" },
+        "padding": { "type": "number", "default": 24 }
+      },
+      "children": "any[]"
+    },
+
+    "text": {
+      "type": "text",
+      "description": "Текстовый элемент.",
+      "props": {
+        "text": { "type": "string", "required": true },
+        "variant": {
+          "type": "enum",
+          "values": ["h1", "h2", "h3", "h4", "body", "body-sm", "caption"],
+          "default": "body"
+        },
+        "color": { "type": "string", "description": "CSS-переменная токена или hex" }
+      }
+    },
+
+    "divider": {
+      "type": "divider",
+      "description": "Горизонтальный разделитель.",
+      "props": {}
+    }
+  }
+}

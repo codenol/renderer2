@@ -1,0 +1,17 @@
+{
+  "type": "tab",
+  "figmaName": "tab",
+  "figmaKey": "965dd049d187e936ba3d31db75db2128b7aa16a5",
+  "figmaNodeId": "3273:24898",
+  "description": "Отдельная вкладка. Используется внутри tab-menu.",
+  "props": {
+    "label": { "type": "string", "required": true },
+    "id": { "type": "string", "required": true },
+    "state": {
+      "type": "enum",
+      "values": ["default", "secondary"],
+      "default": "default",
+      "figmaProp": "State"
+    }
+  }
+}

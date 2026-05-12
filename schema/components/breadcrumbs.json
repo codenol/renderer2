@@ -1,0 +1,31 @@
+{
+  "type": "breadcrumbs",
+  "figmaName": "breadcrumbs",
+  "figmaKey": "d31350316a3448f24ff4ede67358eeec0ac0948e",
+  "figmaNodeId": "1883:16026",
+  "reactImport": "@skala/ui/Breadcrumbs",
+  "description": "Хлебные крошки — путь навигации. Показывает текущее местоположение в иерархии.",
+  "props": {
+    "items": {
+      "type": "array",
+      "required": true,
+      "description": "Элементы пути (от корня к текущей странице)",
+      "itemSchema": {
+        "label": { "type": "string", "required": true },
+        "href": { "type": "string", "description": "Ссылка (опционально, последний элемент — без ссылки)" }
+      }
+    }
+  },
+  "examples": [
+    {
+      "type": "breadcrumbs",
+      "id": "bc-main",
+      "props": {
+        "items": [
+          { "label": "Главная", "href": "/" },
+          { "label": "Здоровье ПАК" }
+        ]
+      }
+    }
+  ]
+}

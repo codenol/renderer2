@@ -1,0 +1,25 @@
+{
+  "type": "progress",
+  "figmaName": "Progress",
+  "figmaKey": "3dc5c876ee823d8cb855923eee3270032adf7727",
+  "figmaNodeId": "3545:31502",
+  "reactImport": "@skala/ui/Progress",
+  "description": "Прогресс-бар. Показывает процент выполнения задачи или заполнения ресурса.",
+  "props": {
+    "value": {
+      "type": "number",
+      "required": true,
+      "min": 0,
+      "max": 100,
+      "description": "Значение от 0 до 100"
+    },
+    "label": {
+      "type": "string",
+      "description": "Подпись под баром (опционально)"
+    }
+  },
+  "examples": [
+    { "type": "progress", "id": "prog-cpu", "props": { "value": 78, "label": "CPU" } },
+    { "type": "progress", "id": "prog-ram", "props": { "value": 45 } }
+  ]
+}

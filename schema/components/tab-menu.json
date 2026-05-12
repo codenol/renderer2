@@ -1,0 +1,60 @@
+{
+  "type": "tab-menu",
+  "figmaName": "tab-menu (v2)",
+  "figmaKey": "5aed2348582c1af8b824b860b551dfd5ec4ec8ff",
+  "figmaNodeId": "3391:38760",
+  "description": "Панель вкладок. Переключает контент внутри страницы без навигации.",
+  "props": {
+    "items": {
+      "type": "array",
+      "required": true,
+      "description": "Список вкладок",
+      "itemSchema": {
+        "id": { "type": "string", "required": true },
+        "label": { "type": "string", "required": true }
+      }
+    },
+    "activeId": {
+      "type": "string",
+      "required": true,
+      "description": "id активной вкладки"
+    }
+  },
+  "children": {
+    "description": "Контент вкладок. Каждый дочерний узел должен иметь id, совпадающий с item.id из items[]",
+    "itemSchema": {
+      "type": "tab-panel",
+      "props": {
+        "tabId": { "type": "string", "required": true }
+      },
+      "children": "any"
+    }
+  },
+  "examples": [
+    {
+      "type": "tab-menu",
+      "id": "tabs-main",
+      "props": {
+        "items": [
+          { "id": "tab-overview", "label": "Обзор" },
+          { "id": "tab-details", "label": "Подробнее" }
+        ],
+        "activeId": "tab-overview"
+      },
+      "children": [
+        {
+          "type": "tab-panel",
+          "id": "panel-overview",
+          "props": { "tabId": "tab-overview" },
+          "children": [{ "type": "text", "id": "txt-1", "props": { "text": "Содержимое вкладки Обзор" } }]
+        },
+        {
+          "type": "tab-panel",
+          "id": "panel-details",
+          "props": { "tabId": "tab-details" },
+          "children": [{ "type": "text", "id": "txt-2", "props": { "text": "Содержимое вкладки Подробнее" } }]
+        }
+      ]
+    }
+  ]
+}

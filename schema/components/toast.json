@@ -1,0 +1,13 @@
+{
+  "type": "toast",
+  "figmaName": "Toast",
+  "figmaKey": "da31beb9121919ef337c8bbe9caee6fb4da4ddda",
+  "figmaNodeId": "3084:32905",
+  "description": "Всплывающее уведомление (тост). Показывается в углу экрана временно.",
+  "usageNote": "Тосты определяются в секции 'toasts[]' на верхнем уровне или вызываются программно через action 'toast:<message>'.",
+  "props": {
+    "type": { "type": "enum", "values": ["info", "success", "warning", "error"], "default": "info" },
+    "text": { "type": "string", "required": true },
+    "duration": { "type": "number", "default": 3000, "description": "Длительность в мс" }
+  }
+}

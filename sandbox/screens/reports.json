@@ -1,0 +1,323 @@
+{
+  "meta": {
+    "title": "Отчёты",
+    "version": "1.0",
+    "description": "Конструктор отчётов по компонентам ПАК"
+  },
+
+  "pages": [
+    {
+      "id": "reports",
+      "path": "/reports",
+      "title": "Отчёты",
+      "layout": {
+        "type": "app-shell",
+        "id": "root",
+        "props": {
+          "sidebar": {
+            "type": "sidebar",
+            "id": "main-sidebar",
+            "props": {
+              "items": [
+                { "id": "nav-health",   "label": "Здоровье ПАК", "icon": "activity",     "href": "/",          "state": "default" },
+                { "id": "nav-structure","label": "Структура ПАК", "icon": "network",      "href": "/structure", "state": "default" },
+                { "id": "nav-reports",  "label": "Отчёты",        "icon": "file-text",    "href": "/reports",   "state": "active" }
+              ]
+            }
+          },
+          "content": {
+            "type": "vstack",
+            "id": "content-root",
+            "props": { "gap": 16 },
+            "children": [
+
+              {
+                "type": "breadcrumbs",
+                "id": "bc-reports",
+                "props": {
+                  "items": [
+                    { "label": "ПАК", "href": "/" },
+                    { "label": "Отчёты" }
+                  ]
+                }
+              },
+
+              {
+                "type": "card",
+                "id": "card-filters",
+                "props": { "title": "Фильтры", "padding": 16 },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "id": "filters-row",
+                    "props": { "gap": 16 },
+                    "children": [
+                      {
+                        "type": "dropdown",
+                        "id": "dd-node-type",
+                        "props": {
+                          "label": "Тип узла",
+                          "placeholder": "Все типы",
+                          "options": [
+                            { "value": "all", "label": "Все типы" },
+                            { "value": "server", "label": "Сервер" },
+                            { "value": "switch", "label": "Коммутатор" },
+                            { "value": "storage", "label": "Хранилище" },
+                            { "value": "compute", "label": "Вычислительный узел" },
+                            { "value": "network", "label": "Сетевой узел" }
+                          ],
+                          "value": "all"
+                        }
+                      },
+                      {
+                        "type": "dropdown",
+                        "id": "dd-pak-type",
+                        "props": {
+                          "label": "Тип ПАК",
+                          "placeholder": "Все типы",
+                          "options": [
+                            { "value": "all", "label": "Все типы" },
+                            { "value": "virtualization", "label": "Виртуализация" },
+                            { "value": "storage", "label": "Хранение" },
+                            { "value": "network", "label": "Сеть" }
+                          ],
+                          "value": "all"
+                        }
+                      },
+                      {
+                        "type": "dropdown",
+                        "id": "dd-pak-name",
+                        "props": {
+                          "label": "Имя ПАК",
+                          "placeholder": "Все ПАК",
+                          "options": [
+                            { "value": "all", "label": "Все ПАК" },
+                            { "value": "pak-1", "label": "ПАК-1" },
+                            { "value": "pak-skala-2", "label": "ПАК-скала-2" },
+                            { "value": "adm2-cnv-o-109", "label": "adm2-cnv-o-109.tech.mosreg.ru" },
+                            { "value": "adm2-cnv-o-121", "label": "adm2-cnv-o-121.tech.mosreg.ru" },
+                            { "value": "adm2-cnv-o-120", "label": "adm2-cnv-o-120.tech.mosreg.ru" }
+                          ],
+                          "value": "all"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "type": "card",
+                "id": "card-attributes",
+                "props": { "title": "Атрибуты отчёта", "padding": 16 },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "id": "attributes-row",
+                    "props": { "gap": 12, "wrap": true },
+                    "children": [
+                      { "type": "checkbox", "id": "chk-node-name",    "props": { "label": "Имя узла",        "checked": true } },
+                      { "type": "checkbox", "id": "chk-node-type",    "props": { "label": "Тип узла",        "checked": true } },
+                      { "type": "checkbox", "id": "chk-pak-name",     "props": { "label": "Имя ПАК",         "checked": true } },
+                      { "type": "checkbox", "id": "chk-package",      "props": { "label": "Пакет",           "checked": false } },
+                      { "type": "checkbox", "id": "chk-version",      "props": { "label": "Версия",          "checked": false } },
+                      { "type": "checkbox", "id": "chk-architecture", "props": { "label": "Архитектура",     "checked": false } },
+                      { "type": "checkbox", "id": "chk-install-date", "props": { "label": "Дата установки",  "checked": false } },
+                      { "type": "checkbox", "id": "chk-module",       "props": { "label": "Модуль",          "checked": false } },
+                      { "type": "checkbox", "id": "chk-equipment",    "props": { "label": "Оборудование",    "checked": false } },
+                      { "type": "checkbox", "id": "chk-article",      "props": { "label": "Артикул",         "checked": false } },
+                      { "type": "checkbox", "id": "chk-serial",       "props": { "label": "Серийный номер",  "checked": false } },
+                      { "type": "checkbox", "id": "chk-quantity",     "props": { "label": "Количество",      "checked": false } },
+                      { "type": "checkbox", "id": "chk-status",       "props": { "label": "Статус",          "checked": false } }
+                    ]
+                  }
+                ]
+              },
+
+              {
+                "type": "tab-menu",
+                "id": "tabs-view-mode",
+                "props": {
+                  "items": [
+                    { "id": "tab-flat",        "label": "Плоский вид" },
+                    { "id": "tab-hierarchical", "label": "Иерархический вид" }
+                  ],
+                  "activeId": "tab-flat"
+                },
+                "children": [
+                  {
+                    "type": "tab-panel",
+                    "id": "panel-flat",
+                    "props": { "tabId": "tab-flat" },
+                    "children": [
+                      {
+                        "type": "vstack",
+                        "id": "flat-view-content",
+                        "props": { "gap": 16 },
+                        "children": [
+                          {
+                            "type": "table-controls",
+                            "id": "tc-reports",
+                            "props": {
+                              "actions": [
+                                { "id": "act-export", "icon": "download", "label": "Экспорт CSV", "variant": "default", "size": "sm", "onClick": "none" }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "table",
+                            "id": "tbl-reports-flat",
+                            "props": {
+                              "columns": [
+                                { "key": "nodeName",    "label": "Имя узла",       "width": "280px", "sortable": true, "sortDir": "asc" },
+                                { "key": "nodeType",    "label": "Тип узла",       "width": "160px", "sortable": true },
+                                { "key": "pakName",     "label": "Имя ПАК",        "width": "200px", "sortable": true }
+                              ],
+                              "data": [
+                                { "nodeName": "adm2-cnv-o-109.tech.mosreg.ru", "nodeType": "Сервер",        "pakName": "ПАК-1" },
+                                { "nodeName": "adm2-cnv-o-121.tech.mosreg.ru", "nodeType": "Сервер",        "pakName": "ПАК-1" },
+                                { "nodeName": "adm2-cnv-o-120.tech.mosreg.ru", "nodeType": "Сервер",        "pakName": "ПАК-скала-2" },
+                                { "nodeName": "serv54",                        "nodeType": "Сервер",        "pakName": "ПАК-скала-2" },
+                                { "nodeName": "serv67",                        "nodeType": "Сервер",        "pakName": "ПАК-скала-2" },
+                                { "nodeName": "serv99",                        "nodeType": "Сервер",        "pakName": "ПАК-скала-2" }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "hstack",
+                            "id": "pagination-flat",
+                            "props": { "gap": 16, "justify": "space-between", "align": "center" },
+                            "children": [
+                              {
+                                "type": "hstack",
+                                "id": "page-buttons",
+                                "props": { "gap": 8 },
+                                "children": [
+                                  { "type": "button", "id": "btn-prev",  "props": { "label": "←", "variant": "ghost", "size": "sm", "onClick": "none" } },
+                                  { "type": "button", "id": "btn-page-1","props": { "label": "1", "variant": "accent","size": "sm", "onClick": "none" } },
+                                  { "type": "button", "id": "btn-page-2","props": { "label": "2", "variant": "ghost", "size": "sm", "onClick": "none" } },
+                                  { "type": "button", "id": "btn-page-3","props": { "label": "3", "variant": "ghost", "size": "sm", "onClick": "none" } },
+                                  { "type": "button", "id": "btn-next",  "props": { "label": "→", "variant": "ghost", "size": "sm", "onClick": "none" } }
+                                ]
+                              },
+                              {
+                                "type": "hstack",
+                                "id": "rows-per-page",
+                                "props": { "gap": 8, "align": "center" },
+                                "children": [
+                                  { "type": "text", "id": "txt-rows-label", "props": { "text": "Строк на странице:", "variant": "body-sm" } },
+                                  {
+                                    "type": "dropdown",
+                                    "id": "dd-rows-count",
+                                    "props": {
+                                      "options": [
+                                        { "value": "20", "label": "20" },
+                                        { "value": "30", "label": "30" },
+                                        { "value": "50", "label": "50" }
+                                      ],
+                                      "value": "20"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "tab-panel",
+                    "id": "panel-hierarchical",
+                    "props": { "tabId": "tab-hierarchical" },
+                    "children": [
+                      {
+                        "type": "vstack",
+                        "id": "hierarchical-view-content",
+                        "props": { "gap": 16 },
+                        "children": [
+                          {
+                            "type": "table-controls",
+                            "id": "tc-reports-hier",
+                            "props": {
+                              "actions": [
+                                { "id": "act-export-hier", "icon": "download", "label": "Экспорт CSV", "variant": "default", "size": "sm", "onClick": "none" }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "table",
+                            "id": "tbl-reports-hierarchical",
+                            "props": {
+                              "columns": [
+                                { "key": "pakName",     "label": "ПАК",            "width": "240px", "sortable": true },
+                                { "key": "module",      "label": "Модуль",         "width": "200px", "sortable": true },
+                                { "key": "nodeType",    "label": "Тип узла",       "width": "160px", "sortable": true },
+                                { "key": "equipment",   "label": "Оборудование",   "width": "auto",  "sortable": true },
+                                { "key": "article",     "label": "Артикул",        "width": "200px", "sortable": true },
+                                { "key": "quantity",    "label": "Кол-во",         "width": "80px",  "sortable": true, "align": "center" }
+                              ],
+                              "data": [
+                                { "pakName": "ПАК виртуализации", "module": "Базовый модуль",     "nodeType": "Вычислительный узел", "equipment": "Сервер YADRO VEGMAN R220 G2", "article": "Y05X82U2S101A_2C1C19", "quantity": 2 },
+                                { "pakName": "ПАК виртуализации", "module": "Базовый модуль",     "nodeType": "Сетевой узел",        "equipment": "Коммутатор B4Com CS4132U",  "article": "SR-CS4132U-AC-B-SW",     "quantity": 16 },
+                                { "pakName": "ПАК виртуализации", "module": "Базовый модуль",     "nodeType": "Узел хранения",       "equipment": "СХД YADRO TATLIN.UNIFIED Gen2","article": "Y16SYSBAS201A_166151",   "quantity": 1 },
+                                { "pakName": "ПАК виртуализации", "module": "Модуль координации", "nodeType": "Вычислительный узел", "equipment": "Сервер YADRO VEGMAN R220 G2", "article": "Y05X82U2S101A_09CEA8", "quantity": 3 },
+                                { "pakName": "ПАК виртуализации", "module": "Модуль виртуализации","nodeType": "Вычислительный узел","equipment": "Сервер YADRO VEGMAN R220 G2", "article": "Y05X82U2S101A_A9880C", "quantity": 33 },
+                                { "pakName": "ПАК виртуализации", "module": "Модуль виртуализации","nodeType": "Сетевой узел",       "equipment": "Коммутатор B4Com CS4132U",  "article": "SR-CS4132U-AC-B-SW",     "quantity": 22 }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "hstack",
+                            "id": "pagination-hier",
+                            "props": { "gap": 16, "justify": "space-between", "align": "center" },
+                            "children": [
+                              {
+                                "type": "hstack",
+                                "id": "page-buttons-hier",
+                                "props": { "gap": 8 },
+                                "children": [
+                                  { "type": "button", "id": "btn-prev-hier",  "props": { "label": "←", "variant": "ghost", "size": "sm", "onClick": "none" } },
+                                  { "type": "button", "id": "btn-page-1-hier","props": { "label": "1", "variant": "accent","size": "sm", "onClick": "none" } },
+                                  { "type": "button", "id": "btn-page-2-hier","props": { "label": "2", "variant": "ghost", "size": "sm", "onClick": "none" } },
+                                  { "type": "button", "id": "btn-next-hier",  "props": { "label": "→", "variant": "ghost", "size": "sm", "onClick": "none" } }
+                                ]
+                              },
+                              {
+                                "type": "hstack",
+                                "id": "rows-per-page-hier",
+                                "props": { "gap": 8, "align": "center" },
+                                "children": [
+                                  { "type": "text", "id": "txt-rows-label-hier", "props": { "text": "Строк на странице:", "variant": "body-sm" } },
+                                  {
+                                    "type": "dropdown",
+                                    "id": "dd-rows-count-hier",
+                                    "props": {
+                                      "options": [
+                                        { "value": "20", "label": "20" },
+                                        { "value": "30", "label": "30" },
+                                        { "value": "50", "label": "50" }
+                                      ],
+                                      "value": "20"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+
+            ]
+          }
+        }
+      }
+    }
+  ],
+
+  "modals": []
+}

@@ -1,0 +1,30 @@
+{
+  "type": "message",
+  "figmaName": "Message",
+  "figmaKey": "750f9ddc2616a3ac1e7c97747617c7eaa3f79422",
+  "figmaNodeId": "802:3049",
+  "reactImport": "@skala/ui/Message",
+  "description": "Информационная плашка. Используется для уведомлений, предупреждений, ошибок внутри страницы.",
+  "props": {
+    "type": {
+      "type": "enum",
+      "values": ["info", "warning", "error", "success"],
+      "required": true,
+      "figmaProp": "variant"
+    },
+    "text": {
+      "type": "string",
+      "required": true,
+      "description": "Текст сообщения"
+    },
+    "title": {
+      "type": "string",
+      "description": "Заголовок (опционально)"
+    }
+  },
+  "examples": [
+    { "type": "message", "id": "msg-warn", "props": { "type": "warning", "text": "Требуется проверка компонентов" } },
+    { "type": "message", "id": "msg-err", "props": { "type": "error", "title": "Ошибка", "text": "Не удалось подключиться к сервису" } },
+    { "type": "message", "id": "msg-ok", "props": { "type": "success", "text": "Изменения сохранены" } }
+  ]
+}

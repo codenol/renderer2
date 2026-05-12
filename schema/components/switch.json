@@ -1,0 +1,15 @@
+{
+  "type": "switch",
+  "figmaName": "Switch",
+  "figmaKey": "c1825bf02dff9e7c2e01c34ba2d3250467571ca6",
+  "figmaNodeId": "1173:20798",
+  "description": "Переключатель вкл/выкл.",
+  "props": {
+    "label": { "type": "string", "description": "Подпись рядом с переключателем" },
+    "checked": { "type": "boolean", "default": false },
+    "disabled": { "type": "boolean", "default": false }
+  },
+  "examples": [
+    { "type": "switch", "id": "sw-notify", "props": { "label": "Уведомления", "checked": true } }
+  ]
+}

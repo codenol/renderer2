@@ -1,0 +1,28 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "Список продуктов" [ref=e6] [cursor=pointer]:
+      - img [ref=e7]
+    - generic [ref=e12]:
+      - button "Комментировать" [ref=e13] [cursor=pointer]:
+        - img [ref=e14]
+      - button "Редактор YAML" [ref=e16] [cursor=pointer]:
+        - img [ref=e17]
+      - button "Поделиться" [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+    - generic [ref=e27]:
+      - button "О программе" [ref=e28] [cursor=pointer]:
+        - img [ref=e29]
+      - button "Настройки" [ref=e32] [cursor=pointer]:
+        - img [ref=e33]
+      - button "S" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: S
+  - main [ref=e39]:
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - button "v1 ▾" [active] [ref=e42] [cursor=pointer]:
+          - text: v1
+          - generic [ref=e43]: ▾
+        - generic "Нажмите чтобы переименовать" [ref=e44] [cursor=pointer]: Без названия
+        - generic [ref=e45]: 31 марта 2026 г.
+      - generic [ref=e48]:
+        - paragraph

@@ -393,8 +393,8 @@ export function CommentLayer({
         )
       })}
 
-      {/* Active comment tooltip — fixed position, measured height */}
-      {activeComment !== null && tooltipPos && (() => {
+      {/* Active comment tooltip — always rendered when active, positioned after measurement */}
+      {activeComment !== null && (() => {
         const c = allSorted.find(x => x.id === activeComment)
         if (!c) return null
         const isCurrent = c.versionId === currentVersionId
@@ -405,8 +405,8 @@ export function CommentLayer({
             ref={tooltipRef}
             className={styles.markerTooltip}
             style={{
-              left: tooltipPos.left,
-              top: tooltipPos.top,
+              left: tooltipPos?.left ?? 0,
+              top: tooltipPos?.top ?? 0,
               opacity: tooltipVisible ? 1 : 0,
               pointerEvents: tooltipVisible ? 'auto' : 'none',
             }}

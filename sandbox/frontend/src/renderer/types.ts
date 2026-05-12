@@ -182,6 +182,8 @@ export interface BranchVersion {
   id: number
   branchSlug: string
   versionNumber: number
+  name?: string
+  isArchived?: boolean
   createdAt: string
 }
 
@@ -205,6 +207,7 @@ export interface ApiClient {
   branchTitle: string
   screenJson: ScreenJSON | null
   versions: BranchVersion[]
+  setVersions: (v: BranchVersion[]) => void
   currentVersionId: number
   setCurrentVersionId: (id: number) => void
   addComment: (data: AddCommentData) => Promise<void>

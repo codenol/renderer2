@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { LIcon } from '@/renderer/components/LIcon'
 import styles from './BranchView.module.scss'
 
@@ -26,6 +26,12 @@ export function YamlEditorModal({
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    if (open && fileRef.current) {
+      fileRef.current.value = ''
+    }
+  }, [open])
+
   if (!open) return null
 
   return (
@@ -47,37 +53,24 @@ export function YamlEditorModal({
           />
         </div>
         <div className={styles.yamlFooter}>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".yaml,.yml"
-            style={{ display: 'none' }}
-            onChange={async e => {
-              console.log('[YamlEditor] input onChange, files:', e.target.files?.length ?? 0)
-              const file = e.target.files?.[0]
-              if (!file) return
-              e.target.value = ''
-              const text = await file.text()
-              console.log('[YamlEditor] file loaded:', file.name, text.length, 'chars')
-              onFileSelect(text)
-            }}
-          />
-          <button
-            className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`}
-            title="Загрузить YAML / JSON"
-            onClick={(e) => {
-              e.stopPropagation()
-              console.log('[YamlEditor] Загрузить файл clicked, ref:', !!fileRef.current)
-              try {
-                fileRef.current?.click()
-                console.log('[YamlEditor] click() succeeded')
-              } catch (err) {
-                console.error('[YamlEditor] click() failed:', err)
-              }
-            }}
-          >
+          <div className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`} style={{ position: 'relative', cursor: 'pointer' }} title="Загрузить YAML / JSON">
             Загрузить файл
-          </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".yaml,.yml"
+              style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+              onChange={async e => {
+                console.log('[YamlEditor] input onChange, files:', e.target.files?.length ?? 0)
+                const file = e.target.files?.[0]
+                if (!file) return
+                e.target.value = ''
+                const text = await file.text()
+                console.log('[YamlEditor] file loaded:', file.name, text.length, 'chars')
+                onFileSelect(text)
+              }}
+            />
+          </div>
           <button
             className={`${styles.yamlBtn} ${styles.yamlBtnApply}`}
             onClick={onSubmit}

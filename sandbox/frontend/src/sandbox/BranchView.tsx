@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import yaml from 'js-yaml'
-import type { ScreenJSON, UserRole } from '@/renderer/types'
+import type { ScreenJSON, UserRole, BranchVersion } from '@/renderer/types'
 import { Renderer } from '@/renderer/Renderer'
 import { CommentLayer } from './CommentLayer'
 import { useApiClient } from './apiClient'
@@ -34,6 +34,7 @@ export function BranchView() {
     branchTitle,
     screenJson,
     versions,
+    setVersions,
     currentVersionId,
     setCurrentVersionId,
     addComment,
@@ -57,6 +58,38 @@ export function BranchView() {
   const [yamlText, setYamlText] = useState('')
   const [yamlCopied, setYamlCopied] = useState(false)
   const [yamlError, setYamlError] = useState<string | null>(null)
+
+  // ─── Version rename ──────────────────────────────────────────────────────
+  const [renameId, setRenameId] = useState<number | null>(null)
+  const [renameText, setRenameText] = useState('')
+
+  async function saveVersionName(id: number, name: string) {
+    const token = localStorage.getItem('skala_access_token')
+    await fetch(`${BACKEND}/api/versions/${id}/name`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ name }),
+    })
+    const res = await fetch(`${BACKEND}/api/branches/${slug}/versions`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (res.ok) {
+      const data: BranchVersion[] = await res.json()
+      setVersions(data)
+    }
+  }
+
+  function startRename(v: BranchVersion) {
+    setRenameId(v.id)
+    setRenameText(v.name || '')
+  }
+
+  function commitRename() {
+    if (renameId !== null) {
+      saveVersionName(renameId, renameText.trim())
+      setRenameId(null)
+    }
+  }
 
   // ─── Version dropdown ─────────────────────────────────────────────────────
   const [versionOpen, setVersionOpen] = useState(false)
@@ -111,8 +144,12 @@ export function BranchView() {
     toastTimer.current = setTimeout(() => setCopyToast(false), 3000)
   }
 
+  function getCurrentVersion(): BranchVersion | undefined {
+    return versions.find(v => v.id === currentVersionId)
+  }
+
   function getCurrentVersionNumber(): number {
-    return versions.find(v => v.id === currentVersionId)?.versionNumber || 1
+    return getCurrentVersion()?.versionNumber || 1
   }
 
   async function switchVersion(versionId: number) {
@@ -247,7 +284,7 @@ export function BranchView() {
           <div className={styles.yamlModal} onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <div className={styles.yamlHeader}><span className={styles.yamlTitle}>Поделиться</span><button className={styles.yamlClose} onClick={() => setShareOpen(false)}>✕</button></div>
               <div className={styles.yamlBody} style={{ padding: '16px 20px' }}>
-                <p style={{ margin: '0 0 8px', fontSize: 14 }}>Версия {getCurrentVersionNumber()} · {localBranchTitle}</p>
+                <p style={{ margin: '0 0 8px', fontSize: 14 }}>Версия {getCurrentVersionNumber()}{getCurrentVersion()?.name ? ` — ${getCurrentVersion()!.name}` : ''} · {localBranchTitle}</p>
                 <p style={{ margin: '0 0 12px', fontSize: 13, opacity: 0.6 }}>По этой ссылке можно просматривать страницу и оставлять комментарии.</p>
                 <input className={styles.identityInput} value={shareUrl} readOnly style={{ cursor: 'pointer' }} onClick={(e) => (e.target as HTMLInputElement).select()} />
             </div>
@@ -255,6 +292,74 @@ export function BranchView() {
           </div>
         </div>
       )}
+
+      {/* Version bar */}
+      <div ref={versionRef} className={styles.versionWrap} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', background: '#0f131e', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <button className={styles.versionBtn} onClick={() => setVersionOpen(v => !v)}>
+          v{getCurrentVersionNumber()}
+          <span className={styles.versionChevron}>{versionOpen ? '▴' : '▾'}</span>
+        </button>
+        {renameId === currentVersionId ? (
+          <input
+            autoFocus
+            className={styles.identityInput}
+            value={renameText}
+            onChange={e => setRenameText(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={e => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') setRenameId(null) }}
+            placeholder="Название версии..."
+            style={{ fontSize: 13, padding: '3px 8px', width: 200, height: 'auto' }}
+          />
+        ) : (
+          <span
+            style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', cursor: 'pointer', fontStyle: getCurrentVersion()?.name ? 'normal' : 'italic' }}
+            onClick={() => { const cv = getCurrentVersion(); if (cv) startRename(cv) }}
+            title="Нажмите чтобы переименовать"
+          >
+            {getCurrentVersion()?.name || 'Без названия'}
+          </span>
+        )}
+        <span style={{ flex: 1, fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'right' }}>
+          {getCurrentVersion() ? new Date(getCurrentVersion()!.createdAt).toLocaleString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}
+        </span>
+        {versionOpen && (
+          <div className={styles.versionDropdown} onClick={e => e.stopPropagation()}>
+            {versions.filter(v => !v.isArchived).map(v => (
+              <Fragment key={v.id}>
+                <button
+                  className={`${styles.versionItem} ${v.id === currentVersionId ? styles['versionItem--active'] : ''}`}
+                  onClick={() => switchVersion(v.id)}
+                >
+                  <span>v{v.versionNumber}</span>
+                  {v.name ? <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>— {v.name}</span> : null}
+                  <span className={styles.versionDate}>{new Date(v.createdAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short' })}</span>
+                  {v.id === currentVersionId && <span className={styles.versionCurrent}>текущая</span>}
+                </button>
+                {renameId === v.id && (
+                  <div style={{ padding: '4px 14px 8px' }}>
+                    <input
+                      autoFocus
+                      className={styles.identityInput}
+                      value={renameText}
+                      onChange={e => setRenameText(e.target.value)}
+                      onBlur={commitRename}
+                      onKeyDown={e => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') setRenameId(null) }}
+                      placeholder="Название версии..."
+                      style={{ fontSize: 12, padding: '2px 6px', width: '100%', height: 'auto' }}
+                    />
+                  </div>
+                )}
+                {v.id !== renameId && (
+                  <button className={styles.versionAction} onClick={() => startRename(v)}>
+                    ✎ Переименовать
+                  </button>
+                )}
+                <hr className={styles.versionDivider} />
+              </Fragment>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Canvas */}
       <div className={styles.canvas}>

@@ -79,6 +79,7 @@ function fmtVersion(v) {
     id: v.id,
     branchSlug: v.branch_slug,
     versionNumber: v.version_number,
+    name: v.name || '',
     isArchived: !!v.is_archived,
     createdAt: new Date(v.created_at * 1000).toISOString(),
   }
@@ -337,6 +338,7 @@ app.get('/api/hierarchy', { preHandler: [authGuard] }, async (req) => {
               versions: versions.map(v => ({
                 id: v.id,
                 versionNumber: v.version_number,
+                name: v.name || '',
                 isArchived: !!v.is_archived,
                 createdAt: new Date(v.created_at * 1000).toISOString(),
               })),
@@ -424,6 +426,15 @@ app.patch('/api/versions/:id', { preHandler: [authGuard, roleGuard('designer')] 
   const result = db.prepare('UPDATE versions SET is_archived = ? WHERE id = ?').run(isArchived ? 1 : 0, parseInt(req.params.id))
   if (result.changes === 0) return reply.code(404).send({ error: 'Version not found' })
   return { id: parseInt(req.params.id), isArchived: !!isArchived }
+})
+
+app.put('/api/versions/:id/name', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const { name } = req.body || {}
+  if (typeof name !== 'string') return reply.code(400).send({ error: 'name (string) required' })
+  const db = getDb()
+  const result = db.prepare('UPDATE versions SET name = ? WHERE id = ?').run(name, parseInt(req.params.id))
+  if (result.changes === 0) return reply.code(404).send({ error: 'Version not found' })
+  return { id: parseInt(req.params.id), name }
 })
 
 app.get('/api/branches/:slug', async (req, reply) => {

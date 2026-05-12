@@ -17,7 +17,7 @@ interface HierarchyFeature {
   versionCount: number
   latestVersion: number
   createdAt: string
-  versions: { id: number; versionNumber: number; isArchived: boolean; createdAt: string }[]
+  versions: { id: number; versionNumber: number; name?: string; isArchived: boolean; createdAt: string }[]
 }
 
 interface HierarchyPage {
@@ -390,9 +390,14 @@ export function DashboardView() {
                                         </span>
                                         <span className={styles.cardTitle}>{f.title}</span>
                                         {f.versionCount > 0 && (
-                                          <span className={styles.featVersion}>
-                                            v{f.latestVersion} ({f.versionCount})
-                                          </span>
+                                          (() => {
+                                            const latestV = (f.versions || []).find(v => v.versionNumber === f.latestVersion)
+                                            const dateStr = latestV ? new Date(latestV.createdAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }) : ''
+                                            const nameStr = latestV?.name || ''
+                                            return <span className={styles.featVersion}>
+                                              v{f.latestVersion}{nameStr ? ` — ${nameStr}` : ''} · {dateStr}
+                                            </span>
+                                          })()
                                         )}
                                         {f.versionCount === 0 && (
                                           <span className={styles.featNoVersion}>нет версий</span>
@@ -418,7 +423,7 @@ export function DashboardView() {
                                                 style={{ paddingLeft: 86 }}
                                               >
                                                 <LIcon name="git-branch" size={14} style={{ flexShrink: 0, color: 'var(--color-icon-secondary, #9ca3af)' }} />
-                                                <span className={styles.featTitle} style={{ flex: 1 }}>Версия {v.versionNumber}</span>
+                                                <span className={styles.featTitle} style={{ flex: 1 }}>Версия {v.versionNumber}{v.name ? ` — ${v.name}` : ''}</span>
                                                 <span className={styles.featVersion} style={{ marginRight: 16 }}>
                                                   {new Date(v.createdAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                 </span>

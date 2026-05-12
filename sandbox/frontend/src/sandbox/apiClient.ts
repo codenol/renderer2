@@ -197,6 +197,7 @@ export function useApiClient(branchSlug: string): ApiClient {
     branchTitle,
     screenJson,
     versions,
+    setVersions,
     currentVersionId,
     setCurrentVersionId,
     addComment,

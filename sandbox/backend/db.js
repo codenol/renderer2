@@ -135,6 +135,11 @@ function migrate(db) {
     db.exec('ALTER TABLE versions ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0')
   }
 
+  // ─── Add name to versions if missing ─────────────────────────────────────
+  if (!verCols.includes('name')) {
+    db.exec("ALTER TABLE versions ADD COLUMN name TEXT NOT NULL DEFAULT ''")
+  }
+
   // ─── Auto-migrate existing orphan branches into "Migrated" hierarchy ──────
   const now2 = Math.floor(Date.now() / 1000)
   const orphanCount = db.prepare("SELECT COUNT(*) as c FROM branches WHERE parent_slug IS NULL AND node_type = 'feature'").get().c

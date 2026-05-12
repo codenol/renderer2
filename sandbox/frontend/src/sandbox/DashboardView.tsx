@@ -57,13 +57,13 @@ export function DashboardView() {
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; slug: string; type: string; title: string; isArchived: boolean } | null>(null)
   const ctxRef = useRef<HTMLDivElement>(null)
 
-  // Rename dialog
+  // Rename modal
   const [renameOpen, setRenameOpen] = useState(false)
   const [renameSlug, setRenameSlug] = useState('')
   const [renameTitle, setRenameTitle] = useState('')
   const [renameSubmitting, setRenameSubmitting] = useState(false)
 
-  // Delete confirmation
+  // Delete modal
   const [deleteSlug, setDeleteSlug] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -130,8 +130,7 @@ export function DashboardView() {
     setRenameSubmitting(true)
     const token = localStorage.getItem('skala_access_token')
     await fetch(`${BACKEND}/api/branches/${renameSlug}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      method: 'PATCH', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify({ title: renameTitle.trim() }),
     })
     setRenameOpen(false)
@@ -139,8 +138,8 @@ export function DashboardView() {
     load()
   }
 
-  function deleteItem() {
-    setDeleteSlug(ctxMenu?.slug || '')
+  function deleteItem(slug: string) {
+    setDeleteSlug(slug)
     setCtxMenu(null)
   }
 
@@ -207,61 +206,159 @@ export function DashboardView() {
               + Продукт
             </button>
           )}
+        </div>
+      </div>
+
+      {error && <div className={styles.error}>{error}</div>}
+
+      {products.length === 0 && !showArchived && (
+        <div className={styles.empty}>
+          <div className={styles.emptyIcon}>
+            <LIcon name="package" size={48} strokeWidth={1.2} />
           </div>
+          <div className={styles.emptyText}>Нет продуктов</div>
+          {isDesigner && (
+            <button className={styles.createBtn} onClick={() => openCreate('product')}>
+              Создать первый продукт
+            </button>
+          )}
         </div>
       )}
 
-      {/* Rename dialog */}
-      {renameOpen && (
-        <div className={styles.modalOverlay} onClick={() => setRenameOpen(false)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <span className={styles.modalTitle}>Переименовать</span>
-              <button className={styles.modalClose} onClick={() => setRenameOpen(false)}>
-                <LIcon name="x" size={18} />
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <input
-                className={styles.modalInput}
-                placeholder="Новое название"
-                value={renameTitle}
-                onChange={e => setRenameTitle(e.target.value)}
-                autoFocus
-                onKeyDown={e => e.key === 'Enter' && confirmRename()}
-              />
-            </div>
-            <div className={styles.modalFooter}>
-              <button className={styles.modalCancel} onClick={() => setRenameOpen(false)}>Отмена</button>
-              <button className={styles.modalSubmit} onClick={confirmRename} disabled={!renameTitle.trim() || renameSubmitting}>
-                {renameSubmitting ? '...' : 'Переименовать'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className={styles.list}>
+        {products.map(p => {
+          const isExp = expanded.has(p.slug)
+          return (
+            <div key={p.slug} className={`${styles.card} ${p.isArchived ? styles['card--archived'] : ''}`}>
+              <div className={styles.cardHeader} onClick={() => toggleExpand(p.slug)}>
+                <span className={styles.cardChevron}>
+                  <LIcon name={isExp ? 'chevron-down' : 'chevron-right'} size={14} />
+                </span>
+                <span className={styles.cardIcon}>
+                  <LIcon name="package" size={18} strokeWidth={1.6} />
+                </span>
+                <span className={styles.cardTitle}>{p.title}</span>
+                {p.isArchived && <span className={styles.cardBadge}>архив</span>}
+                {isDesigner && (
+                  <button className={styles.cardMenu} onClick={e => openContext(e, p.slug, 'product', p.title, p.isArchived)}>
+                    <LIcon name="more-vertical" size={16} />
+                  </button>
+                )}
+              </div>
 
-      {/* Delete confirmation */}
-      {deleteSlug && (
-        <div className={styles.modalOverlay} onClick={() => setDeleteSlug(null)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ maxWidth: 380 }}>
-            <div className={styles.modalHeader}>
-              <span className={styles.modalTitle}>Удалить</span>
-              <button className={styles.modalClose} onClick={() => setDeleteSlug(null)}>
-                <LIcon name="x" size={18} />
-              </button>
+              {isExp && (
+                <div className={styles.cardChildren}>
+                  {p.pages.length === 0 ? (
+                    <div className={styles.emptyRow}>
+                      <span className={styles.emptyRowText}>Нет страниц</span>
+                      {isDesigner && (
+                        <button className={styles.createSmall} onClick={() => openCreate('page', p.slug)}>
+                          + Страница
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    p.pages.map(pg => {
+                      const isPgExp = expanded.has(pg.slug)
+                      return (
+                        <div key={pg.slug} className={`${styles.subCard} ${pg.isArchived ? styles['card--archived'] : ''}`}>
+                          <div className={styles.subCardHeader} onClick={() => toggleExpand(pg.slug)}>
+                            <span className={styles.cardChevron}>
+                              <LIcon name={isPgExp ? 'chevron-down' : 'chevron-right'} size={14} />
+                            </span>
+                            <span className={styles.cardIcon}>
+                              <LIcon name="file-text" size={18} strokeWidth={1.6} />
+                            </span>
+                            <span className={styles.cardTitle}>{pg.title}</span>
+                            {pg.isArchived && <span className={styles.cardBadge}>архив</span>}
+                            {isDesigner && (
+                              <>
+                                <button className={styles.cardMenu} onClick={e => openContext(e, pg.slug, 'page', pg.title, pg.isArchived)}>
+                                  <LIcon name="more-vertical" size={16} />
+                                </button>
+                              </>
+                            )}
+                          </div>
+
+                          {isPgExp && (
+                            <div className={styles.cardChildren}>
+                              {pg.features.length === 0 ? (
+                                <div className={styles.emptyRow}>
+                                  <span className={styles.emptyRowText}>Нет фич</span>
+                                </div>
+                              ) : (
+                                pg.features.map(f => (
+                                  <div
+                                    key={f.slug}
+                                    className={`${styles.featRow} ${f.isArchived ? styles['card--archived'] : ''}`}
+                                    onClick={() => navigate(`/branch/${f.slug}`)}
+                                  >
+                                    <span className={styles.cardIcon}>
+                                      <LIcon name="layout" size={16} strokeWidth={1.6} />
+                                    </span>
+                                    <span className={styles.featTitle}>{f.title}</span>
+                                    {f.versionCount > 0 && (
+                                      <span className={styles.featVersion}>
+                                        v{f.latestVersion} ({f.versionCount})
+                                      </span>
+                                    )}
+                                    {f.versionCount === 0 && (
+                                      <span className={styles.featNoVersion}>нет версий</span>
+                                    )}
+                                    {isDesigner && (
+                                      <button className={styles.cardMenu} onClick={e => openContext(e, f.slug, 'feature', f.title, f.isArchived)}>
+                                        <LIcon name="more-vertical" size={16} />
+                                      </button>
+                                    )}
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              )}
             </div>
-            <div className={styles.modalBody}>
-              <p style={{ margin: 0, fontSize: 14 }}>Удалить навсегда? Восстановление невозможно.</p>
-            </div>
-            <div className={styles.modalFooter}>
-              <button className={styles.modalCancel} onClick={() => setDeleteSlug(null)}>Отмена</button>
-              <button className={`${styles.modalSubmit}`}
-                style={{ background: '#dc2626' }}
-                onClick={confirmDelete}
-              >Удалить</button>
-            </div>
-          </div>
+          )
+        })}
+      </div>
+
+      {/* Context menu */}
+      {ctxMenu && (
+        <div ref={ctxRef} className={styles.contextMenu} style={{ left: ctxMenu.x, top: ctxMenu.y }}>
+          {ctxMenu.type === 'product' && (
+            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); openCreate('page', ctxMenu.slug) }}>
+              <LIcon name="file-plus" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              Добавить страницу
+            </button>
+          )}
+          {ctxMenu.type === 'page' && (
+            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); openCreate('feature', ctxMenu.slug) }}>
+              <LIcon name="clipboard-plus" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              Добавить фичу
+            </button>
+          )}
+          {ctxMenu.type === 'feature' && (
+            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); navigate(`/branch/${ctxMenu.slug}`) }}>
+              <LIcon name="upload" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              Добавить версию
+            </button>
+          )}
+          <button className={styles.contextItem} onClick={() => renameItem(ctxMenu.slug)}>
+            <LIcon name="edit" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            Переименовать
+          </button>
+          <button className={styles.contextItem} onClick={() => archiveItem(ctxMenu.slug, !ctxMenu.isArchived)}>
+            <LIcon name="archive" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            {ctxMenu.isArchived ? 'Разархивировать' : 'Архивировать'}
+          </button>
+          <button className={`${styles.contextItem} ${styles['contextItem--danger']}`} onClick={() => deleteItem(ctxMenu.slug)}>
+            <LIcon name="trash-2" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            Удалить
+          </button>
         </div>
       )}
 
@@ -293,6 +390,52 @@ export function DashboardView() {
               <button className={styles.modalSubmit} onClick={handleCreate} disabled={!createTitle.trim() || createSubmitting}>
                 {createSubmitting ? '...' : 'Создать'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rename modal */}
+      {renameOpen && (
+        <div className={styles.modalOverlay} onClick={() => setRenameOpen(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>Переименовать</span>
+              <button className={styles.modalClose} onClick={() => setRenameOpen(false)}>
+                <LIcon name="x" size={18} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <input className={styles.modalInput} placeholder="Новое название" value={renameTitle}
+                onChange={e => setRenameTitle(e.target.value)} autoFocus
+                onKeyDown={e => e.key === 'Enter' && confirmRename()} />
+            </div>
+            <div className={styles.modalFooter}>
+              <button className={styles.modalCancel} onClick={() => setRenameOpen(false)}>Отмена</button>
+              <button className={styles.modalSubmit} onClick={confirmRename} disabled={!renameTitle.trim() || renameSubmitting}>
+                {renameSubmitting ? '...' : 'Переименовать'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {deleteSlug && (
+        <div className={styles.modalOverlay} onClick={() => setDeleteSlug(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ maxWidth: 380 }}>
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>Удалить</span>
+              <button className={styles.modalClose} onClick={() => setDeleteSlug(null)}>
+                <LIcon name="x" size={18} />
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p style={{ margin: 0, fontSize: 14 }}>Удалить навсегда? Восстановление невозможно.</p>
+            </div>
+            <div className={styles.modalFooter}>
+              <button className={styles.modalCancel} onClick={() => setDeleteSlug(null)}>Отмена</button>
+              <button className={styles.modalSubmit} style={{ background: '#dc2626' }} onClick={confirmDelete}>Удалить</button>
             </div>
           </div>
         </div>

@@ -252,9 +252,6 @@ export function DashboardView() {
                             {pg.isArchived && <span className={styles.cardBadge}>архив</span>}
                             {isDesigner && (
                               <>
-                                <button className={styles.createSmall} onClick={e => { e.stopPropagation(); openCreate('feature', pg.slug) }}>
-                                  + Фича
-                                </button>
                                 <button className={styles.cardMenu} onClick={e => openContext(e, pg.slug, 'page', pg.title, pg.isArchived)}>
                                   <LIcon name="more-vertical" size={16} />
                                 </button>
@@ -319,7 +316,7 @@ export function DashboardView() {
           )}
           {ctxMenu.type === 'page' && (
             <button className={styles.contextItem} onClick={() => { setCtxMenu(null); openCreate('feature', ctxMenu.slug) }}>
-              <LIcon name="layout-plus" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              <LIcon name="clipboard-plus" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
               Добавить фичу
             </button>
           )}

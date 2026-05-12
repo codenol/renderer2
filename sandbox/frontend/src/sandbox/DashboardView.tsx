@@ -327,7 +327,7 @@ export function DashboardView() {
                                                 key={v.id}
                                                 className={styles.featRow}
                                                 onClick={() => navigate(`/branch/${f.slug}`)}
-                                                style={{ paddingLeft: 70 }}
+                                                style={{ paddingLeft: 86 }}
                                               >
                                                 <LIcon name="git-branch" size={14} style={{ flexShrink: 0, color: 'var(--color-icon-secondary, #9ca3af)' }} />
                                                 <span className={styles.featTitle} style={{ flex: 1 }}>Версия {v.versionNumber}</span>

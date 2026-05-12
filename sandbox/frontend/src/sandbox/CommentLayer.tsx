@@ -463,7 +463,8 @@ export function CommentLayer({
               top: tooltipPos?.top ?? 0,
               opacity: tooltipVisible ? 1 : 0,
               pointerEvents: tooltipVisible ? 'auto' : 'none',
-            }}
+              '--role-color': ROLE_COLORS[userRole],
+            } as React.CSSProperties}
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
@@ -605,7 +606,7 @@ export function CommentLayer({
         <div
           ref={popupRef}
           className={`${styles.popup} ${pending.flipDown ? styles['popup--down'] : ''}`}
-          style={{ left: pending.vx, top: pending.vy }}
+          style={{ left: pending.vx, top: pending.vy, '--role-color': ROLE_COLORS[userRole] } as React.CSSProperties}
           onClick={e => e.stopPropagation()}
         >
           <div className={styles.popupWho}>

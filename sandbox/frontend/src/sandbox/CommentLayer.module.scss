@@ -252,7 +252,7 @@
 .popup {
   position: fixed;
   transform: translate(-50%, calc(-100% - 16px));
-  background: #fff;
+  background: var(--color-modal-background-primary, #fff);
   border-radius: 12px;
   padding: 14px 16px;
   width: 280px;
@@ -271,7 +271,7 @@
     left: 50%;
     transform: translateX(-50%);
     border: 8px solid transparent;
-    border-top-color: #fff;
+    border-top-color: var(--color-modal-background-primary, #fff);
   }
 
   &--down {
@@ -284,7 +284,7 @@
       left: 50%;
       transform: translateX(-50%);
       border: 8px solid transparent;
-      border-bottom-color: #fff;
+      border-bottom-color: var(--color-modal-background-primary, #fff);
     }
   }
 }
@@ -306,22 +306,23 @@
 .popupWhoName {
   font-size: 13px;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-modal-text-primary, #111827);
 }
 
 .popupWhoRoleLabel {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-modal-text-secondary, #6b7280);
 }
 
 .popupNode {
   font-size: 11px;
-  color: #9ca3af;
-  code { font-family: monospace; background: #f3f4f6; border-radius: 4px; padding: 1px 4px; }
+  color: var(--color-modal-text-tertiary, #9ca3af);
+  code { font-family: monospace; background: var(--color-modal-background-secondary, #f3f4f6); border-radius: 4px; padding: 1px 4px; }
 }
 
 .popupTextarea {
-  border: 1px solid #e5e7eb;
+  background: var(--color-input-background-default, #fff);
+  border: 1px solid var(--color-input-border-default, #e5e7eb);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 13px;
@@ -329,7 +330,8 @@
   resize: vertical;
   outline: none;
   width: 100%;
-  &:focus { border-color: #2d98b4; }
+  color: var(--color-input-text-filled, #111827);
+  &:focus { border-color: var(--color-input-border-focused, #2d98b4); }
 }
 
 .popupActions {
@@ -342,8 +344,11 @@
   padding: 6px 14px;
   border-radius: 8px;
   font-size: 13px;
-  color: #6b7280;
-  &:hover { background: #f3f4f6; }
+  border: none;
+  background: transparent;
+  color: var(--color-modal-text-secondary, #6b7280);
+  cursor: pointer;
+  &:hover { background: var(--color-modal-background-secondary, #f3f4f6); }
 }
 
 .popupSubmit {
@@ -351,9 +356,11 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  background: #2d98b4;
+  border: none;
+  background: var(--role-color, #2d98b4);
   color: #fff;
-  &:hover:not(:disabled) { background: #248aa4; }
+  cursor: pointer;
+  &:hover:not(:disabled) { filter: brightness(1.15); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
@@ -565,11 +572,11 @@
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
-  background: #2d98b4;
+  background: var(--role-color, #2d98b4);
   color: #fff;
   border: none;
   cursor: pointer;
-  &:hover:not(:disabled) { background: #2589a3; }
+  &:hover:not(:disabled) { filter: brightness(1.15); }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 

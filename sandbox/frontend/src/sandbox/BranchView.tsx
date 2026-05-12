@@ -7,6 +7,7 @@ import { CommentLayer } from './CommentLayer'
 import { useApiClient } from './apiClient'
 import { useAuth } from '@/auth/AuthContext'
 import { useSidebarActions } from './SidebarActions'
+import { YamlEditorModal } from './YamlEditorModal'
 import styles from './BranchView.module.scss'
 
 const BACKEND = 'http://localhost:3001'
@@ -56,7 +57,6 @@ export function BranchView() {
   const [yamlText, setYamlText] = useState('')
   const [yamlCopied, setYamlCopied] = useState(false)
   const [yamlError, setYamlError] = useState<string | null>(null)
-  const yamlFileRef = useRef<HTMLInputElement>(null)
 
   // ─── Version dropdown ─────────────────────────────────────────────────────
   const [versionOpen, setVersionOpen] = useState(false)
@@ -177,33 +177,6 @@ export function BranchView() {
     URL.revokeObjectURL(url)
   }
 
-  async function onUploadYamlFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]; if (!file) return; e.target.value = ''
-    const text = await file.text()
-    setYamlText(text); setYamlError(null)
-    let parsed: unknown
-    try { parsed = yaml.load(text, { schema: yaml.FAILSAFE_SCHEMA }) } catch (err) {
-      setYamlError(err instanceof Error ? err.message : 'Ошибка парсинга YAML'); return
-    }
-    if (!parsed || typeof parsed !== 'object') { setYamlError('YAML должен содержать объект'); return }
-    const json = parsed as ScreenJSON
-    if (!json.pages || !Array.isArray(json.pages)) { setYamlError('YAML должен содержать раздел pages'); return }
-
-    if (slug && connected && userRole === 'designer') {
-      const token = localStorage.getItem('skala_access_token')
-      try {
-        const res = await fetch(`${BACKEND}/api/branches/${slug}/versions`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/yaml', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-          body: text,
-        })
-        if (res.ok) { const v = await res.json(); setCurrentVersionId(v.id); showToast(`Версия ${v.versionNumber} создана`) }
-        else setApiScreenJson(json)
-      } catch { setApiScreenJson(json) }
-    } else { setApiScreenJson(json) }
-    setYamlOpen(false)
-  }
-
   // ─── Share ────────────────────────────────────────────────────────────────
   async function handleShare() {
     if (!currentVersionId) return
@@ -251,23 +224,22 @@ export function BranchView() {
       {copyToast && <div className={styles.copyToast}>{toastMsg}</div>}
 
       {/* YAML modal */}
-      {yamlOpen && (
-        <div className={styles.yamlOverlay} onClick={() => setYamlOpen(false)}>
-          <div className={styles.yamlModal} onClick={e => e.stopPropagation()}>
-            <div className={styles.yamlHeader}><span className={styles.yamlTitle}>YAML — {localBranchTitle}</span><button className={styles.yamlClose} onClick={() => setYamlOpen(false)}>✕</button></div>
-            {yamlError && <div className={styles.yamlError}>{yamlError}</div>}
-            <div className={styles.yamlBody}><textarea className={styles.yamlTextarea} value={yamlText} onChange={e => { setYamlText(e.target.value); setYamlError(null) }} spellCheck={false} /></div>
-            <div className={styles.yamlFooter}>
-              <input ref={yamlFileRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }} onChange={onUploadYamlFile} />
-              <button className={`${styles.yamlBtn} ${styles.yamlBtnApply}`} onClick={applyYaml}>Применить</button>
-              <button className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`} onClick={() => yamlFileRef.current?.click()}>Загрузить файл</button>
-              <div style={{ flex: 1 }} />
-              <button className={`${styles.yamlBtn} ${styles.yamlBtnCopy} ${yamlCopied ? styles.yamlBtnCopied : ''}`} onClick={copyYaml}>{yamlCopied ? '✓ Скопировано' : 'Скопировать'}</button>
-              <button className={`${styles.yamlBtn} ${styles.yamlBtnDownload}`} onClick={downloadYaml}>Скачать .yaml</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <YamlEditorModal
+        open={yamlOpen}
+        onClose={() => setYamlOpen(false)}
+        title={`YAML — ${localBranchTitle}`}
+        yamlText={yamlText}
+        onYamlChange={t => { setYamlText(t); setYamlError(null) }}
+        yamlError={yamlError || ''}
+        onSubmit={applyYaml}
+        submitLabel="Применить"
+        submitting={false}
+        showCopyDownload
+        onCopy={copyYaml}
+        copied={yamlCopied}
+        onDownload={downloadYaml}
+        onFileSelect={text => { setYamlText(text); setYamlError(null) }}
+      />
 
       {/* Share modal */}
       {shareOpen && (

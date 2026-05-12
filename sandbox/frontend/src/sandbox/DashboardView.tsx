@@ -4,8 +4,8 @@ import yaml from 'js-yaml'
 import type { ScreenJSON } from '@/renderer/types'
 import { useAuth } from '@/auth/AuthContext'
 import { LIcon } from '@/renderer/components/LIcon'
+import { YamlEditorModal } from './YamlEditorModal'
 import styles from './DashboardView.module.scss'
-import branchStyles from './BranchView.module.scss'
 
 const BACKEND = 'http://localhost:3001'
 
@@ -89,7 +89,6 @@ export function DashboardView() {
   const [versionYamlFeatureTitle, setVersionYamlFeatureTitle] = useState('')
   const [versionYamlNextNum, setVersionYamlNextNum] = useState(1)
   const [versionYamlSubmitting, setVersionYamlSubmitting] = useState(false)
-  const yamlFileRef = useRef<HTMLInputElement>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -271,13 +270,6 @@ export function DashboardView() {
     } finally {
       setVersionYamlSubmitting(false)
     }
-  }
-
-  async function onUploadYamlFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]; if (!file) return; e.target.value = ''
-    const text = await file.text()
-    setVersionYamlText(text)
-    setVersionYamlError('')
   }
 
   if (loading) {
@@ -568,36 +560,18 @@ export function DashboardView() {
       )}
 
       {/* Version YAML modal */}
-      {versionYamlOpen && (
-        <div className={branchStyles.yamlOverlay} onClick={() => setVersionYamlOpen(false)}>
-          <div className={branchStyles.yamlModal} onClick={e => e.stopPropagation()}>
-            <div className={branchStyles.yamlHeader}>
-              <span className={branchStyles.yamlTitle}>
-                Новая версия · {versionYamlFeatureTitle} · v{versionYamlNextNum}
-              </span>
-              <button className={branchStyles.yamlClose} onClick={() => setVersionYamlOpen(false)}>✕</button>
-            </div>
-            {versionYamlError && <div className={branchStyles.yamlError}>{versionYamlError}</div>}
-            <div className={branchStyles.yamlBody}>
-              <textarea className={branchStyles.yamlTextarea} value={versionYamlText}
-                onChange={e => { setVersionYamlText(e.target.value); setVersionYamlError('') }}
-                spellCheck={false} />
-            </div>
-            <div className={branchStyles.yamlFooter}>
-              <button className={`${branchStyles.yamlBtn} ${branchStyles.yamlBtnApply}`} onClick={submitVersionYaml}
-                disabled={!versionYamlText.trim() || versionYamlSubmitting}>
-                {versionYamlSubmitting ? '...' : `Создать версию ${versionYamlNextNum}`}
-              </button>
-              <input ref={yamlFileRef} type="file" accept=".yaml,.yml" style={{ display: 'none' }} onChange={onUploadYamlFile} />
-              <button className={`${branchStyles.yamlBtn} ${branchStyles.yamlBtnUpload}`} onClick={() => yamlFileRef.current?.click()}>
-                Загрузить файл
-              </button>
-              <div style={{ flex: 1 }} />
-              <button className={`${branchStyles.yamlBtn} ${branchStyles.yamlBtnDownload}`} onClick={() => setVersionYamlOpen(false)}>Отмена</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <YamlEditorModal
+        open={versionYamlOpen}
+        onClose={() => setVersionYamlOpen(false)}
+        title={`Новая версия · ${versionYamlFeatureTitle} · v${versionYamlNextNum}`}
+        yamlText={versionYamlText}
+        onYamlChange={t => { setVersionYamlText(t); setVersionYamlError('') }}
+        yamlError={versionYamlError}
+        onSubmit={submitVersionYaml}
+        submitLabel={`Создать версию ${versionYamlNextNum}`}
+        submitting={versionYamlSubmitting}
+        onFileSelect={text => { setVersionYamlText(text); setVersionYamlError('') }}
+      />
 
       {/* Toast */}
       {toastVisible && <div className={styles.copyToast}>{toastMsg}</div>}

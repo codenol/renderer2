@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { LIcon } from '@/renderer/components/LIcon'
 import styles from './BranchView.module.scss'
 
@@ -23,6 +24,7 @@ export function YamlEditorModal({
   onSubmit, submitLabel, submitting,
   showCopyDownload, onCopy, copied, onDownload, onFileSelect,
 }: Props) {
+  const fileRef = useRef<HTMLInputElement>(null)
 
   if (!open) return null
 
@@ -45,6 +47,37 @@ export function YamlEditorModal({
           />
         </div>
         <div className={styles.yamlFooter}>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".yaml,.yml"
+            style={{ display: 'none' }}
+            onChange={async e => {
+              console.log('[YamlEditor] input onChange, files:', e.target.files?.length ?? 0)
+              const file = e.target.files?.[0]
+              if (!file) return
+              e.target.value = ''
+              const text = await file.text()
+              console.log('[YamlEditor] file loaded:', file.name, text.length, 'chars')
+              onFileSelect(text)
+            }}
+          />
+          <button
+            className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`}
+            title="Загрузить YAML / JSON"
+            onClick={(e) => {
+              e.stopPropagation()
+              console.log('[YamlEditor] Загрузить файл clicked, ref:', !!fileRef.current)
+              try {
+                fileRef.current?.click()
+                console.log('[YamlEditor] click() succeeded')
+              } catch (err) {
+                console.error('[YamlEditor] click() failed:', err)
+              }
+            }}
+          >
+            Загрузить файл
+          </button>
           <button
             className={`${styles.yamlBtn} ${styles.yamlBtnApply}`}
             onClick={onSubmit}
@@ -52,24 +85,6 @@ export function YamlEditorModal({
           >
             {submitting ? '...' : submitLabel}
           </button>
-          <label className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`} style={{ cursor: 'pointer' }}
-            onClick={() => console.log('[YamlEditor] Загрузить файл — label clicked')}>
-            Загрузить файл
-            <input
-              type="file"
-              accept=".yaml,.yml"
-              style={{ display: 'none' }}
-              onChange={async e => {
-                console.log('[YamlEditor] input onChange, files:', e.target.files?.length ?? 0)
-                const file = e.target.files?.[0]
-                if (!file) return
-                e.target.value = ''
-                const text = await file.text()
-                console.log('[YamlEditor] file loaded:', file.name, text.length, 'chars')
-                onFileSelect(text)
-              }}
-            />
-          </label>
           <div style={{ flex: 1 }} />
           {showCopyDownload && (
             <>

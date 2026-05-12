@@ -1,0 +1,415 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "S^R" [ref=e5] [cursor=pointer]
+    - generic [ref=e6]:
+      - generic [ref=e7]: Конструктор отчётов
+      - generic [ref=e8]: report-builder
+    - generic [ref=e9]:
+      - button "? Аноним Дизайнер ▾" [ref=e11] [cursor=pointer]:
+        - generic [ref=e12]: "?"
+        - generic [ref=e13]: Аноним
+        - generic [ref=e14]: Дизайнер
+        - generic [ref=e15]: ▾
+      - button "YAML" [ref=e16] [cursor=pointer]
+      - button "Копировать комментарии в буфер" [ref=e17] [cursor=pointer]
+      - button "Комментировать" [ref=e18] [cursor=pointer]
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - button "Безопасность" [ref=e27] [cursor=pointer]:
+            - img [ref=e28]
+          - button "Уведомления" [ref=e31] [cursor=pointer]:
+            - img [ref=e32]
+          - button "Обзор" [ref=e35] [cursor=pointer]:
+            - img [ref=e36]
+          - button "Закладки" [ref=e41] [cursor=pointer]:
+            - img [ref=e42]
+        - generic [ref=e44]:
+          - button "Настройки" [ref=e45] [cursor=pointer]:
+            - img [ref=e46]
+          - button "Светлая тема" [ref=e49] [cursor=pointer]:
+            - img [ref=e50]
+          - button "Галерея" [ref=e56] [cursor=pointer]:
+            - img [ref=e57]
+          - button "Помощь" [ref=e61] [cursor=pointer]:
+            - img [ref=e62]
+          - button "AB" [ref=e65]
+      - generic [ref=e66]:
+        - img "^геном 2.0" [ref=e68]
+        - navigation [ref=e77]:
+          - button "Здоровье ПАК" [ref=e78] [cursor=pointer]:
+            - img [ref=e80]
+            - generic [ref=e85]: Здоровье ПАК
+          - button "Устройства" [ref=e86] [cursor=pointer]:
+            - img [ref=e88]
+            - generic [ref=e90]: Устройства
+          - button "Отчёты" [ref=e91] [cursor=pointer]:
+            - img [ref=e93]
+            - generic [ref=e95]: Отчёты
+          - button "Настройки" [ref=e96] [cursor=pointer]:
+            - img [ref=e98]
+            - generic [ref=e101]: Настройки
+        - button "Свернуть" [ref=e104] [cursor=pointer]:
+          - img [ref=e105]
+          - generic [ref=e107]: Свернуть
+    - generic [ref=e108]:
+      - navigation "breadcrumb" [ref=e109]:
+        - button "ПАК" [ref=e111] [cursor=pointer]
+        - generic [ref=e112]:
+          - generic [ref=e113]: •
+          - button "Отчёты" [ref=e114] [cursor=pointer]
+        - generic [ref=e115]:
+          - generic [ref=e116]: •
+          - generic [ref=e117]: Конструктор отчётов
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - generic [ref=e124]: "Колонки:"
+            - button "Узел ×" [ref=e125] [cursor=pointer]:
+              - text: Узел
+              - generic [ref=e126]: ×
+            - button "Тип сущности ×" [ref=e127] [cursor=pointer]:
+              - text: Тип сущности
+              - generic [ref=e128]: ×
+            - button "Название ×" [ref=e129] [cursor=pointer]:
+              - text: Название
+              - generic [ref=e130]: ×
+            - button "Версия ×" [ref=e131] [cursor=pointer]:
+              - text: Версия
+              - generic [ref=e132]: ×
+            - button "Архитектура ×" [ref=e133] [cursor=pointer]:
+              - text: Архитектура
+              - generic [ref=e134]: ×
+            - button "Дата установки" [ref=e135] [cursor=pointer]
+            - button "Серийный номер" [ref=e136] [cursor=pointer]
+            - button "Количество" [ref=e137] [cursor=pointer]
+            - button "Расположение" [ref=e138] [cursor=pointer]
+            - combobox [ref=e139] [cursor=pointer]:
+              - option "+ Добавить поле" [selected]
+              - option "Дата установки"
+              - option "Серийный номер"
+              - option "Количество"
+              - option "Расположение"
+            - button "Экспорт ▾" [ref=e141] [cursor=pointer]
+          - generic [ref=e142]:
+            - generic [ref=e143]: "Группировка:"
+            - combobox [ref=e144] [cursor=pointer]:
+              - option "Не выбрано"
+              - option "Узел" [selected]
+              - option "Тип сущности"
+              - option "Название"
+              - option "Версия"
+              - option "Архитектура"
+              - option "Дата установки"
+              - option "Серийный номер"
+              - option "Количество"
+              - option "Расположение"
+            - generic [ref=e145]: "Сортировка:"
+            - combobox [ref=e146] [cursor=pointer]:
+              - option "Не выбрано"
+              - option "Узел ↑"
+              - option "Узел ↓"
+              - option "Тип сущности ↑"
+              - option "Тип сущности ↓"
+              - option "Название ↑"
+              - option "Название ↓"
+              - option "Версия ↑"
+              - option "Версия ↓"
+              - option "Архитектура ↑"
+              - option "Архитектура ↓"
+              - option "Дата установки ↑"
+              - option "Дата установки ↓" [selected]
+              - option "Серийный номер ↑"
+              - option "Серийный номер ↓"
+              - option "Количество ↑"
+              - option "Количество ↓"
+              - option "Расположение ↑"
+              - option "Расположение ↓"
+            - generic [ref=e148]: "Фильтр:"
+            - combobox [ref=e149] [cursor=pointer]:
+              - option "Поле" [selected]
+              - option "Узел"
+              - option "Тип сущности"
+              - option "Название"
+              - option "Версия"
+              - option "Архитектура"
+              - option "Дата установки"
+              - option "Серийный номер"
+              - option "Количество"
+              - option "Расположение"
+            - combobox [ref=e150] [cursor=pointer]:
+              - option "равно" [selected]
+              - option "содержит"
+              - option "не равно"
+            - textbox "Значение" [ref=e151]
+            - button "Добавить" [ref=e152] [cursor=pointer]
+          - generic [ref=e153]:
+            - generic [ref=e154]: "Активные фильтры:"
+            - button "Архитектура равно amd64 ×" [ref=e155] [cursor=pointer]:
+              - text: Архитектура равно amd64
+              - generic [ref=e156]: ×
+            - button "Тип сущности равно package ×" [active] [ref=e157] [cursor=pointer]:
+              - text: Тип сущности равно package
+              - generic [ref=e158]: ×
+        - table [ref=e159]:
+          - rowgroup [ref=e160]:
+            - row "Узел Тип сущности Название Версия Архитектура" [ref=e161]:
+              - columnheader "Узел" [ref=e162] [cursor=pointer]
+              - columnheader "Тип сущности" [ref=e163] [cursor=pointer]
+              - columnheader "Название" [ref=e164] [cursor=pointer]
+              - columnheader "Версия" [ref=e165] [cursor=pointer]
+              - columnheader "Архитектура" [ref=e166] [cursor=pointer]
+          - rowgroup [ref=e167]:
+            - row "srv-pak-01 (16)" [ref=e168]:
+              - cell "srv-pak-01 (16)" [ref=e169]
+            - row "srv-pak-01 package lsscsi 0.30-0.1 amd64" [ref=e170]:
+              - cell "srv-pak-01" [ref=e171]
+              - cell "package" [ref=e172]
+              - cell "lsscsi" [ref=e173]
+              - cell "0.30-0.1" [ref=e174]
+              - cell "amd64" [ref=e175]
+            - row "srv-pak-01 package chrony 4.3-2+deb12u1 amd64" [ref=e176]:
+              - cell "srv-pak-01" [ref=e177]
+              - cell "package" [ref=e178]
+              - cell "chrony" [ref=e179]
+              - cell "4.3-2+deb12u1" [ref=e180]
+              - cell "amd64" [ref=e181]
+            - row "srv-pak-01 package nginx 1.22.1-9 amd64" [ref=e182]:
+              - cell "srv-pak-01" [ref=e183]
+              - cell "package" [ref=e184]
+              - cell "nginx" [ref=e185]
+              - cell "1.22.1-9" [ref=e186]
+              - cell "amd64" [ref=e187]
+            - row "srv-pak-01 package curl 7.64.0-4+deb10u5 amd64" [ref=e188]:
+              - cell "srv-pak-01" [ref=e189]
+              - cell "package" [ref=e190]
+              - cell "curl" [ref=e191]
+              - cell "7.64.0-4+deb10u5" [ref=e192]
+              - cell "amd64" [ref=e193]
+            - row "srv-pak-01 package dmsetup 2:1.02.175-2+b1 amd64" [ref=e194]:
+              - cell "srv-pak-01" [ref=e195]
+              - cell "package" [ref=e196]
+              - cell "dmsetup" [ref=e197]
+              - cell "2:1.02.175-2+b1" [ref=e198]
+              - cell "amd64" [ref=e199]
+            - row "srv-pak-01 package ethtool 1:4.19-1+b1 amd64" [ref=e200]:
+              - cell "srv-pak-01" [ref=e201]
+              - cell "package" [ref=e202]
+              - cell "ethtool" [ref=e203]
+              - cell "1:4.19-1+b1" [ref=e204]
+              - cell "amd64" [ref=e205]
+            - row "srv-pak-01 package glib-networking 2.58.0-2+deb10u2 amd64" [ref=e206]:
+              - cell "srv-pak-01" [ref=e207]
+              - cell "package" [ref=e208]
+              - cell "glib-networking" [ref=e209]
+              - cell "2.58.0-2+deb10u2" [ref=e210]
+              - cell "amd64" [ref=e211]
+            - row "srv-pak-01 package glib-networking-services 2.58.0-2+deb10u2 amd64" [ref=e212]:
+              - cell "srv-pak-01" [ref=e213]
+              - cell "package" [ref=e214]
+              - cell "glib-networking-services" [ref=e215]
+              - cell "2.58.0-2+deb10u2" [ref=e216]
+              - cell "amd64" [ref=e217]
+            - row "srv-pak-01 package ipmitool 1.8.18-6+deb10u1+b1 amd64" [ref=e218]:
+              - cell "srv-pak-01" [ref=e219]
+              - cell "package" [ref=e220]
+              - cell "ipmitool" [ref=e221]
+              - cell "1.8.18-6+deb10u1+b1" [ref=e222]
+              - cell "amd64" [ref=e223]
+            - row "srv-pak-01 package iptables 1.8.5-3~bpo10+1 amd64" [ref=e224]:
+              - cell "srv-pak-01" [ref=e225]
+              - cell "package" [ref=e226]
+              - cell "iptables" [ref=e227]
+              - cell "1.8.5-3~bpo10+1" [ref=e228]
+              - cell "amd64" [ref=e229]
+            - row "srv-pak-01 package libvirt-clients 10.5.0-1.astra.se06 amd64" [ref=e230]:
+              - cell "srv-pak-01" [ref=e231]
+              - cell "package" [ref=e232]
+              - cell "libvirt-clients" [ref=e233]
+              - cell "10.5.0-1.astra.se06" [ref=e234]
+              - cell "amd64" [ref=e235]
+            - row "srv-pak-01 package libvirt-daemon 10.5.0-1.astra.se06 amd64" [ref=e236]:
+              - cell "srv-pak-01" [ref=e237]
+              - cell "package" [ref=e238]
+              - cell "libvirt-daemon" [ref=e239]
+              - cell "10.5.0-1.astra.se06" [ref=e240]
+              - cell "amd64" [ref=e241]
+            - row "srv-pak-01 package libvirt-daemon-driver-qemu 10.5.0-1.astra.se06 amd64" [ref=e242]:
+              - cell "srv-pak-01" [ref=e243]
+              - cell "package" [ref=e244]
+              - cell "libvirt-daemon-driver-qemu" [ref=e245]
+              - cell "10.5.0-1.astra.se06" [ref=e246]
+              - cell "amd64" [ref=e247]
+            - row "srv-pak-01 package libvirt0 10.5.0-1.astra.se06 amd64" [ref=e248]:
+              - cell "srv-pak-01" [ref=e249]
+              - cell "package" [ref=e250]
+              - cell "libvirt0" [ref=e251]
+              - cell "10.5.0-1.astra.se06" [ref=e252]
+              - cell "amd64" [ref=e253]
+            - row "srv-pak-01 package openssl 1.1.1n-0+deb11u4 amd64" [ref=e254]:
+              - cell "srv-pak-01" [ref=e255]
+              - cell "package" [ref=e256]
+              - cell "openssl" [ref=e257]
+              - cell "1.1.1n-0+deb11u4" [ref=e258]
+              - cell "amd64" [ref=e259]
+            - row "srv-pak-01 package openssh-server 8.4p1-5+deb11u1 amd64" [ref=e260]:
+              - cell "srv-pak-01" [ref=e261]
+              - cell "package" [ref=e262]
+              - cell "openssh-server" [ref=e263]
+              - cell "8.4p1-5+deb11u1" [ref=e264]
+              - cell "amd64" [ref=e265]
+            - row "srv-pak-02 (13)" [ref=e266]:
+              - cell "srv-pak-02 (13)" [ref=e267]
+            - row "srv-pak-02 package lsscsi 0.30-0.1 amd64" [ref=e268]:
+              - cell "srv-pak-02" [ref=e269]
+              - cell "package" [ref=e270]
+              - cell "lsscsi" [ref=e271]
+              - cell "0.30-0.1" [ref=e272]
+              - cell "amd64" [ref=e273]
+            - row "srv-pak-02 package chrony 4.3-2+deb12u1 amd64" [ref=e274]:
+              - cell "srv-pak-02" [ref=e275]
+              - cell "package" [ref=e276]
+              - cell "chrony" [ref=e277]
+              - cell "4.3-2+deb12u1" [ref=e278]
+              - cell "amd64" [ref=e279]
+            - row "srv-pak-02 package nginx 1.22.1-9 amd64" [ref=e280]:
+              - cell "srv-pak-02" [ref=e281]
+              - cell "package" [ref=e282]
+              - cell "nginx" [ref=e283]
+              - cell "1.22.1-9" [ref=e284]
+              - cell "amd64" [ref=e285]
+            - row "srv-pak-02 package ca-certificates 20230311ubuntu0.20.04.1 amd64" [ref=e286]:
+              - cell "srv-pak-02" [ref=e287]
+              - cell "package" [ref=e288]
+              - cell "ca-certificates" [ref=e289]
+              - cell "20230311ubuntu0.20.04.1" [ref=e290]
+              - cell "amd64" [ref=e291]
+            - row "srv-pak-02 package curl 7.64.0-4+deb10u5 amd64" [ref=e292]:
+              - cell "srv-pak-02" [ref=e293]
+              - cell "package" [ref=e294]
+              - cell "curl" [ref=e295]
+              - cell "7.64.0-4+deb10u5" [ref=e296]
+              - cell "amd64" [ref=e297]
+            - row "srv-pak-02 package dmsetup 2:1.02.175-2+b1 amd64" [ref=e298]:
+              - cell "srv-pak-02" [ref=e299]
+              - cell "package" [ref=e300]
+              - cell "dmsetup" [ref=e301]
+              - cell "2:1.02.175-2+b1" [ref=e302]
+              - cell "amd64" [ref=e303]
+            - row "srv-pak-02 package ethtool 1:4.19-1+b1 amd64" [ref=e304]:
+              - cell "srv-pak-02" [ref=e305]
+              - cell "package" [ref=e306]
+              - cell "ethtool" [ref=e307]
+              - cell "1:4.19-1+b1" [ref=e308]
+              - cell "amd64" [ref=e309]
+            - row "srv-pak-02 package ipmitool 1.8.18-6+deb10u1+b1 amd64" [ref=e310]:
+              - cell "srv-pak-02" [ref=e311]
+              - cell "package" [ref=e312]
+              - cell "ipmitool" [ref=e313]
+              - cell "1.8.18-6+deb10u1+b1" [ref=e314]
+              - cell "amd64" [ref=e315]
+            - row "srv-pak-02 package iptables 1.8.5-3~bpo10+1 amd64" [ref=e316]:
+              - cell "srv-pak-02" [ref=e317]
+              - cell "package" [ref=e318]
+              - cell "iptables" [ref=e319]
+              - cell "1.8.5-3~bpo10+1" [ref=e320]
+              - cell "amd64" [ref=e321]
+            - row "srv-pak-02 package libvirt-clients 10.5.0-1.astra.se06 amd64" [ref=e322]:
+              - cell "srv-pak-02" [ref=e323]
+              - cell "package" [ref=e324]
+              - cell "libvirt-clients" [ref=e325]
+              - cell "10.5.0-1.astra.se06" [ref=e326]
+              - cell "amd64" [ref=e327]
+            - row "srv-pak-02 package libvirt-daemon 10.5.0-1.astra.se06 amd64" [ref=e328]:
+              - cell "srv-pak-02" [ref=e329]
+              - cell "package" [ref=e330]
+              - cell "libvirt-daemon" [ref=e331]
+              - cell "10.5.0-1.astra.se06" [ref=e332]
+              - cell "amd64" [ref=e333]
+            - row "srv-pak-02 package libvirt-daemon-driver-qemu 10.5.0-1.astra.se06 amd64" [ref=e334]:
+              - cell "srv-pak-02" [ref=e335]
+              - cell "package" [ref=e336]
+              - cell "libvirt-daemon-driver-qemu" [ref=e337]
+              - cell "10.5.0-1.astra.se06" [ref=e338]
+              - cell "amd64" [ref=e339]
+            - row "srv-pak-02 package libvirt0 10.5.0-1.astra.se06 amd64" [ref=e340]:
+              - cell "srv-pak-02" [ref=e341]
+              - cell "package" [ref=e342]
+              - cell "libvirt0" [ref=e343]
+              - cell "10.5.0-1.astra.se06" [ref=e344]
+              - cell "amd64" [ref=e345]
+            - row "srv-pak-03 (12)" [ref=e346]:
+              - cell "srv-pak-03 (12)" [ref=e347]
+            - row "srv-pak-03 package chrony 4.3-2+deb12u1 amd64" [ref=e348]:
+              - cell "srv-pak-03" [ref=e349]
+              - cell "package" [ref=e350]
+              - cell "chrony" [ref=e351]
+              - cell "4.3-2+deb12u1" [ref=e352]
+              - cell "amd64" [ref=e353]
+            - row "srv-pak-03 package nginx 1.22.1-9 amd64" [ref=e354]:
+              - cell "srv-pak-03" [ref=e355]
+              - cell "package" [ref=e356]
+              - cell "nginx" [ref=e357]
+              - cell "1.22.1-9" [ref=e358]
+              - cell "amd64" [ref=e359]
+            - row "srv-pak-03 package curl 7.64.0-4+deb10u5 amd64" [ref=e360]:
+              - cell "srv-pak-03" [ref=e361]
+              - cell "package" [ref=e362]
+              - cell "curl" [ref=e363]
+              - cell "7.64.0-4+deb10u5" [ref=e364]
+              - cell "amd64" [ref=e365]
+            - row "srv-pak-03 package dmsetup 2:1.02.175-2+b1 amd64" [ref=e366]:
+              - cell "srv-pak-03" [ref=e367]
+              - cell "package" [ref=e368]
+              - cell "dmsetup" [ref=e369]
+              - cell "2:1.02.175-2+b1" [ref=e370]
+              - cell "amd64" [ref=e371]
+            - row "srv-pak-03 package ethtool 1:4.19-1+b1 amd64" [ref=e372]:
+              - cell "srv-pak-03" [ref=e373]
+              - cell "package" [ref=e374]
+              - cell "ethtool" [ref=e375]
+              - cell "1:4.19-1+b1" [ref=e376]
+              - cell "amd64" [ref=e377]
+            - row "srv-pak-03 package glib-networking 2.58.0-2+deb10u2 amd64" [ref=e378]:
+              - cell "srv-pak-03" [ref=e379]
+              - cell "package" [ref=e380]
+              - cell "glib-networking" [ref=e381]
+              - cell "2.58.0-2+deb10u2" [ref=e382]
+              - cell "amd64" [ref=e383]
+            - row "srv-pak-03 package ipmitool 1.8.18-6+deb10u1+b1 amd64" [ref=e384]:
+              - cell "srv-pak-03" [ref=e385]
+              - cell "package" [ref=e386]
+              - cell "ipmitool" [ref=e387]
+              - cell "1.8.18-6+deb10u1+b1" [ref=e388]
+              - cell "amd64" [ref=e389]
+            - row "srv-pak-03 package libvirt-clients 10.5.0-1.astra.se06 amd64" [ref=e390]:
+              - cell "srv-pak-03" [ref=e391]
+              - cell "package" [ref=e392]
+              - cell "libvirt-clients" [ref=e393]
+              - cell "10.5.0-1.astra.se06" [ref=e394]
+              - cell "amd64" [ref=e395]
+            - row "srv-pak-03 package libvirt-daemon 10.5.0-1.astra.se06 amd64" [ref=e396]:
+              - cell "srv-pak-03" [ref=e397]
+              - cell "package" [ref=e398]
+              - cell "libvirt-daemon" [ref=e399]
+              - cell "10.5.0-1.astra.se06" [ref=e400]
+              - cell "amd64" [ref=e401]
+            - row "srv-pak-03 package libvirt-daemon-driver-qemu 10.5.0-1.astra.se06 amd64" [ref=e402]:
+              - cell "srv-pak-03" [ref=e403]
+              - cell "package" [ref=e404]
+              - cell "libvirt-daemon-driver-qemu" [ref=e405]
+              - cell "10.5.0-1.astra.se06" [ref=e406]
+              - cell "amd64" [ref=e407]
+            - row "srv-pak-03 package libvirt0 10.5.0-1.astra.se06 amd64" [ref=e408]:
+              - cell "srv-pak-03" [ref=e409]
+              - cell "package" [ref=e410]
+              - cell "libvirt0" [ref=e411]
+              - cell "10.5.0-1.astra.se06" [ref=e412]
+              - cell "amd64" [ref=e413]
+            - row "srv-pak-03 package openssl 1.1.1n-0+deb11u4 amd64" [ref=e414]:
+              - cell "srv-pak-03" [ref=e415]
+              - cell "package" [ref=e416]
+              - cell "openssl" [ref=e417]
+              - cell "1.1.1n-0+deb11u4" [ref=e418]
+              - cell "amd64" [ref=e419]

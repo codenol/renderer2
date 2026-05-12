@@ -1,0 +1,244 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "S^R" [ref=e5] [cursor=pointer]
+    - generic [ref=e6]:
+      - generic [ref=e7]: Конструктор отчётов
+      - generic [ref=e8]: report-builder
+    - generic [ref=e9]:
+      - button "? Аноним Дизайнер ▾" [ref=e11] [cursor=pointer]:
+        - generic [ref=e12]: "?"
+        - generic [ref=e13]: Аноним
+        - generic [ref=e14]: Дизайнер
+        - generic [ref=e15]: ▾
+      - button "YAML" [ref=e16] [cursor=pointer]
+      - button "Копировать комментарии в буфер" [ref=e17] [cursor=pointer]
+      - button "Комментировать" [ref=e18] [cursor=pointer]
+  - generic [ref=e22]:
+    - complementary [ref=e23]:
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - button "Безопасность" [ref=e27] [cursor=pointer]:
+            - img [ref=e28]
+          - button "Уведомления" [ref=e31] [cursor=pointer]:
+            - img [ref=e32]
+          - button "Обзор" [ref=e35] [cursor=pointer]:
+            - img [ref=e36]
+          - button "Закладки" [ref=e41] [cursor=pointer]:
+            - img [ref=e42]
+        - generic [ref=e44]:
+          - button "Настройки" [ref=e45] [cursor=pointer]:
+            - img [ref=e46]
+          - button "Светлая тема" [ref=e49] [cursor=pointer]:
+            - img [ref=e50]
+          - button "Галерея" [ref=e56] [cursor=pointer]:
+            - img [ref=e57]
+          - button "Помощь" [ref=e61] [cursor=pointer]:
+            - img [ref=e62]
+          - button "AB" [ref=e65]
+      - generic [ref=e66]:
+        - img "^геном 2.0" [ref=e68]
+        - navigation [ref=e77]:
+          - button "Здоровье ПАК" [ref=e78] [cursor=pointer]:
+            - img [ref=e80]
+            - generic [ref=e85]: Здоровье ПАК
+          - button "Устройства" [ref=e86] [cursor=pointer]:
+            - img [ref=e88]
+            - generic [ref=e90]: Устройства
+          - button "Отчёты" [ref=e91] [cursor=pointer]:
+            - img [ref=e93]
+            - generic [ref=e95]: Отчёты
+          - button "Настройки" [ref=e96] [cursor=pointer]:
+            - img [ref=e98]
+            - generic [ref=e101]: Настройки
+        - button "Свернуть" [ref=e104] [cursor=pointer]:
+          - img [ref=e105]
+          - generic [ref=e107]: Свернуть
+    - generic [ref=e108]:
+      - navigation "breadcrumb" [ref=e109]:
+        - button "ПАК" [ref=e111] [cursor=pointer]
+        - generic [ref=e112]:
+          - generic [ref=e113]: •
+          - button "Отчёты" [ref=e114] [cursor=pointer]
+        - generic [ref=e115]:
+          - generic [ref=e116]: •
+          - generic [ref=e117]: Конструктор отчётов
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - generic [ref=e124]: "Колонки:"
+            - button "Узел" [ref=e536] [cursor=pointer]
+            - button "Тип сущности" [ref=e537] [cursor=pointer]
+            - button "Название" [ref=e538] [cursor=pointer]
+            - button "Версия" [ref=e539] [cursor=pointer]
+            - button "Архитектура" [active] [ref=e540] [cursor=pointer]
+            - button "Дата установки" [ref=e135] [cursor=pointer]
+            - button "Серийный номер" [ref=e136] [cursor=pointer]
+            - button "Количество" [ref=e137] [cursor=pointer]
+            - button "Расположение" [ref=e138] [cursor=pointer]
+            - combobox [ref=e139] [cursor=pointer]:
+              - option "+ Добавить поле" [selected]
+              - option "Узел"
+              - option "Тип сущности"
+              - option "Название"
+              - option "Версия"
+              - option "Архитектура"
+              - option "Дата установки"
+              - option "Серийный номер"
+              - option "Количество"
+              - option "Расположение"
+            - button "Экспорт ▾" [ref=e141] [cursor=pointer]
+          - generic [ref=e142]:
+            - generic [ref=e143]: "Группировка:"
+            - combobox [ref=e144] [cursor=pointer]:
+              - option "Не выбрано"
+              - option "Узел" [selected]
+              - option "Тип сущности"
+              - option "Название"
+              - option "Версия"
+              - option "Архитектура"
+              - option "Дата установки"
+              - option "Серийный номер"
+              - option "Количество"
+              - option "Расположение"
+            - generic [ref=e145]: "Сортировка:"
+            - combobox [ref=e146] [cursor=pointer]:
+              - option "Не выбрано"
+              - option "Узел ↑"
+              - option "Узел ↓"
+              - option "Тип сущности ↑"
+              - option "Тип сущности ↓"
+              - option "Название ↑"
+              - option "Название ↓"
+              - option "Версия ↑"
+              - option "Версия ↓"
+              - option "Архитектура ↑"
+              - option "Архитектура ↓"
+              - option "Дата установки ↑"
+              - option "Дата установки ↓" [selected]
+              - option "Серийный номер ↑"
+              - option "Серийный номер ↓"
+              - option "Количество ↑"
+              - option "Количество ↓"
+              - option "Расположение ↑"
+              - option "Расположение ↓"
+            - generic [ref=e148]: "Фильтр:"
+            - combobox [ref=e149] [cursor=pointer]:
+              - option "Поле" [selected]
+              - option "Узел"
+              - option "Тип сущности"
+              - option "Название"
+              - option "Версия"
+              - option "Архитектура"
+              - option "Дата установки"
+              - option "Серийный номер"
+              - option "Количество"
+              - option "Расположение"
+            - combobox [ref=e150] [cursor=pointer]:
+              - option "равно" [selected]
+              - option "содержит"
+              - option "не равно"
+            - textbox "Значение" [ref=e151]
+            - button "Добавить" [ref=e152] [cursor=pointer]
+        - table [ref=e159]:
+          - rowgroup:
+            - row
+          - rowgroup [ref=e167]:
+            - row "srv-pak-01 (26)" [ref=e541]:
+              - cell "srv-pak-01 (26)" [ref=e542]
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row "srv-pak-02 (22)" [ref=e543]:
+              - cell "srv-pak-02 (22)" [ref=e544]
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row "srv-pak-03 (21)" [ref=e545]:
+              - cell "srv-pak-03 (21)" [ref=e546]
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row
+            - row "s3m-03b01-msk01 (1)" [ref=e547]:
+              - cell "s3m-03b01-msk01 (1)" [ref=e548]
+            - row
+            - row "s3m-03b02-msk01 (1)" [ref=e549]:
+              - cell "s3m-03b02-msk01 (1)" [ref=e550]
+            - row
+            - row "s3m-03b01-klg02 (1)" [ref=e551]:
+              - cell "s3m-03b01-klg02 (1)" [ref=e552]
+            - row
+            - row "s3m-03b01-rnd01 (1)" [ref=e553]:
+              - cell "s3m-03b01-rnd01 (1)" [ref=e554]
+            - row
+            - row "s3m-03b02-rnd01 (1)" [ref=e555]:
+              - cell "s3m-03b02-rnd01 (1)" [ref=e556]
+            - row
+            - row "s3m-03b01-klg01 (1)" [ref=e557]:
+              - cell "s3m-03b01-klg01 (1)" [ref=e558]
+            - row
+            - row "s3m-03b02-msk02 (1)" [ref=e559]:
+              - cell "s3m-03b02-msk02 (1)" [ref=e560]
+            - row
+            - row "s3m-03b03-msk01 (1)" [ref=e561]:
+              - cell "s3m-03b03-msk01 (1)" [ref=e562]
+            - row

@@ -394,7 +394,7 @@
 .yamlOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: var(--color-layout-overlay-background-default, rgba(0,0,0,0.5));
   z-index: 9000;
   display: flex;
   align-items: center;
@@ -403,7 +403,7 @@
 }
 
 .yamlModal {
-  background: #fff;
+  background: var(--color-modal-background-primary, #fff);
   border-radius: 16px;
   width: 100%;
   max-width: 900px;
@@ -418,14 +418,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-modal-border-default, #e5e7eb);
   flex-shrink: 0;
 }
 
 .yamlTitle {
   font-size: 15px;
   font-weight: 600;
-  color: #1e2433;
+  color: var(--color-modal-text-primary, #1e2433);
 }
 
 .yamlClose {
@@ -434,20 +434,20 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #6b7280;
+  color: var(--color-modal-text-tertiary, #6b7280);
   font-size: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  &:hover { background: #f3f4f6; color: #1e2433; }
+  &:hover { background: var(--color-modal-background-secondary, #f3f4f6); color: var(--color-modal-text-primary, #1e2433); }
 }
 
 .yamlBody {
   flex: 1;
   overflow: auto;
   padding: 0;
-  background: #f8fafc;
+  background: var(--color-modal-background-primary, #f8fafc);
 }
 
 .yamlTextarea {
@@ -461,8 +461,8 @@
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   font-size: 13px;
   line-height: 1.6;
-  color: #1e2433;
-  background: #f8fafc;
+  color: var(--color-modal-text-primary, #1e2433);
+  background: var(--color-modal-background-primary, #f8fafc);
   white-space: pre;
   tab-size: 2;
 }
@@ -481,7 +481,7 @@
   align-items: center;
   gap: 10px;
   padding: 14px 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-modal-border-default, #e5e7eb);
   flex-shrink: 0;
 }
 
@@ -490,7 +490,7 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-modal-border-default, #e5e7eb);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -509,8 +509,8 @@
 
 .yamlBtnDownload {
   background: transparent;
-  color: #374151;
-  &:hover { background: #f3f4f6; }
+  color: var(--color-modal-text-primary, #374151);
+  &:hover { background: var(--color-modal-background-secondary, #f3f4f6); }
 }
 
 .yamlBtnApply {
@@ -522,6 +522,6 @@
 
 .yamlBtnUpload {
   background: transparent;
-  color: #374151;
-  &:hover { background: #f3f4f6; }
+  color: var(--color-modal-text-primary, #374151);
+  &:hover { background: var(--color-modal-background-secondary, #f3f4f6); }
 }

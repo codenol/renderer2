@@ -355,7 +355,12 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  transition: box-shadow 0.2s;
   // No overflow:hidden — allows comment popups and marker tooltips to overflow
+
+  &--comment {
+    box-shadow: 0 0 0 2px #2d98b4, 0 8px 40px rgba(0,0,0,0.18);
+  }
 }
 
 // ─── States ───────────────────────────────────────────────────────────────────

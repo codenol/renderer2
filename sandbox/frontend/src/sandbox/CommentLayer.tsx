@@ -118,8 +118,15 @@ export function CommentLayer({
     const nodeEl = (e.target as HTMLElement).closest('[data-node-id]')
     const nodeId = nodeEl?.getAttribute('data-node-id') ?? undefined
 
-    const flipDown = e.clientY < POPUP_HEIGHT + 24
-    setPending({ x, y, vx: e.clientX, vy: e.clientY, flipDown, nodeId, parentId: null })
+    // Clamp popup to viewport
+    const popupWidth = 280
+    const popupHeight = 260
+    const margin = 16
+    const vx = Math.max(margin + popupWidth / 2, Math.min(window.innerWidth - margin - popupWidth / 2, e.clientX))
+    const vy = Math.max(margin, Math.min(window.innerHeight - margin - popupHeight, e.clientY))
+
+    const flipDown = e.clientY < popupHeight + 24
+    setPending({ x, y, vx, vy, flipDown, nodeId, parentId: null })
     setActiveComment(null)
     setRejectingId(null)
   }, [commentMode])

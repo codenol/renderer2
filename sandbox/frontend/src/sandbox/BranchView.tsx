@@ -242,7 +242,10 @@ export function BranchView() {
 
   return (
     <div className={styles.wrap}>
-      {commentMode && <div className={styles.commentHint}>Кликните на элемент, чтобы оставить комментарий · Esc — выйти</div>}
+  // Show toast when entering comment mode
+  useEffect(() => {
+    if (commentMode) showToast('Режим комментариев — кликните на элемент экрана · Esc — выйти')
+  }, [commentMode])
       {commentError && <div className={styles.commentError}>{commentError}</div>}
       {copyToast && <div className={styles.copyToast}>{toastMsg}</div>}
 
@@ -281,7 +284,7 @@ export function BranchView() {
 
       {/* Canvas */}
       <div className={styles.canvas}>
-        <div className={styles.screen}>
+        <div className={`${styles.screen} ${commentMode ? styles['screen--comment'] : ''}`}>
           <Renderer screen={localScreenJson} commentMode={commentMode} />
           {slug && (
             <CommentLayer

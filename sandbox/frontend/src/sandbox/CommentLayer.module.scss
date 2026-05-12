@@ -422,3 +422,153 @@
   color: #fff;
   font-size: 10px;
 }
+
+// ─── Reply header (inside thread) ───────────────────────────────────────────
+.replyHeader {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px 3px;
+}
+
+.replyDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.replyRole {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.replyAuthor {
+  font-size: 11px;
+  color: #f9fafb;
+  flex: 1;
+}
+
+.replyDate {
+  font-size: 9px;
+  color: rgba(255,255,255,0.35);
+  white-space: nowrap;
+}
+
+.replyText {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e5e7eb;
+  padding: 2px 8px 6px;
+}
+
+// ─── Reply actions (mini resolve/reject) ──────────────────────────────────────
+.replyActions {
+  display: flex;
+  gap: 4px;
+  padding: 0 8px 4px;
+}
+
+.btnResolveMini,
+.btnRejectMini {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  font-size: 11px;
+  border: none;
+  cursor: pointer;
+}
+
+.btnResolveMini {
+  background: rgba(74,222,128,0.12);
+  color: #4ade80;
+  &:hover { background: rgba(74,222,128,0.25); }
+}
+
+.btnRejectMini {
+  background: rgba(239,68,68,0.1);
+  color: #fca5a5;
+  &:hover { background: rgba(239,68,68,0.2); }
+}
+
+// ─── Mini status badges in replies ───────────────────────────────────────────
+.statusResolvedMini {
+  font-size: 10px;
+  font-weight: 600;
+  color: #4ade80;
+  padding: 2px 8px 4px;
+}
+
+.statusRejectedMini {
+  font-size: 10px;
+  font-weight: 500;
+  color: #fca5a5;
+  padding: 2px 8px 4px;
+  line-height: 1.3;
+}
+
+// ─── Mini LLM button in replies ──────────────────────────────────────────────
+.btnLlmMini {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 5px;
+  font-size: 11px;
+  background: transparent;
+  color: rgba(255,255,255,0.2);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  &:hover { color: rgba(139,92,246,0.6); }
+
+  &--active {
+    color: #a78bfa;
+    background: rgba(139,92,246,0.15);
+    &:hover { background: rgba(139,92,246,0.25); }
+  }
+}
+
+// ─── Inline reply textarea ───────────────────────────────────────────────────
+.replyInline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.replyInput {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 7px;
+  padding: 7px 9px;
+  font-size: 12px;
+  font-family: inherit;
+  background: rgba(255,255,255,0.06);
+  color: #f9fafb;
+  resize: none;
+  outline: none;
+  width: 100%;
+  &::placeholder { color: rgba(255,255,255,0.3); }
+  &:focus { border-color: rgba(255,255,255,0.25); }
+}
+
+.replySubmit {
+  align-self: flex-end;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #2d98b4;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  &:hover:not(:disabled) { background: #2589a3; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}

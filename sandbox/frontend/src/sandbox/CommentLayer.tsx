@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react'
 import type { Comment, CommentTree, UserRole } from '@/renderer/types'
 import styles from './CommentLayer.module.scss'
 
@@ -53,8 +53,6 @@ function getReplyCount(tree: CommentTree[]): number {
   return count
 }
 
-const POPUP_HEIGHT = 220
-
 interface Pending {
   x: number
   y: number
@@ -62,7 +60,6 @@ interface Pending {
   vy: number
   flipDown: boolean
   nodeId?: string
-  parentId?: number | null
 }
 
 interface CommentLayerProps {
@@ -95,46 +92,36 @@ export function CommentLayer({
 }: CommentLayerProps) {
   const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'Аноним'
   const isDesigner = userRole === 'designer'
+
+  // ─── New comment popup state ──────────────────────────────────────────────
   const [pending, setPending] = useState<Pending | null>(null)
   const [text, setText] = useState('')
-  const [activeComment, setActiveComment] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // ─── Active tooltip state ─────────────────────────────────────────────────
+  const [activeComment, setActiveComment] = useState<number | null>(null)
+  const [tooltipPos, setTooltipPos] = useState<{ left: number; top: number } | null>(null)
+  const [tooltipVisible, setTooltipVisible] = useState(false)
+
+  // ─── Reject state ─────────────────────────────────────────────────────────
   const [rejectingId, setRejectingId] = useState<number | null>(null)
   const [rejectText, setRejectText] = useState('')
-  const [tooltipPos, setTooltipPos] = useState<{ left: number; top: number; flipDown: boolean } | null>(null)
 
+  // ─── Inline reply state ───────────────────────────────────────────────────
+  const [replyText, setReplyText] = useState('')
+  const [replySubmitting, setReplySubmitting] = useState(false)
+
+  // ─── Refs ─────────────────────────────────────────────────────────────────
   const popupRef = useRef<HTMLDivElement>(null)
   const markerRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+  const tooltipRef = useRef<HTMLDivElement>(null)
 
-  // ─── Calculate tooltip position ────────────────────────────────────────────
-  useEffect(() => {
-    if (activeComment === null) {
-      setTooltipPos(null)
-      return
-    }
-    const markerEl = markerRefs.current.get(activeComment)
-    if (!markerEl) return
+  // ─── Flatten comments (needed early for LLM init) ─────────────────────────
+  const allComments = flattenCommentTree(commentTree)
+  const flatMap = new Map<number, Comment>()
+  for (const c of allComments) flatMap.set(c.id, c)
 
-    const rect = markerEl.getBoundingClientRect()
-    const tooltipWidth = 300
-    const tooltipHeight = 260
-    const margin = 12
-
-    const centerX = rect.left + rect.width / 2
-    const spaceAbove = rect.top - margin
-    const flipDown = spaceAbove < tooltipHeight
-
-    let left = centerX - tooltipWidth / 2
-    left = Math.max(margin, Math.min(window.innerWidth - margin - tooltipWidth, left))
-
-    const top = flipDown
-      ? rect.bottom + margin
-      : rect.top - tooltipHeight - margin
-
-    setTooltipPos({ left, top, flipDown })
-  }, [activeComment])
-
-  // ─── LLM toggle ───────────────────────────────────────────────────────────
+  // ─── LLM toggle state ─────────────────────────────────────────────────────
   const [llmIds, setLlmIds] = useState<Set<number>>(new Set())
 
   useEffect(() => {
@@ -160,9 +147,41 @@ export function CommentLayer({
     })
   }
 
-  const allComments = flattenCommentTree(commentTree)
-  const flatMap = new Map<number, Comment>()
-  for (const c of allComments) flatMap.set(c.id, c)
+  // ─── Tooltip positioning: measure real height ─────────────────────────────
+  useLayoutEffect(() => {
+    if (activeComment === null || !tooltipRef.current) {
+      setTooltipPos(null)
+      setTooltipVisible(false)
+      return
+    }
+    const markerEl = markerRefs.current.get(activeComment)
+    if (!markerEl) return
+
+    const markerRect = markerEl.getBoundingClientRect()
+    const tooltipRect = tooltipRef.current.getBoundingClientRect()
+    const tooltipHeight = tooltipRect.height
+    const tooltipWidth = tooltipRect.width
+    const margin = 12
+
+    const centerX = markerRect.left + markerRect.width / 2
+    const spaceAbove = markerRect.top - margin
+    const spaceBelow = window.innerHeight - markerRect.bottom - margin
+
+    let left = centerX - tooltipWidth / 2
+    left = Math.max(margin, Math.min(window.innerWidth - margin - tooltipWidth, left))
+
+    let top: number
+    if (spaceBelow >= tooltipHeight) {
+      top = markerRect.bottom + margin
+    } else if (spaceAbove >= tooltipHeight) {
+      top = markerRect.top - tooltipHeight - margin
+    } else {
+      top = Math.max(margin, window.innerHeight - margin - tooltipHeight)
+    }
+
+    setTooltipPos({ left, top })
+    setTooltipVisible(true)
+  }, [activeComment])
 
   // ─── Click to place comment ──────────────────────────────────────────────
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -177,7 +196,6 @@ export function CommentLayer({
     const nodeEl = (e.target as HTMLElement).closest('[data-node-id]')
     const nodeId = nodeEl?.getAttribute('data-node-id') ?? undefined
 
-    // Clamp popup to viewport
     const popupWidth = 280
     const popupHeight = 260
     const margin = 16
@@ -185,9 +203,10 @@ export function CommentLayer({
     const vy = Math.max(margin, Math.min(window.innerHeight - margin - popupHeight, e.clientY))
 
     const flipDown = e.clientY < popupHeight + 24
-    setPending({ x, y, vx, vy, flipDown, nodeId, parentId: null })
+    setPending({ x, y, vx, vy, flipDown, nodeId })
     setActiveComment(null)
     setRejectingId(null)
+    setReplyText('')
   }, [commentMode])
 
   // ─── Submit new comment ──────────────────────────────────────────────────
@@ -197,7 +216,7 @@ export function CommentLayer({
     try {
       await onAdd({
         versionId: currentVersionId,
-        parentId: pending.parentId,
+        parentId: null,
         nodeId: pending.nodeId,
         x: pending.x,
         y: pending.y,
@@ -212,18 +231,22 @@ export function CommentLayer({
     }
   }
 
-  // ─── Reply handler ───────────────────────────────────────────────────────
-  function startReply(parentComment: Comment) {
-    setActiveComment(null)
-    setPending({
-      x: parentComment.x ?? 50,
-      y: parentComment.y ?? 50,
-      vx: Math.min(window.innerWidth - 360, Math.max(280, window.innerWidth / 2)),
-      vy: Math.min(window.innerHeight - 300, Math.max(100, window.innerHeight / 3)),
-      flipDown: false,
-      nodeId: parentComment.nodeId,
-      parentId: parentComment.id,
-    })
+  // ─── Submit inline reply ─────────────────────────────────────────────────
+  async function submitReply(parentId: number) {
+    if (!replyText.trim()) return
+    setReplySubmitting(true)
+    try {
+      await onAdd({
+        versionId: currentVersionId,
+        parentId,
+        text: replyText.trim(),
+        author: fullName,
+        role: userRole,
+      })
+      setReplyText('')
+    } finally {
+      setReplySubmitting(false)
+    }
   }
 
   // ─── Resolve / reject ────────────────────────────────────────────────────
@@ -255,10 +278,8 @@ export function CommentLayer({
 
   const currentComments = collectCommentsForMarkers(commentTree, currentVersionId)
   const olderComments = allComments.filter(c => c.versionId !== currentVersionId && !c.parentId)
-
   const allSorted = [...olderComments, ...currentComments]
 
-  // Count replies for a comment
   function countReplies(cid: number): number {
     const item = flatMap.get(cid)
     if (!item) return 0
@@ -284,24 +305,39 @@ export function CommentLayer({
     const replies = allComments.filter(c => c.parentId === parentId)
     if (!replies.length) return null
     return (
-      <div className={styles.threadReplies} style={{ marginLeft: depth === 1 ? 0 : 0 }}>
+      <div className={styles.threadReplies}>
         {replies.map(r => {
           const isOpen = r.status === 'open'
           return (
             <div key={r.id} className={styles.threadReply}>
-              <div className={styles.tooltipHeader} style={{ padding: '6px 8px 4px' }}>
-                <span className={styles.tooltipDot} style={{ background: ROLE_COLORS[r.role] }} />
-                <span className={styles.tooltipRole} style={{ color: ROLE_COLORS[r.role], fontSize: 11 }}>
+              <div className={styles.replyHeader}>
+                <span className={styles.replyDot} style={{ background: ROLE_COLORS[r.role] }} />
+                <span className={styles.replyRole} style={{ color: ROLE_COLORS[r.role] }}>
                   {ROLE_LABELS[r.role]}
                 </span>
-                <span className={styles.tooltipAuthor} style={{ fontSize: 11 }}>{r.author}</span>
-                <span className={styles.tooltipDate} style={{ fontSize: 10, marginLeft: 'auto' }}>
+                <span className={styles.replyAuthor}>{r.author}</span>
+                <span className={styles.replyDate}>
                   {new Date(r.createdAt).toLocaleString('ru-RU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </span>
+                {isDesigner && (
+                  <button
+                    className={`${styles.btnLlmMini} ${llmIds.has(r.id) ? styles['btnLlmMini--active'] : ''}`}
+                    onClick={() => toggleLLM(r.id)}
+                    title={llmIds.has(r.id) ? 'Убрать LLM-пометку' : 'Пометить для LLM'}
+                  >
+                    ✨
+                  </button>
+                )}
               </div>
-              <div className={styles.tooltipText} style={{ fontSize: 12, padding: '4px 8px 4px' }}>{r.text}</div>
-              {r.status === 'resolved' && <div className={styles.statusResolved} style={{ fontSize: 11, padding: '2px 8px' }}>✓ Выполнено</div>}
-              {r.status === 'rejected' && <div className={styles.statusRejected} style={{ fontSize: 11, padding: '2px 8px' }}>✗ Отклонено{r.rejectReason ? `: ${r.rejectReason}` : ''}</div>}
+              <div className={styles.replyText}>{r.text}</div>
+              {r.status === 'resolved' && <div className={styles.statusResolvedMini}>✓ Выполнено</div>}
+              {r.status === 'rejected' && <div className={styles.statusRejectedMini}>✗ Отклонено{r.rejectReason ? `: ${r.rejectReason}` : ''}</div>}
+              {isOpen && isDesigner && (
+                <div className={styles.replyActions}>
+                  <button className={styles.btnResolveMini} onClick={() => resolveComment(r.id)}>✓</button>
+                  <button className={styles.btnRejectMini} onClick={() => { setRejectingId(r.id); setRejectText('') }}>✗</button>
+                </div>
+              )}
               {renderReplies(r.id, depth + 1)}
             </div>
           )
@@ -318,7 +354,6 @@ export function CommentLayer({
       {/* Existing comment markers */}
       {allSorted.map(c => {
         const isCurrent = c.versionId === currentVersionId
-        const isOpen = c.status === 'open'
         const replyCount = countReplies(c.id)
 
         return (
@@ -338,6 +373,7 @@ export function CommentLayer({
               setPending(null)
               setRejectingId(null)
               setRejectText('')
+              setReplyText('')
             }}
           >
             {c.status === 'resolved' ? '✓' : c.status === 'rejected' ? '✗' : getInitials(c.author)}
@@ -357,7 +393,7 @@ export function CommentLayer({
         )
       })}
 
-      {/* Active comment tooltip — fixed position, never clipped */}
+      {/* Active comment tooltip — fixed position, measured height */}
       {activeComment !== null && tooltipPos && (() => {
         const c = allSorted.find(x => x.id === activeComment)
         if (!c) return null
@@ -366,8 +402,14 @@ export function CommentLayer({
 
         return (
           <div
+            ref={tooltipRef}
             className={styles.markerTooltip}
-            style={{ left: tooltipPos.left, top: tooltipPos.top }}
+            style={{
+              left: tooltipPos.left,
+              top: tooltipPos.top,
+              opacity: tooltipVisible ? 1 : 0,
+              pointerEvents: tooltipVisible ? 'auto' : 'none',
+            }}
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
@@ -379,6 +421,15 @@ export function CommentLayer({
               <span className={styles.tooltipAuthor}>{c.author}</span>
               {!isCurrent && (
                 <span className={styles.tooltipVersion}>v{c.versionNumber}</span>
+              )}
+              {isDesigner && (
+                <button
+                  className={`${styles.btnLlm} ${llmIds.has(c.id) ? styles['btnLlm--active'] : ''}`}
+                  onClick={() => toggleLLM(c.id)}
+                  title={llmIds.has(c.id) ? 'Убрать LLM-пометку' : 'Пометить для LLM'}
+                >
+                  ✨
+                </button>
               )}
               <button
                 className={styles.tooltipDelete}
@@ -402,7 +453,7 @@ export function CommentLayer({
               {new Date(c.createdAt).toLocaleString('ru-RU')}
             </div>
 
-            {/* Status badge for resolved/rejected */}
+            {/* Status badge */}
             {c.status === 'resolved' && (
               <div className={styles.statusResolved}>✓ Выполнено</div>
             )}
@@ -415,31 +466,41 @@ export function CommentLayer({
             {/* Thread replies */}
             {renderReplies(c.id)}
 
-            {/* Actions for open comments */}
-            {isOpen && rejectingId !== c.id && (
+            {/* Inline reply (for open comments) */}
+            {isOpen && (
+              <div className={styles.replyInline}>
+                <textarea
+                  className={styles.replyInput}
+                  placeholder="Ответить..."
+                  value={replyText}
+                  onChange={e => setReplyText(e.target.value)}
+                  rows={2}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && e.metaKey) submitReply(c.id)
+                    if (e.key === 'Escape') setReplyText('')
+                  }}
+                />
+                <button
+                  className={styles.replySubmit}
+                  onClick={() => submitReply(c.id)}
+                  disabled={!replyText.trim() || replySubmitting}
+                >
+                  {replySubmitting ? '...' : 'Отправить'}
+                </button>
+              </div>
+            )}
+
+            {/* Actions for open comments (designer only) */}
+            {isOpen && rejectingId !== c.id && isDesigner && (
               <div className={styles.tooltipActions}>
-                {isDesigner && (
-                  <>
-                    <button
-                      className={`${styles.btnLlm} ${llmIds.has(c.id) ? styles['btnLlm--active'] : ''}`}
-                      onClick={() => toggleLLM(c.id)}
-                      title={llmIds.has(c.id) ? 'Убрать LLM-пометку' : 'Пометить для LLM'}
-                    >
-                      ✨
-                    </button>
-                    <button className={styles.btnResolve} onClick={() => resolveComment(c.id)}>
-                      ✓ Выполнено
-                    </button>
-                    <button
-                      className={styles.btnReject}
-                      onClick={() => { setRejectingId(c.id); setRejectText('') }}
-                    >
-                       Отклонить
-                    </button>
-                  </>
-                )}
-                <button className={styles.btnReply} onClick={() => startReply(c)}>
-                  ↩ Ответить
+                <button className={styles.btnResolve} onClick={() => resolveComment(c.id)}>
+                  ✓ Выполнено
+                </button>
+                <button
+                  className={styles.btnReject}
+                  onClick={() => { setRejectingId(c.id); setRejectText('') }}
+                >
+                  ✗ Отклонить
                 </button>
               </div>
             )}
@@ -472,7 +533,7 @@ export function CommentLayer({
         )
       })()}
 
-      {/* New comment / Reply popup */}
+      {/* New comment popup (only for new comments, not replies) */}
       {pending && (
         <div
           ref={popupRef}
@@ -484,9 +545,6 @@ export function CommentLayer({
             <span className={styles.popupWhoRole} style={{ background: ROLE_COLORS[userRole] }} />
             <span className={styles.popupWhoName}>{fullName}</span>
             <span className={styles.popupWhoRoleLabel}>{ROLE_LABELS[userRole]}</span>
-            {pending.parentId && (
-              <span className={styles.popupReplyLabel}>→ ответ</span>
-            )}
           </div>
 
           {pending.nodeId && (
@@ -497,7 +555,7 @@ export function CommentLayer({
 
           <textarea
             className={styles.popupTextarea}
-            placeholder={pending.parentId ? 'Ответ..."' : 'Комментарий...'}
+            placeholder="Комментарий..."
             value={text}
             onChange={e => setText(e.target.value)}
             rows={3}

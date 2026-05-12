@@ -22,6 +22,22 @@ export function AboutModal({ open, onClose }: Props) {
           <p style={{ margin: 0, fontSize: 12, opacity: 0.4 }}>
             Инструмент для визуальной сборки экранов из&nbsp;JSON&nbsp;/&nbsp;YAML. Разработано в&nbsp;Скала^Р.
           </p>
+          <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+            <p style={{ margin: '0 0 10px', fontSize: 11, opacity: 0.5 }}>
+              Инструкция для LLM по&nbsp;использованию YAML-файлов и&nbsp;созданию экранов
+            </p>
+            <button
+              className={[styles.yamlBtn, styles.yamlBtnApply].join(' ')}
+              onClick={() => {
+                const a = document.createElement('a')
+                a.href = '/llm-prompt.md'
+                a.download = 'llm-prompt.md'
+                a.click()
+              }}
+            >
+              Скачать инструкцию
+            </button>
+          </div>
         </div>
       </div>
     </div>

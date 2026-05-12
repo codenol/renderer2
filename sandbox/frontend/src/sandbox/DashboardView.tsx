@@ -565,6 +565,14 @@ export function DashboardView() {
               </button>
             </>
           )}
+          {ctxMenu.type === 'feature' && (
+            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); openVersionYaml(ctxMenu.slug, ctxMenu.title) }}>
+              <LIcon name="upload" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+              Добавить версию
+            </button>
+          )}
+          {(ctxMenu.type === 'product' || ctxMenu.type === 'page' || ctxMenu.type === 'feature') && (
+          <>
           <button className={styles.contextItem} onClick={() => renameItem(ctxMenu.slug)}>
             <LIcon name="edit" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Переименовать
@@ -577,6 +585,8 @@ export function DashboardView() {
             <LIcon name="trash-2" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Удалить
           </button>
+          </>
+          )}
         </div>
       )}
 

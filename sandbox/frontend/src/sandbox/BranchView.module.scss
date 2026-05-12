@@ -6,7 +6,79 @@
   background: #e5e7eb;
 }
 
-// ─── Top bar ─────────────────────────────────────────────────────────────────
+// ─── Content header (replaces TopBar) ────────────────────────────────────────
+.contentHeader {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.breadcrumbLink {
+  color: #2d98b4;
+  cursor: pointer;
+  font-weight: 500;
+  &:hover { text-decoration: underline; }
+}
+
+.breadcrumbSep {
+  color: #d1d5db;
+}
+
+.breadcrumbCurrent {
+  color: #111827;
+  font-weight: 600;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  &:hover { background: #f3f4f6; }
+}
+
+.wsStatus {
+  font-size: 13px;
+  width: 24px;
+  text-align: center;
+}
+
+.commentError {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fecaca;
+  color: #991b1b;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  z-index: 999;
+  animation: toastIn 0.2s;
+}
+
+// ─── Top bar (deprecated, kept for style compatibility) ────────────────────────
 .topBar {
   position: sticky;
   top: 0;

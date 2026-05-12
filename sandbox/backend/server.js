@@ -79,6 +79,7 @@ function fmtVersion(v) {
     id: v.id,
     branchSlug: v.branch_slug,
     versionNumber: v.version_number,
+    isArchived: !!v.is_archived,
     createdAt: new Date(v.created_at * 1000).toISOString(),
   }
 }
@@ -273,6 +274,141 @@ app.get('/api/branches', async () => {
     title: r.title,
     createdAt: new Date(r.created_at * 1000).toISOString(),
   }))
+})
+
+// ─── Hierarchy ────────────────────────────────────────────────────────────────
+
+app.get('/api/hierarchy', { preHandler: [authGuard] }, async (req) => {
+  const db = getDb()
+  const showArchived = req.query.showArchived === 'true'
+  const archiveFilter = showArchived ? '' : 'AND b.is_archived = 0'
+
+  const products = db.prepare(`
+    SELECT b.* FROM branches b
+    WHERE b.node_type = 'product' ${archiveFilter}
+    ORDER BY b.created_at ASC
+  `).all()
+
+  const result = products.map(p => {
+    const pages = db.prepare(`
+      SELECT b.* FROM branches b
+      WHERE b.node_type = 'page' AND b.parent_slug = ? ${archiveFilter}
+      ORDER BY b.created_at ASC
+    `).all(p.slug)
+
+    return {
+      slug: p.slug,
+      title: p.title,
+      nodeType: p.node_type,
+      isArchived: !!p.is_archived,
+      createdAt: new Date(p.created_at * 1000).toISOString(),
+      pages: pages.map(pg => {
+        const features = db.prepare(`
+          SELECT b.*,
+            (SELECT COUNT(*) FROM versions v WHERE v.branch_slug = b.slug AND v.is_archived = 0) as version_count,
+            (SELECT MAX(v.version_number) FROM versions v WHERE v.branch_slug = b.slug AND v.is_archived = 0) as latest_version
+          FROM branches b
+          WHERE b.node_type = 'feature' AND b.parent_slug = ? ${archiveFilter}
+          ORDER BY b.created_at ASC
+        `).all(pg.slug)
+
+        return {
+          slug: pg.slug,
+          title: pg.title,
+          nodeType: pg.node_type,
+          isArchived: !!pg.is_archived,
+          createdAt: new Date(pg.created_at * 1000).toISOString(),
+          features: features.map(f => ({
+            slug: f.slug,
+            title: f.title,
+            nodeType: 'feature',
+            isArchived: !!f.is_archived,
+            versionCount: f.version_count,
+            latestVersion: f.latest_version,
+            createdAt: new Date(f.created_at * 1000).toISOString(),
+          })),
+        }
+      }),
+    }
+  })
+
+  return result
+})
+
+app.post('/api/products', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const { title } = req.body || {}
+  if (!title?.trim()) return reply.code(400).send({ error: 'title required' })
+  const db = getDb()
+  const slug = nanoid(8)
+  const now = Math.floor(Date.now() / 1000)
+  db.prepare("INSERT INTO branches (slug, title, node_type, parent_slug, created_by, created_at) VALUES (?, ?, 'product', NULL, ?, ?)")
+    .run(slug, title.trim(), req.user.email, now)
+  reply.code(201).send({ slug, title: title.trim(), nodeType: 'product', createdAt: new Date(now * 1000).toISOString() })
+})
+
+app.post('/api/pages', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const { title, parentSlug } = req.body || {}
+  if (!title?.trim() || !parentSlug?.trim()) return reply.code(400).send({ error: 'title and parentSlug required' })
+  const db = getDb()
+  const parent = db.prepare("SELECT slug FROM branches WHERE slug = ? AND node_type = 'product'").get(parentSlug)
+  if (!parent) return reply.code(404).send({ error: 'Parent product not found' })
+  const slug = nanoid(8)
+  const now = Math.floor(Date.now() / 1000)
+  db.prepare("INSERT INTO branches (slug, title, node_type, parent_slug, created_by, created_at) VALUES (?, ?, 'page', ?, ?, ?)")
+    .run(slug, title.trim(), parentSlug, req.user.email, now)
+  reply.code(201).send({ slug, title: title.trim(), parentSlug, nodeType: 'page', createdAt: new Date(now * 1000).toISOString() })
+})
+
+app.post('/api/features', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const { title, parentSlug } = req.body || {}
+  if (!title?.trim() || !parentSlug?.trim()) return reply.code(400).send({ error: 'title and parentSlug required' })
+  const db = getDb()
+  const parent = db.prepare("SELECT slug FROM branches WHERE slug = ? AND node_type = 'page'").get(parentSlug)
+  if (!parent) return reply.code(404).send({ error: 'Parent page not found' })
+  const slug = nanoid(8)
+  const now = Math.floor(Date.now() / 1000)
+  db.prepare("INSERT INTO branches (slug, title, node_type, parent_slug, created_by, created_at) VALUES (?, ?, 'feature', ?, ?, ?)")
+    .run(slug, title.trim(), parentSlug, req.user.email, now)
+  reply.code(201).send({ slug, title: title.trim(), parentSlug, nodeType: 'feature', createdAt: new Date(now * 1000).toISOString() })
+})
+
+app.patch('/api/branches/:slug', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const { title, isArchived } = req.body || {}
+  const db = getDb()
+  const branch = db.prepare('SELECT slug FROM branches WHERE slug = ?').get(req.params.slug)
+  if (!branch) return reply.code(404).send({ error: 'Branch not found' })
+
+  if (title !== undefined) {
+    db.prepare('UPDATE branches SET title = ? WHERE slug = ?').run(title.trim(), req.params.slug)
+  }
+  if (isArchived !== undefined) {
+    db.prepare('UPDATE branches SET is_archived = ? WHERE slug = ?').run(isArchived ? 1 : 0, req.params.slug)
+  }
+  const updated = db.prepare('SELECT * FROM branches WHERE slug = ?').get(req.params.slug)
+  return {
+    slug: updated.slug,
+    title: updated.title,
+    nodeType: updated.node_type,
+    isArchived: !!updated.is_archived,
+    parentSlug: updated.parent_slug,
+    createdAt: new Date(updated.created_at * 1000).toISOString(),
+  }
+})
+
+app.delete('/api/branches/:slug', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const db = getDb()
+  const result = db.prepare('DELETE FROM branches WHERE slug = ?').run(req.params.slug)
+  if (result.changes === 0) return reply.code(404).send({ error: 'Branch not found' })
+  reply.code(204).send()
+})
+
+app.patch('/api/versions/:id', { preHandler: [authGuard, roleGuard('designer')] }, async (req, reply) => {
+  const { isArchived } = req.body || {}
+  if (isArchived === undefined) return reply.code(400).send({ error: 'isArchived required' })
+  const db = getDb()
+  const result = db.prepare('UPDATE versions SET is_archived = ? WHERE id = ?').run(isArchived ? 1 : 0, parseInt(req.params.id))
+  if (result.changes === 0) return reply.code(404).send({ error: 'Version not found' })
+  return { id: parseInt(req.params.id), isArchived: !!isArchived }
 })
 
 app.get('/api/branches/:slug', async (req, reply) => {

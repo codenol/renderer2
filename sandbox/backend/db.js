@@ -114,7 +114,41 @@ function migrate(db) {
     `)
   }
 
-  // ─── Add new columns to comments if upgrading from old schema ────────────
+  // ─── Add hierarchy columns to branches if missing ────────────────────────
+  const branchCols2 = db.pragma('table_info(branches)').map(c => c.name)
+  if (!branchCols2.includes('parent_slug')) {
+    db.exec('ALTER TABLE branches ADD COLUMN parent_slug TEXT REFERENCES branches(slug)')
+  }
+  if (!branchCols2.includes('node_type')) {
+    db.exec("ALTER TABLE branches ADD COLUMN node_type TEXT NOT NULL DEFAULT 'feature' CHECK(node_type IN ('product','page','feature'))")
+  }
+  if (!branchCols2.includes('created_by')) {
+    db.exec('ALTER TABLE branches ADD COLUMN created_by TEXT')
+  }
+  if (!branchCols2.includes('is_archived')) {
+    db.exec('ALTER TABLE branches ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0')
+  }
+
+  // ─── Add is_archived to versions if missing ────────────────────────────────
+  const verCols = db.pragma('table_info(versions)').map(c => c.name)
+  if (!verCols.includes('is_archived')) {
+    db.exec('ALTER TABLE versions ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0')
+  }
+
+  // ─── Auto-migrate existing orphan branches into "Migrated" hierarchy ──────
+  const now2 = Math.floor(Date.now() / 1000)
+  const orphanCount = db.prepare("SELECT COUNT(*) as c FROM branches WHERE parent_slug IS NULL AND node_type = 'feature'").get().c
+  if (orphanCount > 0) {
+    const existingProduct = db.prepare("SELECT slug FROM branches WHERE node_type = 'product' AND slug = 'migrated'").get()
+    if (!existingProduct) {
+      db.prepare("INSERT OR IGNORE INTO branches (slug, title, node_type, parent_slug, created_by, is_archived, created_at) VALUES (?, ?, 'product', NULL, 'system', 0, ?)").run('migrated', 'Migrated', now2)
+    }
+    const existingPage = db.prepare("SELECT slug FROM branches WHERE node_type = 'page' AND parent_slug = 'migrated'").get()
+    if (!existingPage) {
+      db.prepare("INSERT OR IGNORE INTO branches (slug, title, node_type, parent_slug, created_by, is_archived, created_at) VALUES (?, ?, 'page', 'migrated', 'system', 0, ?)").run('migrated-default', 'Default', now2)
+    }
+    db.prepare("UPDATE branches SET parent_slug = 'migrated-default', node_type = 'feature' WHERE parent_slug IS NULL AND node_type = 'feature' AND slug NOT IN ('migrated','migrated-default')").run()
+  }
   const commentCols = db.pragma('table_info(comments)').map(c => c.name)
   if (!commentCols.includes('version_id')) {
     db.exec('ALTER TABLE comments ADD COLUMN version_id INTEGER')

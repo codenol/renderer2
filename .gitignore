@@ -32,9 +32,8 @@ CLAUDE.md
 
 # Misc temp/snapshot files
 _tokens.scss
-after-filter-removal/
-cmdb-snapshot/
-component-map.json
+after-filter-removal
+cmdb-snapshot
 current-state/
 embedded-test.png
 export-button.png
@@ -64,3 +63,5 @@ geo-clusters.html
 
 # Snapshot files
 report-builder3-snapshot.yml
+page-snapshot.yml
+*.png

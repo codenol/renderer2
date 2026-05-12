@@ -34,7 +34,7 @@ CLAUDE.md
 _tokens.scss
 after-filter-removal
 cmdb-snapshot
-current-state/
+current-state
 embedded-test.png
 export-button.png
 figma-manifest.json
@@ -53,7 +53,7 @@ skala-design-system-index.json
 
 # PDF reports
 hardware_report_464.pdf
-software_report\ \(3\).pdf
+software_report*.pdf
 
 # Backend data (runtime db)
 sandbox/backend/data/

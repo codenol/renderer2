@@ -269,10 +269,10 @@ export function BranchView() {
         <div className={styles.yamlOverlay} onClick={() => setShareOpen(false)}>
           <div className={styles.yamlModal} onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <div className={styles.yamlHeader}><span className={styles.yamlTitle}>Поделиться</span><button className={styles.yamlClose} onClick={() => setShareOpen(false)}>✕</button></div>
-            <div className={styles.yamlBody} style={{ padding: '16px 20px' }}>
-              <p style={{ margin: '0 0 8px', fontSize: 14 }}>Версия {getCurrentVersionNumber()} · {localBranchTitle}</p>
-              <p style={{ margin: '0 0 12px', fontSize: 13, color: '#64748b' }}>По этой ссылке можно просматривать страницу и оставлять комментарии.</p>
-              <input className={styles.identityInput} value={shareUrl} readOnly style={{ width: '100%', boxSizing: 'border-box', cursor: 'pointer' }} onClick={(e) => (e.target as HTMLInputElement).select()} />
+              <div className={styles.yamlBody} style={{ padding: '16px 20px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: 14 }}>Версия {getCurrentVersionNumber()} · {localBranchTitle}</p>
+                <p style={{ margin: '0 0 12px', fontSize: 13, opacity: 0.6 }}>По этой ссылке можно просматривать страницу и оставлять комментарии.</p>
+                <input className={styles.identityInput} value={shareUrl} readOnly style={{ cursor: 'pointer' }} onClick={(e) => (e.target as HTMLInputElement).select()} />
             </div>
             <div className={styles.yamlFooter}><div style={{ flex: 1 }} /><button className={`${styles.yamlBtn} ${styles.yamlBtnCopy}`} onClick={copyShareUrl}>Копировать ссылку</button></div>
           </div>

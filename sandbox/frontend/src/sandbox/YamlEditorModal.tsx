@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import { LIcon } from '@/renderer/components/LIcon'
 import styles from './BranchView.module.scss'
 
@@ -24,7 +23,6 @@ export function YamlEditorModal({
   onSubmit, submitLabel, submitting,
   showCopyDownload, onCopy, copied, onDownload, onFileSelect,
 }: Props) {
-  const fileRef = useRef<HTMLInputElement>(null)
 
   if (!open) return null
 
@@ -47,20 +45,6 @@ export function YamlEditorModal({
           />
         </div>
         <div className={styles.yamlFooter}>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".yaml,.yml"
-            style={{ display: 'none' }}
-            onChange={async e => {
-              const file = e.target.files?.[0]
-              if (!file) return
-              e.target.value = ''
-              const text = await file.text()
-              onFileSelect(text)
-            }}
-            onClick={e => e.stopPropagation()}
-          />
           <button
             className={`${styles.yamlBtn} ${styles.yamlBtnApply}`}
             onClick={onSubmit}
@@ -68,12 +52,21 @@ export function YamlEditorModal({
           >
             {submitting ? '...' : submitLabel}
           </button>
-          <button
-            className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`}
-            onClick={() => fileRef.current?.click()}
-          >
+          <label className={`${styles.yamlBtn} ${styles.yamlBtnUpload}`} style={{ cursor: 'pointer' }}>
             Загрузить файл
-          </button>
+            <input
+              type="file"
+              accept=".yaml,.yml"
+              style={{ display: 'none' }}
+              onChange={async e => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                e.target.value = ''
+                const text = await file.text()
+                onFileSelect(text)
+              }}
+            />
+          </label>
           <div style={{ flex: 1 }} />
           {showCopyDownload && (
             <>

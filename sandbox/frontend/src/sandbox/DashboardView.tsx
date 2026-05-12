@@ -58,12 +58,13 @@ export function DashboardView() {
   const [createError, setCreateError] = useState('')
 
   // Context menu
-  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; slug: string; type: string; title: string; isArchived: boolean } | null>(null)
+  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; slug: string; type: string; title: string; isArchived: boolean; versionId?: number } | null>(null)
   const ctxRef = useRef<HTMLDivElement>(null)
 
   // Rename modal
   const [renameOpen, setRenameOpen] = useState(false)
   const [renameSlug, setRenameSlug] = useState('')
+  const [renameVersionId, setRenameVersionId] = useState<number | null>(null)
   const [renameTitle, setRenameTitle] = useState('')
   const [renameSubmitting, setRenameSubmitting] = useState(false)
 
@@ -126,9 +127,9 @@ export function DashboardView() {
     setExpanded(next)
   }
 
-  function openContext(e: React.MouseEvent, slug: string, type: string, title: string, isArchived: boolean) {
+  function openContext(e: React.MouseEvent, slug: string, type: string, title: string, isArchived: boolean, versionId?: number) {
     e.stopPropagation()
-    setCtxMenu({ x: e.clientX, y: e.clientY, slug, type, title, isArchived })
+    setCtxMenu({ x: e.clientX, y: e.clientY, slug, type, title, isArchived, versionId })
   }
 
   async function archiveItem(slug: string, archive: boolean) {
@@ -144,22 +145,97 @@ export function DashboardView() {
 
   function renameItem(slug: string) {
     setRenameSlug(slug)
+    setRenameVersionId(null)
+    setRenameTitle(ctxMenu?.title || '')
+    setCtxMenu(null)
+    setRenameOpen(true)
+  }
+
+  function renameVersionItem(versionId: number) {
+    setRenameVersionId(versionId)
+    setRenameSlug('')
     setRenameTitle(ctxMenu?.title || '')
     setCtxMenu(null)
     setRenameOpen(true)
   }
 
   async function confirmRename() {
-    if (!renameTitle.trim()) return
+    if (renameVersionId) {
+      setRenameSubmitting(true)
+      const token = localStorage.getItem('skala_access_token')
+      await fetch(`${BACKEND}/api/versions/${renameVersionId}/name`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ name: renameTitle.trim() }),
+      })
+      setRenameSubmitting(false)
+      setRenameOpen(false)
+      load()
+      return
+    }
+    if (!renameSlug) return
     setRenameSubmitting(true)
     const token = localStorage.getItem('skala_access_token')
     await fetch(`${BACKEND}/api/branches/${renameSlug}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify({ title: renameTitle.trim() }),
     })
-    setRenameOpen(false)
     setRenameSubmitting(false)
+    setRenameOpen(false)
     load()
+  }
+
+  async function archiveVersion(versionId: number, archive: boolean) {
+    const token = localStorage.getItem('skala_access_token')
+    await fetch(`${BACKEND}/api/versions/${versionId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ isArchived: archive }),
+    })
+    setCtxMenu(null)
+    load()
+  }
+
+  async function cloneVersion(versionId: number, branchSlug: string) {
+    setCtxMenu(null)
+    const token = localStorage.getItem('skala_access_token')
+    const getRes = await fetch(`${BACKEND}/api/branches/${branchSlug}/versions/${versionId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!getRes.ok) { showToast('Ошибка клонирования'); return }
+    const data = await getRes.json()
+    const yamlStr = yaml.dump(data.screen, { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false, indent: 2 })
+    const postRes = await fetch(`${BACKEND}/api/branches/${branchSlug}/versions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/yaml', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: yamlStr,
+    })
+    if (postRes.ok) {
+      const v = await postRes.json()
+      showToast(`Версия ${v.versionNumber} клонирована`)
+    } else {
+      showToast('Ошибка клонирования')
+    }
+    load()
+  }
+
+  async function downloadVersionYaml(versionId: number, branchSlug: string) {
+    setCtxMenu(null)
+    const token = localStorage.getItem('skala_access_token')
+    const res = await fetch(`${BACKEND}/api/branches/${branchSlug}/versions/${versionId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!res.ok) { showToast('Ошибка загрузки'); return }
+    const data = await res.json()
+    const yamlStr = yaml.dump(data.screen, { lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false, indent: 2 })
+    const blob = new Blob([yamlStr], { type: 'text/yaml' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${branchSlug}-v${data.versionNumber}.yaml`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   function deleteItem(slug: string) {
@@ -424,9 +500,14 @@ export function DashboardView() {
                                               >
                                                 <LIcon name="git-branch" size={14} style={{ flexShrink: 0, color: 'var(--color-icon-secondary, #9ca3af)' }} />
                                                 <span className={styles.featTitle} style={{ flex: 1 }}>Версия {v.versionNumber}{v.name ? ` — ${v.name}` : ''}</span>
-                                                <span className={styles.featVersion} style={{ marginRight: 16 }}>
+                                                <span className={styles.featVersion} style={{ marginRight: 8 }}>
                                                   {new Date(v.createdAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                 </span>
+                                                {isDesigner && (
+                                                  <button className={styles.cardMenu} onClick={e => { e.stopPropagation(); openContext(e, f.slug, 'version', `Версия ${v.versionNumber}`, !!v.isArchived, v.id) }}>
+                                                    <LIcon name="more-vertical" size={14} />
+                                                  </button>
+                                                )}
                                               </div>
                                             ))
                                           )}
@@ -464,11 +545,25 @@ export function DashboardView() {
               Добавить фичу
             </button>
           )}
-          {ctxMenu.type === 'feature' && (
-            <button className={styles.contextItem} onClick={() => { setCtxMenu(null); openVersionYaml(ctxMenu.slug, ctxMenu.title) }}>
-              <LIcon name="upload" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
-              Добавить версию
-            </button>
+          {ctxMenu.type === 'version' && (
+            <>
+              <button className={styles.contextItem} onClick={() => renameVersionItem(ctxMenu.versionId!)}>
+                <LIcon name="edit" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+                Переименовать
+              </button>
+              <button className={styles.contextItem} onClick={() => archiveVersion(ctxMenu.versionId!, !ctxMenu.isArchived)}>
+                <LIcon name="archive" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+                {ctxMenu.isArchived ? 'Разархивировать' : 'Архивировать'}
+              </button>
+              <button className={styles.contextItem} onClick={() => cloneVersion(ctxMenu.versionId!, ctxMenu.slug)}>
+                <LIcon name="copy" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+                Клонировать
+              </button>
+              <button className={styles.contextItem} onClick={() => downloadVersionYaml(ctxMenu.versionId!, ctxMenu.slug)}>
+                <LIcon name="download" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />
+                Скачать YAML
+              </button>
+            </>
           )}
           <button className={styles.contextItem} onClick={() => renameItem(ctxMenu.slug)}>
             <LIcon name="edit" size={14} strokeWidth={1.6} style={{ marginRight: 8, verticalAlign: 'middle' }} />

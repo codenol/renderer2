@@ -7,7 +7,6 @@
   &--active {
     pointer-events: all;
     cursor: crosshair;
-    box-shadow: inset 0 0 0 4px #8b5cf6;
   }
 }
 
@@ -579,8 +578,7 @@
   position: fixed;
   pointer-events: none;
   z-index: 1000;
-  border: 2px solid #8b5cf6;
+  border: 2px solid;
   border-radius: 2px;
-  background: rgba(#8b5cf6, 0.06);
   transition: left 0.08s, top 0.08s, width 0.08s, height 0.08s;
 }

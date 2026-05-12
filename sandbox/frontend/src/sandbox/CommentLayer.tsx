@@ -386,6 +386,7 @@ export function CommentLayer({
     <div
       ref={layerRef}
       className={`${styles.layer} ${commentMode ? styles['layer--active'] : ''}`}
+      style={commentMode ? { boxShadow: `inset 0 0 0 4px ${ROLE_COLORS[userRole]}` } : undefined}
       onClick={handleClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -399,6 +400,7 @@ export function CommentLayer({
             top: hoveredRect.top,
             width: hoveredRect.width,
             height: hoveredRect.height,
+            borderColor: ROLE_COLORS[userRole],
           }}
         />
       )}

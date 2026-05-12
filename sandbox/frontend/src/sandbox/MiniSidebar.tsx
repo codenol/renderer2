@@ -43,7 +43,7 @@ export function MiniSidebar({
   const isDesigner = user?.role === 'designer'
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || '?'
   const initials = [user?.firstName, user?.lastName]
-    .filter(Boolean).map(s => s[0]).join('').toUpperCase() || '?'
+    .filter(Boolean).map(s => s![0]).join('').toUpperCase() || '?'
 
   const onHome = location.pathname !== '/'
 
@@ -112,9 +112,11 @@ export function MiniSidebar({
         <button className={styles.sidebarBtn} title="О программе" onClick={() => setAboutOpen(true)}>
           <LIcon name="help-circle" size={20} />
         </button>
+        {isDesigner && (
         <button className={styles.sidebarBtn} title="Настройки" onClick={() => setSettingsOpen(true)}>
           <LIcon name="settings" size={20} />
         </button>
+        )}
         <div className={styles.profileWrap} ref={profileRef}>
           <button className={styles.sidebarBtn} onClick={() => setProfileOpen(v => !v)} title={fullName}>
             <span className={styles.avatarDot} style={{ background: ROLE_COLORS[user?.role ?? 'guest'] }}>
@@ -143,7 +145,7 @@ export function MiniSidebar({
         </div>
       </div>
 
-      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsModal open={settingsOpen && isDesigner} onClose={() => setSettingsOpen(false)} />
       <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </div>
   )
